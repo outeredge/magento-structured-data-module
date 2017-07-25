@@ -4,6 +4,7 @@ namespace OuterEdge\StructuredData\Block;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Block\Product\View;
+use Magento\Store\Model\ScopeInterface;
 
 class Product extends View
 {
@@ -82,7 +83,12 @@ class Product extends View
     
     public function getConfig($config)
     {
-        return $this->_scopeConfig->getValue($config, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->_scopeConfig->getValue($config, ScopeInterface::SCOPE_STORE);
+    }
+    
+    public function getStore()
+    {
+        return $this->_storeManager->getStore();
     }
     
     public function getStoreLogoUrl()

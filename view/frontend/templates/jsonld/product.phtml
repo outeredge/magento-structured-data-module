@@ -4,8 +4,8 @@
 	"@type": "WebPage",
 	"publisher": {
 	    "@type": "Organization",
-	    "name": "<?php echo $block->getConfig('general/store_information/name'); ?>",
-	    "url": "<?php echo $block->getProduct()->getStore()->getBaseUrl() ?>",
+	    "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStore()->getName()); ?>",
+	    "url": "<?php echo $block->getStore()->getBaseUrl() ?>",
 	    "logo": {
 	        "@type": "ImageObject",
 	        "url": "<?php echo $block->getStoreLogoUrl(); ?>"
@@ -29,7 +29,7 @@
 	    "offers": {
 	        "@type": "Offer",
 	        "price": <?php echo $block->getProduct()->getPrice(); ?>,
-	        "priceCurrency": "<?php echo $block->getProduct()->getStore()->getCurrentCurrency()->getCode() ?>",
+	        "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
 	        "availability": "http://schema.org/<?php echo $block->getProduct()->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
 	        "itemCondition": "http://schema.org/NewCondition"
 	    },
@@ -68,7 +68,7 @@
             "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($review->getTitle())); ?>",
             "publisher": {
                 "@type": "Organization",
-                "name": "<?php echo $block->getConfig('general/store_information/name'); ?>",
+                "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStore()->getName()); ?>",
             },
             "reviewRating": {
                 "@type": "Rating",
