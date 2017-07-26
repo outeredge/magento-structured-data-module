@@ -14,6 +14,11 @@ class Cms extends Template
     protected $_page;
     
     /**
+     * @var \Magento\Cms\Model\Template\FilterProvider
+     */
+    protected $_filterProvider;
+    
+    /**
      * @var string
      */
     protected $_content;
@@ -31,6 +36,7 @@ class Cms extends Template
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Cms\Model\Page $page
+     * @param \Magento\Cms\Model\Template\FilterProvider $filterProvider
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -38,9 +44,11 @@ class Cms extends Template
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Magento\Cms\Model\Page $page,
+        \Magento\Cms\Model\Template\FilterProvider $filterProvider,
         array $data = []
     ) {
         $this->_page = $page;
+        $this->_filterProvider = $filterProvider;
         parent::__construct($context, $data);
     }
     
@@ -65,8 +73,10 @@ class Cms extends Template
     public function getContent()
     {
         if (!$this->_content) {
-            $content = nl2br($this->getPage()->getContent());
-            $this->_content = preg_replace('/([\r\n\t])/',' ', $content);
+            $content = $this->_filterProvider->getPageFilter()->filter($this->getPage()->getContent());
+            $content = nl2br($content);
+            $content = preg_replace('/([\r\n\t])/',' ', $content);
+            $this->_content = $content;
         }
         return $this->_content;
     }
