@@ -113,8 +113,11 @@ class Cms extends Template
         $doc = new DOMDocument();
         @$doc->loadHtml($this->getContent());
         $tags = $doc->getElementsByTagName('img');
-        if (!empty($tags)) {
-            $this->_image = $tags[0]->getAttribute('src');
+        if ($tags->length > 0) {
+            foreach ($tags as $tag) {
+                $this->_image = $tag->getAttribute('src');
+                break;
+            }
         }
     }
 }
