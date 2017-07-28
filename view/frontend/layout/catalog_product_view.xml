@@ -4,5 +4,28 @@
         <referenceBlock name="head.additional">
             <block ifconfig="structureddata/product/enable" class="OuterEdge\StructuredData\Block\Product" name="product.structured.data.jsonld" template="OuterEdge_StructuredData::jsonld/product.phtml"/>
         </referenceBlock>
+
+        <attribute name="itemtype" remove="true"/>
+        <attribute name="itemscope" remove="true"/>
+        <referenceBlock name="page.main.title">
+            <arguments>
+                <argument name="add_base_attribute" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceBlock name="product.info.sku">
+            <arguments>
+                <argument name="add_attribute" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceBlock name="product.info.overview">
+            <arguments>
+                <argument name="add_attribute" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceBlock name="product.price.final">
+            <arguments>
+                <argument name="zone" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
     </body>
 </page>
