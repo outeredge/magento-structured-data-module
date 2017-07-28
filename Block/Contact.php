@@ -11,7 +11,7 @@ class Contact extends Template
      * @var \Magento\Theme\Block\Html\Header\Logo
      */
     protected $_logoBlock;
-    
+
     /**
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Theme\Block\Html\Header\Logo $logoBlock
@@ -27,24 +27,32 @@ class Contact extends Template
         $this->_logoBlock = $logoBlock;
         parent::__construct($context, $data);
     }
-    
+
     public function getConfig($config)
     {
         return $this->_scopeConfig->getValue($config, ScopeInterface::SCOPE_STORE);
     }
-    
+
     public function getStore()
     {
         return $this->_storeManager->getStore();
     }
-    
+
     public function getStoreLogoUrl()
     {
         return $this->_logoBlock->getLogoSrc();
     }
-    
+
     public function isLocalBusiness()
     {
         return $this->getConfig('structureddata/contact/type') == 'LocalBusiness';
+    }
+
+    public function getStreetAddress()
+    {
+        return implode(', ', array_map('trim', [
+            $this->getConfig('general/store_information/street_line1'),
+            $this->getConfig('general/store_information/street_line2')
+        ]));
     }
 }

@@ -9,8 +9,7 @@
 	    "image": "<?php echo $block->getStoreLogoUrl(); ?>",
 	    "address": {
 	        "@type": "PostalAddress",
-	        "streetAddress": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/street_line1')); ?>",
-	        "streetAddress": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/street_line2')); ?>",
+                "streetAddress": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStreetAddress()); ?>"
 	        "addressLocality": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/city')); ?>",
 	        "addressRegion": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/region_id')); ?>",
 	        "postalCode": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/postcode')); ?>",
