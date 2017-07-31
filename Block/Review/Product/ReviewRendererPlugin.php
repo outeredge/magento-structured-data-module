@@ -10,6 +10,10 @@ class ReviewRendererPlugin
 {
     public function afterGetReviewsSummaryHtml(ReviewRenderer $subject, $html)
     {
+        if (!$html) {
+            return $html;
+        }
+        
         $dom = new DOMDocument();
         $dom->loadHTML($html);
         $xpath = new DOMXPath($dom);
