@@ -3,19 +3,23 @@
     "description": "Magento Structured Data Module by outer/edge",
     "type": "magento2-module",
     "license": [
-        "OSL-3.0",
-        "AFL-3.0"
+        "MIT"
     ],
     "authors": [
         {
             "name": "outer/edge",
-            "email": "support@outeredgeuk.com",
+            "email": "hello@outeredgeuk.com",
             "homepage": "https://outeredgeuk.com/",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": "~5.5.0|~5.6.0|~7.0.0"
+        "php": "7.0.2|7.0.4|~7.0.6|~7.1.0"
+    },
+    "require-dev": {
+        "magento-ecg/coding-standard": "~3.0",
+        "outeredge/coding-standards": "~1.0.0",
+        "squizlabs/php_codesniffer": "^3.0"
     },
     "autoload": {
         "files": [

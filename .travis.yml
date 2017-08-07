@@ -1,0 +1,9 @@
+language: php
+php:
+  - 7.0
+  - 7.1
+directories:
+  - $HOME/.composer/cache/files
+script:
+  - composer install --no-interaction --no-autoloader --prefer-dist
+  - vendor/bin/phpcs .  --runtime-set ignore_warnings_on_exit 1

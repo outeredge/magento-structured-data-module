@@ -1,0 +1,7 @@
+.PHONY: phpcs phpcbf
+
+phpcs:
+	@docker exec $(NAME) phpcs $(ARGS)
+
+phpcbf:
+	@docker exec $(NAME) phpcbf $(ARGS)
