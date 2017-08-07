@@ -2,70 +2,92 @@
 
 namespace OuterEdge\StructuredData\Block;
 
-use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Block\Product\View;
+use Magento\Review\Model\Review\SummaryFactory;
+use Magento\Review\Model\Review\Summary;
+use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
+use Magento\Theme\Block\Html\Header\Logo;
+use Magento\Catalog\Block\Product\Context;
+use Magento\Framework\Url\EncoderInterface as UrlEncoderInterface;
+use Magento\Framework\Json\EncoderInterface as JsonEncoderInterface;
+use Magento\Framework\Stdlib\StringUtils;
+use Magento\Catalog\Helper\Product as ProductHelper;
+use Magento\Catalog\Model\ProductTypes\ConfigInterface;
+use Magento\Framework\Locale\FormatInterface;
+use Magento\Customer\Model\Session;
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Store\Model\ScopeInterface;
 
 class Product extends View
 {
     /**
-     * @var \Magento\Review\Model\Review\SummaryFactory
+     * @var SummaryFactory
      */
     protected $_reviewSummaryFactory;
 
     /**
-     * @var \Magento\Review\Model\ResourceModel\Review\CollectionFactory
+     * @var ReviewCollectionFactory
      */
     protected $_reviewCollectionFactory;
-    
+
     /**
-     * @var \Magento\Theme\Block\Html\Header\Logo
+     * @var Logo
      */
-    protected $_logoBlock;
-    
+    protected $_logo;
+
+    /**
+     * @var string
+     */
     protected $_brand = null;
-    
+
+    /**
+     * @var Summary
+     */
     protected $_reviewData = null;
-    
+
+    /**
+     * @var int
+     */
     protected $_reviewsCount = null;
-    
+
     /**
      * @param Context $context
-     * @param \Magento\Framework\Url\EncoderInterface $urlEncoder
-     * @param \Magento\Framework\Json\EncoderInterface $jsonEncoder
-     * @param \Magento\Framework\Stdlib\StringUtils $string
-     * @param \Magento\Catalog\Helper\Product $productHelper
-     * @param \Magento\Catalog\Model\ProductTypes\ConfigInterface $productTypeConfig
-     * @param \Magento\Framework\Locale\FormatInterface $localeFormat
-     * @param \Magento\Customer\Model\Session $customerSession
-     * @param ProductRepositoryInterface|\Magento\Framework\Pricing\PriceCurrencyInterface $productRepository
-     * @param \Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency
-     * @param \Magento\Review\Model\Review\SummaryFactory $reviewSummaryFactory
-     * @param \Magento\Review\Model\ResourceModel\Review\CollectionFactory $reviewCollectionFactory
-     * @param \Magento\Theme\Block\Html\Header\Logo $logoBlock
+     * @param UrlEncoderInterface $urlEncoder
+     * @param JsonEncoderInterface $jsonEncoder
+     * @param StringUtils $string
+     * @param ProductHelper $productHelper
+     * @param ConfigInterface $productTypeConfig
+     * @param FormatInterface $localeFormat
+     * @param Session $customerSession
+     * @param ProductRepositoryInterface $productRepository
+     * @param PriceCurrencyInterface $priceCurrency
+     * @param SummaryFactory $reviewSummaryFactory
+     * @param ReviewCollectionFactory $reviewCollectionFactory
+     * @param Logo $logo
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        \Magento\Catalog\Block\Product\Context $context,
-        \Magento\Framework\Url\EncoderInterface $urlEncoder,
-        \Magento\Framework\Json\EncoderInterface $jsonEncoder,
-        \Magento\Framework\Stdlib\StringUtils $string,
-        \Magento\Catalog\Helper\Product $productHelper,
-        \Magento\Catalog\Model\ProductTypes\ConfigInterface $productTypeConfig,
-        \Magento\Framework\Locale\FormatInterface $localeFormat,
-        \Magento\Customer\Model\Session $customerSession,
+        Context $context,
+        UrlEncoderInterface $urlEncoder,
+        JsonEncoderInterface $jsonEncoder,
+        StringUtils $string,
+        ProductHelper $productHelper,
+        ConfigInterface $productTypeConfig,
+        FormatInterface $localeFormat,
+        Session $customerSession,
         ProductRepositoryInterface $productRepository,
-        \Magento\Framework\Pricing\PriceCurrencyInterface $priceCurrency,
-        \Magento\Review\Model\Review\SummaryFactory $reviewSummaryFactory,
-        \Magento\Review\Model\ResourceModel\Review\CollectionFactory $reviewCollectionFactory,
-        \Magento\Theme\Block\Html\Header\Logo $logoBlock,
+        PriceCurrencyInterface $priceCurrency,
+        SummaryFactory $reviewSummaryFactory,
+        ReviewCollectionFactory $reviewCollectionFactory,
+        Logo $logo,
         array $data = []
     ) {
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
-        $this->_logoBlock = $logoBlock;
+        $this->_logo = $logo;
         parent::__construct(
             $context,
             $urlEncoder,
@@ -80,22 +102,22 @@ class Product extends View
             $data
         );
     }
-    
+
     public function getConfig($config)
     {
         return $this->_scopeConfig->getValue($config, ScopeInterface::SCOPE_STORE);
     }
-    
+
     public function getStore()
     {
         return $this->_storeManager->getStore();
     }
-    
+
     public function getStoreLogoUrl()
     {
-        return $this->_logoBlock->getLogoSrc();
+        return $this->_logo->getLogoSrc();
     }
-    
+
     public function getDescription()
     {
         if ($this->getConfig('structureddata/product/use_short_description')) {
@@ -105,7 +127,7 @@ class Product extends View
         }
         return preg_replace('/([\r\n\t])/',' ', $description);
     }
-    
+
     public function getBrand()
     {
         if ($this->_brand === null) {
@@ -119,7 +141,7 @@ class Product extends View
         }
         return $this->_brand;
     }
-    
+
     public function getAttributeText($attribute)
     {
         $attributeText = $this->getProduct()->getAttributeText($attribute);
@@ -128,7 +150,7 @@ class Product extends View
         }
         return $attributeText;
     }
-    
+
     public function getReviewData()
     {
         if ($this->_reviewData === null) {
@@ -136,13 +158,13 @@ class Product extends View
         }
         return $this->_reviewData;
     }
-    
+
     public function getReviewsRating()
     {
         $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() : 20;
         return $ratingSummary / 20;
     }
-    
+
     public function getReviewsCount()
     {
         if ($this->_reviewsCount === null) {
@@ -150,7 +172,7 @@ class Product extends View
         }
         return $this->_reviewsCount;
     }
-    
+
     public function getReviews()
     {
         $collection = $this->_reviewCollectionFactory->create()
@@ -165,7 +187,7 @@ class Product extends View
             }
             $item->setRatingValue($ratingValue / (20 * $ratingCount));
         }
-            
+
         return $collection;
     }
 }

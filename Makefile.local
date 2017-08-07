@@ -1,7 +1,7 @@
 .PHONY: phpcs phpcbf
 
 phpcs:
-	@docker exec $(NAME) phpcs $(ARGS)
+	@docker exec $(NAME) vendor/bin/phpcs $(ARGS)
 
 phpcbf:
-	@docker exec $(NAME) phpcbf $(ARGS)
+	@docker exec $(NAME) vendor/bin/phpcbf $(ARGS)

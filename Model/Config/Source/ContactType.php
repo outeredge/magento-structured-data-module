@@ -13,6 +13,15 @@ class ContactType implements ArrayInterface
      */
     public function toOptionArray()
     {
-        return [['value' => 'Organization', 'label' => __('Organization')], ['value' => 'LocalBusiness', 'label' => __('LocalBusiness')]];
+        return [
+            [
+                'value' => 'Organization',
+                'label' => __('Organization')
+            ],
+            [
+                'value' => 'LocalBusiness',
+                'label' => __('LocalBusiness')
+            ]
+        ];
     }
 }

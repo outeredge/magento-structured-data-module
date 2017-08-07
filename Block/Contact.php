@@ -3,28 +3,30 @@
 namespace OuterEdge\StructuredData\Block;
 
 use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Store\Model\ScopeInterface;
 
 class Contact extends Template
 {
     /**
-     * @var \Magento\Theme\Block\Html\Header\Logo
+     * @var Logo
      */
-    protected $_logoBlock;
+    protected $_logo;
 
     /**
-     * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Magento\Theme\Block\Html\Header\Logo $logoBlock
+     * @param Context $context
+     * @param Logo $logo
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Theme\Block\Html\Header\Logo $logoBlock,
+        Context $context,
+        Logo $logo,
         array $data = []
     ) {
-        $this->_logoBlock = $logoBlock;
+        $this->_logo = $logo;
         parent::__construct($context, $data);
     }
 
@@ -40,7 +42,7 @@ class Contact extends Template
 
     public function getStoreLogoUrl()
     {
-        return $this->_logoBlock->getLogoSrc();
+        return $this->_logo->getLogoSrc();
     }
 
     public function isLocalBusiness()

@@ -1,19 +1,19 @@
 <?php
 
-namespace OuterEdge\StructuredData\Block\Review\Product;
+namespace OuterEdge\StructuredData\Plugin\Review\Block\Product;
 
-use Magento\Review\Block\Product\ReviewRenderer;
+use Magento\Review\Block\Product\ReviewRenderer as ProductReviewRenderer;
 use DOMDocument;
 use DOMXPath;
 
-class ReviewRendererPlugin
+class ReviewRenderer
 {
-    public function afterGetReviewsSummaryHtml(ReviewRenderer $subject, $html)
+    public function afterGetReviewsSummaryHtml(ProductReviewRenderer $subject, $html)
     {
         if (!$html) {
             return $html;
         }
-        
+
         $dom = new DOMDocument();
         $dom->loadHTML($html);
         $xpath = new DOMXPath($dom);
