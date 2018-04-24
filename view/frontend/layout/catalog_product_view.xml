@@ -5,8 +5,8 @@
             <block ifconfig="structureddata/product/enable" class="OuterEdge\StructuredData\Block\Product" name="product.structured.data.jsonld" template="OuterEdge_StructuredData::jsonld/product.phtml"/>
         </referenceBlock>
 
-        <attribute name="itemtype" remove="true"/>
-        <attribute name="itemscope" remove="true"/>
+        <attribute name="itemtype" value=""/>
+        <attribute name="itemscope" value=""/>
         <referenceBlock name="page.main.title">
             <arguments>
                 <argument name="add_base_attribute" xsi:type="boolean">false</argument>
