@@ -1,5 +1,15 @@
 <script type="application/ld+json">
 {
+    <?php foreach($block->getChildren() as $option): ?>
+        <?php foreach($option as $product): ?>
+            <?php $_product = $block->loadProduct($product); ?>
+            "@type": "Product",
+            "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getSku()); ?>"
+        <?php endforeach; ?>
+    <?php endforeach; ?>
+
+    
+
     "@context": "https://schema.org/",
     "@type": "WebPage",
     "publisher": {
