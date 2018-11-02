@@ -113,9 +113,12 @@ class Product extends View
 
     public function getChildren()
     {
-        $children = $this->getProduct()->getTypeInstance()->getChildrenIds($this->getProduct()->getId(), true);
-        // $children = $this->getProduct()->getTypeInstance()->getUsedProducts($configProduct);
-        return $children;
+        $configurableCode = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+        if(!$this->getConfig('structureddata/product/include_children') || $this->getProduct()->getTypeId() !== $configurableCode) {
+            return array();
+        }
+        
+        return $this->getProduct()->getTypeInstance()->getChildrenIds($this->getProduct()->getId(), true);
     }
 
     public function loadProduct($id)

@@ -1,15 +1,6 @@
+<?php $children = $block->getChildren(); ?>
 <script type="application/ld+json">
 {
-    <?php foreach($block->getChildren() as $option): ?>
-        <?php foreach($option as $product): ?>
-            <?php $_product = $block->loadProduct($product); ?>
-            "@type": "Product",
-            "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getSku()); ?>"
-        <?php endforeach; ?>
-    <?php endforeach; ?>
-
-    
-
     "@context": "https://schema.org/",
     "@type": "WebPage",
     "publisher": {
@@ -77,13 +68,32 @@
         "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getSku())); ?>",
         "description": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getDescription())); ?>",
         "image": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getImage($block->getProduct(), 'product_base_image')->getImageUrl()); ?>",
-        "offers": {
+        "offers": [
+        {
             "@type": "Offer",
             "price": <?php echo $block->getProduct()->getPrice(); ?>,
             "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
             "availability": "http://schema.org/<?php echo $block->getProduct()->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
             "itemCondition": "http://schema.org/NewCondition"
-        },
+        }<?php echo !empty($children) ? ',' : ''; ?>
+        <?php if(!empty($children)): ?>
+            <?php $end = end($children) ?>
+            <?php $lastKey = end($end);?>
+            <?php foreach($children as $options): ?>
+            <?php foreach($options as $key => $product): ?>
+                <?php $_product = $block->loadProduct($product); ?>
+                {
+                    "@type": "Offer",
+                    "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getSku()); ?>",
+                    "price": <?php echo $_product->getPrice(); ?>,
+                    "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
+                    "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
+                    "itemCondition": "http://schema.org/NewCondition"
+                }<?php echo $key == $lastKey ? '' : ','; ?>
+            <?php endforeach; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        ],
         "weight": {
             "@type": "QuantitativeValue",
             "value": "<?php echo $block->getProduct()->getWeight(); ?>",
