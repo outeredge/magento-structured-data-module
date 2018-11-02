@@ -18,9 +18,15 @@ use Magento\Customer\Model\Session;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Catalog\Model\ProductFactory;
 
 class Product extends View
 {
+    /**
+     * @var Product Loader
+     */
+    protected $_productFactory;
+  
     /**
      * @var SummaryFactory
      */
@@ -82,11 +88,13 @@ class Product extends View
         PriceCurrencyInterface $priceCurrency,
         SummaryFactory $reviewSummaryFactory,
         ReviewCollectionFactory $reviewCollectionFactory,
+        ProductFactory $productFactory,
         Logo $logo,
         array $data = []
     ) {
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
+        $this->_productFactory = $productFactory;
         $this->_logo = $logo;
         parent::__construct(
             $context,
@@ -101,6 +109,21 @@ class Product extends View
             $priceCurrency,
             $data
         );
+    }
+
+    public function getChildren()
+    {
+        $configurableCode = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+        if(!$this->getConfig('structureddata/product/include_children') || $this->getProduct()->getTypeId() !== $configurableCode) {
+            return array();
+        }
+        
+        return $this->getProduct()->getTypeInstance()->getChildrenIds($this->getProduct()->getId(), true);
+    }
+
+    public function loadProduct($id)
+    {
+        return $this->_productFactory->create()->load($id);
     }
 
     public function getConfig($config)
