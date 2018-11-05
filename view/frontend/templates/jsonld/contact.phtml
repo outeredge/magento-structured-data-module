@@ -17,9 +17,9 @@
 	    },
 	    "telephone": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/phone')); ?>",
 	    "email": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('trans_email/ident_general/email')); ?>",
-	    "url": "<?php echo $block->getStore()->getBaseUrl() ?>",
+	    "url": "<?php echo $block->getStore()->getBaseUrl() ?>"
 <?php if ($block->isLocalBusiness()): ?>
-        "geo": {
+        ,"geo": {
             "@type": "GeoCoordinates",
             "latitude": "<?php echo $block->getConfig('structureddata/contact/latitude') ?>",
             "longitude": "<?php echo $block->getConfig('structureddata/contact/longitude') ?>"
