@@ -3,15 +3,15 @@
     "@context": "https://schema.org/",
 	"@type": "WebPage",
 	"name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getTitle())); ?>",
-	"mainContentOfPage": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getContent())); ?>",
-<?php if ($block->getMetaDescription()): ?>
-    "description": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getMetaDescription())); ?>",
-<?php endif; ?>
-<?php if ($block->getImage()): ?>
-	"primaryImageOfPage": {
-	    "@type": "ImageObject",
-	    "url": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getImage()); ?>"
-	}
-<?php endif; ?>
+	"mainContentOfPage": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getContent())); ?>"
+	<?php if ($block->getMetaDescription()): ?>
+		,"description": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getMetaDescription())); ?>"
+	<?php endif; ?>
+	<?php if ($block->getImage()): ?>
+		,"primaryImageOfPage": {
+		    "@type": "ImageObject",
+		    "url": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getImage()); ?>"
+		}
+	<?php endif; ?>
 }
 </script>
