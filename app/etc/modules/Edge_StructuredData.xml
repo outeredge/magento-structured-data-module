@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <Edge_StructuredData>
+            <active>true</active>
+            <codePool>local</codePool>
+        </Edge_StructuredData>
+    </modules>
+</config>

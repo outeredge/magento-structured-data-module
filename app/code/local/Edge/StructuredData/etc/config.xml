@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <Edge_StructuredData>
+            <version>1.0.0</version>
+        </Edge_StructuredData>
+    </modules>
+    <global>
+        <helpers>
+            <structureddata>
+                <class>Edge_StructuredData_Helper</class>
+            </structureddata>
+        </helpers>
+        <blocks>
+            <structureddata>
+                <class>Edge_StructuredData_Block</class>
+            </structureddata>
+        </blocks>
+    </global>
+    <frontend>
+        <layout>
+            <updates>
+                <structureddata>
+                    <file>structureddata.xml</file>
+                </structureddata>
+            </updates>
+        </layout>
+    </frontend>
+</config>

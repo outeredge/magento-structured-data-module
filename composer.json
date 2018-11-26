@@ -14,8 +14,8 @@
     },
     "extra": {
         "map": [
-            ["app/code/local/Edge/Structureddata", "app/code/local/Edge/Structureddata"],
-            ["app/etc/modules/Edge_Structureddata.xml", "app/etc/modules/Edge_Structureddata.xml"]
+            ["app/code/local/Edge/StructuredData", "app/code/local/Edge/StructuredData"],
+            ["app/etc/modules/Edge_StructuredData.xml", "app/etc/modules/Edge_StructuredData.xml"]
         ]
     }
 }
