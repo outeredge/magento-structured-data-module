@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <outeredge translate="label">
+            <label>outer/edge</label>
+            <sort_order>211</sort_order>
+        </outeredge>
+    </tabs>
+    <sections>
+        <structureddata translate="label" module="structureddata">
+            <class>separator-top</class>
+            <label>Structured Datas</label>
+            <tab>outeredge</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>1</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <general translate="label">
+                    <label>General</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <enabled translate="label" module="core">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enabled>
+                    </fields>
+                </general>
+            </groups>
+        </structureddata>
+    </sections>
+</config>

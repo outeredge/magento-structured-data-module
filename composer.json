@@ -1,32 +1,21 @@
 {
-    "name": "outeredge/magento-structured-data-module",
-    "description": "Magento Structured Data Module by outer/edge",
-    "type": "magento2-module",
-    "license": [
-        "MIT"
-    ],
+    "name": "outeredge/edge-magento-module-structured-data",
+    "type": "magento-module",
+    "description": "Structured Data Module by outer/edge",
+    "license": "MIT",
     "authors": [
         {
             "name": "outer/edge",
-            "email": "hello@outeredgeuk.com",
-            "homepage": "https://outeredgeuk.com/",
-            "role": "Developer"
+            "email": "support@outeredgeuk.com"
         }
     ],
     "require": {
-        "php": "7.0.2|7.0.4|~7.0.6|~7.1.0"
+        "magento-hackathon/magento-composer-installer": "*"
     },
-    "require-dev": {
-        "magento-ecg/coding-standard": "~3.0",
-        "outeredge/coding-standards": "~1.0.0",
-        "squizlabs/php_codesniffer": "^3.0"
-    },
-    "autoload": {
-        "files": [
-            "registration.php"
-        ],
-        "psr-4": {
-            "OuterEdge\\StructuredData\\": ""
-        }
+    "extra": {
+        "map": [
+            ["app/code/local/Edge/Structureddata", "app/code/local/Edge/Structureddata"],
+            ["app/etc/modules/Edge_Structureddata.xml", "app/etc/modules/Edge_Structureddata.xml"]
+        ]
     }
 }
