@@ -1,0 +1,107 @@
+<?php if(Mage::getStoreConfig('structureddata_product/product/enable')): ?>
+<?php $children = $this->getChildren(); ?>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+    "@type": "WebPage",
+    "publisher": {
+        "@type": "Organization",
+        "name": "<?php echo $this->escapeHtml(Mage::app()->getStore()->getName()); ?>",
+        "url": "<?php echo Mage::app()->getStore()->getBaseUrl() ?>",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "<?php echo Mage::getStoreConfig('design/header/logo_src'); ?>"
+        }
+    },
+    "mainEntity": {
+        "@type": "Product",
+        <?php if ($this->getBrand()): ?>
+            "brand": {
+                "@type": "Brand",
+                "name": "<?php /* @escapeNotVerified */ echo $this->stripTags($this->getBrand()); ?>"
+            },
+        <?php endif; ?>
+        <?php if ($this->getReviewsCount()): ?>
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "bestRating": "5",
+                "worstRating": "1",
+                "ratingValue": "<?php echo $this->getReviewsRating(); ?>",
+                "reviewCount": "<?php echo $this->getReviewsCount(); ?>",
+                "itemReviewed": {
+                    "@type": "Thing",
+                    "name": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getProduct()->getName())); ?>"
+                }
+            },
+            <?php foreach ($this->getReviews() as $review): ?>
+                "review": {
+                    "@type": "Review",
+                    "author": {
+                        "@type": "Person",
+                        "name": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($review->getNickname()); ?>"
+                    },
+                    "datePublished": "<?php echo date('Y-m-d', strtotime($review->getCreatedAt())); ?>",
+                    "reviewBody": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($review->getDetail())); ?>",
+                    "name": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($review->getTitle())); ?>",
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->getStore()->getName()); ?>"
+                    },
+                    "reviewRating": {
+                        "@type": "Rating",
+                        "bestRating": "5",
+                        "worstRating": "1",
+                        "ratingValue": "<?php echo $review->getRatingValue(); ?>"
+                    }
+                },
+            <?php endforeach; ?>
+    <?php endif; ?>
+        <?php if ($this->getProduct()->getMpn()): ?>
+            "mpn": "<?php /* @escapeNotVerified */ echo $block->stripTags($this->getProduct()->getMpn()); ?>",
+        <?php endif; ?>
+        <?php if ($this->getProduct()->getMaterial()): ?>
+            "material": "<?php /* @escapeNotVerified */ echo $this->getAttributeText('material'); ?>",
+        <?php endif; ?>
+        <?php if ($this->getProduct()->getColor()): ?>
+            "color": "<?php /* @escapeNotVerified */ echo $this->getAttributeText('color'); ?>",
+        <?php endif; ?>
+        "name": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getProduct()->getName())); ?>",
+        "sku": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getProduct()->getSku())); ?>",
+        "description": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getDescription())); ?>",
+        "image": "<?php /* @escapeNotVerified */ echo $this->stripTags(Mage::getBaseUrl().'media/catalog/product'. $this->getProduct()->getImage()); ?>",
+        "offers": [
+        {
+            "@type": "Offer",
+            "price": <?php echo $this->getProduct()->getPrice(); ?>,
+            "priceCurrency": "<?php echo Mage::app()->getStore()->getCurrentCurrencyCode() ?>",
+            "availability": "http://schema.org/<?php echo $this->getProduct()->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
+            "itemCondition": "http://schema.org/NewCondition"
+        }<?php echo !empty($children) ? ',' : ''; ?>
+        <?php if(!empty($children)): ?>
+        <?php $end = end($children) ?>
+        <?php $lastKey = end($end);?>
+        <?php foreach($children as $options): ?>
+            <?php foreach($options as $key => $product): ?>
+                <?php $_product = $this->getProduct(); ?>
+                {
+                    "@type": "Offer",
+                    "sku": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($_product->getSku()); ?>",
+                    "price": <?php echo $_product->getPrice(); ?>,
+                    "priceCurrency": "<?php echo Mage::app()->getStore()->getCurrentCurrencyCode() ?>",
+                    "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
+                    "itemCondition": "http://schema.org/NewCondition"
+                }<?php echo $key == $lastKey ? '' : ','; ?>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+    <?php endif; ?>
+        ],
+        "weight": {
+            "@type": "QuantitativeValue",
+            "value": "<?php echo $this->getProduct()->getWeight(); ?>",
+            "unitText": "<?php echo $this->getConfig('general/locale/weight_unit'); ?>"
+        }
+    }
+}
+</script>
+<?php endif; ?>
+

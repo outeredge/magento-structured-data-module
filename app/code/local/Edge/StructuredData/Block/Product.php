@@ -2,105 +2,49 @@
 
 class Edge_StructuredData_Block_Product extends Mage_Core_Block_Template
 {
-    protected $_product = null;
-
-    protected function _toHtml()
+    /**
+     * @return array
+     */
+    public function getChildren()
     {
-        if (!$this->getProduct()
-            || !Mage::getStoreConfigFlag('structureddata/general/enabled')) {
-
-            return '';
-        }
-        return parent::_toHtml();
-    }
-
-    public function getProduct()
-    {
-        if (null === $this->_product) {
-            $this->_product = Mage::registry('product');
-        }
-        return $this->_product;
-    }
-
-    public function getReviewCount()
-    {
-        return $this->getProduct()->getRatingSummary()->getReviewsCount();
-    }
-
-    public function getStockStatusUrl()
-    {
-        if ($this->getProduct()->isSaleable()){
-            $availability = 'InStock';
-        } else {
-            $availability = 'OutOfStock';
-        }
-        return $availability;
+        $product = $this->getProduct();
+        $childProducts = Mage::getModel('catalog/product_type_configurable')
+            ->getUsedProducts(null, $product);
+        return $childProducts;
     }
 
     /**
-     * @return mixed Array with min and max values or float
+     * @return Mage_Catalog_Model_Product|mixed
      */
-    public function getPriceValues()
+    public function getProduct()
     {
-        $product     = $this->getProduct();
-        $priceModel  = $product->getPriceModel();
-        $productType = $product->getTypeInstance();
-
-        if ($productType instanceof Mage_Bundle_Model_Product_Type) {
-            if (method_exists($priceModel, 'getTotalPrices')) {
-                return $priceModel->getTotalPrices($product);
-            }
-        }
-
-        if ($productType instanceof Mage_Catalog_Model_Product_Type_Grouped) {
-            $assocProducts = $productType->getAssociatedProductCollection($product)
-                ->addMinimalPrice()
-                ->setOrder('minimal_price', 'ASC');
-
-            $product = $assocProducts->getFirstItem();
-            if ($product) {
-                return array($product->getFinalPrice());
-            }
-        }
-
-        $minPrice   = $product->getMinimalPrice();
-        $finalPrice = $product->getFinalPrice();
-        if ($minPrice && $minPrice < $finalPrice) {
-            return array($minPrice, $finalPrice);
-        }
-
-        return $finalPrice;
+        return Mage::registry('current_product');
     }
 
-    public function getFormattedPrice($price)
+    /**
+     * Need to implement review rating for the product page in here.
+     * @return string
+     */
+    public function getReviewsRating()
     {
-        return $this->helper('core')->currency(
-            $this->helper('tax')->getPrice(
-                $this->getProduct(),
-                $price
-            ),
-            true,
-            false
-        );
+        return '';
     }
 
-    public function getShortDescription()
+    /**
+     * Need to implement review count for the product page in here.
+     * @return string
+     */
+    public function getReviewsCount()
     {
-        $description = strip_tags($this->getProduct()->getShortDescription());
-        $description = str_replace("\"", "'", $description);
-        return $description;
+        return '';
     }
 
-    public function getAttributeText($attributeCode)
+    /**
+     * Need to implement reviews for the product page in here.
+     * @return array
+     */
+    public function getReviews()
     {
-        $product   = $this->getProduct();
-        $attribute = $product->getResource()
-            ->getAttribute($attributeCode);
-
-        if (!$attribute) {
-            return false;
-        }
-        return str_replace("\"", "'", $attribute->getFrontend()->getValue($product));
+        return array();
     }
-    
 }
