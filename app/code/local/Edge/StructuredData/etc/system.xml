@@ -1,42 +1,108 @@
 <?xml version="1.0"?>
 <config>
     <tabs>
-        <outeredge translate="label">
-            <label>outer/edge</label>
-            <sort_order>211</sort_order>
-        </outeredge>
+        <structureddata translate="label">
+            <label>Structured Data</label>
+            <sort_order>200</sort_order>
+        </structureddata>
     </tabs>
     <sections>
-        <structureddata translate="label" module="structureddata">
-            <class>separator-top</class>
-            <label>Structured Datas</label>
-            <tab>outeredge</tab>
+        <structureddata_product>
+            <label>Structured Data</label>
+            <tab>structureddata</tab>
             <frontend_type>text</frontend_type>
-            <sort_order>1</sort_order>
+            <sort_order>1000</sort_order>
             <show_in_default>1</show_in_default>
             <show_in_website>1</show_in_website>
             <show_in_store>1</show_in_store>
             <groups>
-                <general translate="label">
-                    <label>General</label>
+                <product translate="label">
+                    <label>Product Page</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>5</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <enable>
+                            <label>Enable</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enable>
+                    </fields>
+                </product>
+                <contacts translate="label">
+                    <label>Contacts Page</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>10</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
-                        <enabled translate="label" module="core">
-                            <label>Enabled</label>
+                        <enable>
+                            <label>Enable</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enable>
+                        <type translate="label">
+                            <label>Type</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>edge_structureddata/system_config_source_dropdown_values</source_model>
                             <sort_order>10</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                        </enabled>
+                            <depends><enable>1</enable></depends>
+                        </type>
+                        <latitude>
+                            <label>Latitude</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>15</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends><type>LocalBusiness</type></depends>
+                        </latitude>
+                        <longitude>
+                            <label>Longitude</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <depends><type>LocalBusiness</type></depends>
+                        </longitude>
                     </fields>
-                </general>
+                </contacts>
+                <cms translate="label">
+                    <label>CMS Page</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>20</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <enable>
+                            <label>Enable</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </enable>
+                    </fields>
+                </cms>
             </groups>
-        </structureddata>
+        </structureddata_product>
+
     </sections>
 </config>

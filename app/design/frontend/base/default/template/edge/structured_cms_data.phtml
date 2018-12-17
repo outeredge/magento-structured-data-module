@@ -1,0 +1,19 @@
+<?php if(Mage::getStoreConfig('structureddata_product/cms/enable')): ?>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+	"@type": "WebPage",
+	"name": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags(Mage::getSingleton('cms/page')->getTitle())); ?>",
+	"mainContentOfPage": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags(Mage::getSingleton('cms/page')->getContent())); ?>"
+	<?php if (Mage::getSingleton('cms/page')->getMetaDescription()): ?>
+		,"description": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags(Mage::getSingleton('cms/page')->getMetaDescription())); ?>"
+	<?php endif; ?>
+	<?php if ($this->getImage()): ?>
+		,"primaryImageOfPage": {
+		    "@type": "ImageObject",
+		    "url": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->getImage()); ?>"
+		}
+	<?php endif; ?>
+}
+</script>
+<?php endif; ?>

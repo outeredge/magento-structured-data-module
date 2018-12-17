@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout>
+    <catalog_product_view>
+        <reference name="head">
+            <block type="edge_structureddata/product" name="structured.data.product" as="structured_data_product" template="edge/structured_product_data.phtml"/>
+        </reference>
+    </catalog_product_view>
+    <cms_page>
+        <reference name="head">
+            <block type="edge_structureddata/cms" name="structured.data.cms" as="structured_data_cms" template="edge/structured_cms_data.phtml"/>
+        </reference>
+    </cms_page>
+    <contacts_index_index>
+        <reference name="head">
+            <block type="edge_structureddata/contacts" name="structured.data.contacts" as="structured_data_contacts" template="edge/structured_contacts_data.phtml"/>
+        </reference>
+    </contacts_index_index>
+</layout>

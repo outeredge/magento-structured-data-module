@@ -1,0 +1,32 @@
+<?php if(Mage::getStoreConfig('structureddata_product/contacts/enable')): ?>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+	"@type": "ContactPage",
+	"mainEntity": {
+	    "@type": "<?php echo Mage::getStoreConfig('structureddata_product/contacts/type') ?>",
+	    "@id": "<?php echo Mage::app()->getStore()->getBaseUrl() ?>",
+	    "name": "<?php echo $this->escapeHtml(Mage::app()->getStore()->getName()); ?>",
+	    "image": "<?php echo  $this->getSkinUrl(Mage::getStoreConfig('design/header/logo_src')); ?>",
+	    "address": {
+	        "@type": "PostalAddress",
+                "streetAddress": "<?php echo $this->escapeHtml(Mage::getStoreConfig('general/store_information/address')); ?>"
+	        "addressLocality": "",
+	        "addressRegion": "",
+	        "postalCode": "",
+	        "addressCountry": "<?php echo Mage::getStoreConfig('general/country/default'); ?>"
+	    },
+	    "telephone": "<?php echo $this->escapeHtml(Mage::getStoreConfig('general/store_information/phone')); ?>",
+	    "email": "<?php echo $this->escapeHtml(Mage::getStoreConfig('trans_email/ident_general/email')); ?>",
+	    "url": "<?php echo Mage::app()->getStore()->getBaseUrl() ?>"
+<?php if ($this->isLocalBusiness()): ?>
+        ,"geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "<?php echo $block->getConfig('structureddata_product/contacts/latitude') ?>",
+            "longitude": "<?php echo $block->getConfig('structureddata_product/contacts/longitude') ?>"
+        }
+<?php endif; ?>
+	}
+}
+</script>
+<?php endif; ?>
