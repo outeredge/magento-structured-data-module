@@ -77,23 +77,20 @@
             "availability": "http://schema.org/<?php echo $this->getProduct()->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
             "itemCondition": "http://schema.org/NewCondition"
         }<?php echo !empty($children) ? ',' : ''; ?>
-        <?php if(!empty($children)): ?>
-        <?php $end = end($children) ?>
-        <?php $lastKey = end($end);?>
-        <?php foreach($children as $options): ?>
-            <?php foreach($options as $key => $product): ?>
-                <?php $_product = $this->getProduct(); ?>
-                {
-                    "@type": "Offer",
-                    "sku": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($_product->getSku()); ?>",
-                    "price": <?php echo $_product->getPrice(); ?>,
-                    "priceCurrency": "<?php echo Mage::app()->getStore()->getCurrentCurrencyCode() ?>",
-                    "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
-                    "itemCondition": "http://schema.org/NewCondition"
-                }<?php echo $key == $lastKey ? '' : ','; ?>
+        <?php if (!empty($children)): ?>
+            <?php $last_product_id = end($children)->getId(); ?>
+            <?php foreach ($children as $option): ?>
+                <?php $_product = Mage::getModel('catalog/product')->load($option->getId()); ?>
+                        {
+                            "@type": "Offer",
+                            "sku": "<?php echo $this->escapeHtml($_product->getSku()); ?>",
+                            "price": <?php echo $_product->getPrice(); ?>,
+                            "priceCurrency": "<?php echo Mage::app()->getStore()->getCurrentCurrencyCode() ?>",
+                            "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
+                            "itemCondition": "http://schema.org/NewCondition"
+                        }<?php echo $_product->getId() == $last_product_id ? '' : ','; ?>
             <?php endforeach; ?>
-        <?php endforeach; ?>
-    <?php endif; ?>
+        <?php endif; ?>
         ],
         "weight": {
             "@type": "QuantitativeValue",
