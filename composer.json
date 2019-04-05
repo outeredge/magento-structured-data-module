@@ -13,9 +13,6 @@
             "role": "Developer"
         }
     ],
-    "require": {
-        "php": "7.0.2|7.0.4|~7.0.6|~7.1.0"
-    },
     "require-dev": {
         "magento-ecg/coding-standard": "~3.0",
         "outeredge/coding-standards": "~1.0.0",
