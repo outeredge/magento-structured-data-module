@@ -208,10 +208,11 @@ class Product extends View
             foreach ($item->getRatingVotes() as $rating) {
                 $ratingValue += $rating->getPercent();
             }
-            if ($ratingCount <= 0) {
-                $ratingCount = 1;
+            if ($ratingCount > 0) {
+                $item->setRatingValue($ratingValue / (20 * $ratingCount));
+            } else {
+                $item->setRatingValue(null); 
             }
-            $item->setRatingValue($ratingValue / (20 * $ratingCount));
         }
 
         return $collection;
