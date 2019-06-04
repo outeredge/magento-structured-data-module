@@ -195,26 +195,4 @@ class Product extends View
         }
         return $this->_reviewsCount;
     }
-
-    public function getReviews()
-    {
-        $collection = $this->_reviewCollectionFactory->create()
-            ->addEntityFilter('product', $this->getProduct()->getId())
-            ->addRateVotes();
-
-        foreach ($collection as $item) {
-            $ratingValue = 0;
-            $ratingCount = count($item->getRatingVotes());
-            foreach ($item->getRatingVotes() as $rating) {
-                $ratingValue += $rating->getPercent();
-            }
-            if ($ratingCount > 0) {
-                $item->setRatingValue($ratingValue / (20 * $ratingCount));
-            } else {
-                $item->setRatingValue(null); 
-            }
-        }
-
-        return $collection;
-    }
 }
