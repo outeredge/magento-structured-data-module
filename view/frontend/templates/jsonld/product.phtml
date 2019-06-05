@@ -31,7 +31,7 @@
                     "@type": "Thing",
                     "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>"
                 }
-            }
+            },
         <?php endif; ?>
         <?php if ($block->getProduct()->getMpn()): ?>
             "mpn": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getProduct()->getMpn()); ?>",
