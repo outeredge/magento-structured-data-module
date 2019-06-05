@@ -32,28 +32,6 @@
                     "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>"
                 }
             },
-            <?php foreach ($this->getReviews() as $review): ?>
-                "review": {
-                    "@type": "Review",
-                    "author": {
-                        "@type": "Person",
-                        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($review->getNickname()); ?>"
-                    },
-                    "datePublished": "<?php echo date('Y-m-d', strtotime($review->getCreatedAt())); ?>",
-                    "reviewBody": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($review->getDetail())); ?>",
-                    "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($review->getTitle())); ?>",
-                    "publisher": {
-                        "@type": "Organization",
-                        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStore()->getName()); ?>"
-                    },
-                    "reviewRating": {
-                        "@type": "Rating",
-                        "bestRating": "5",
-                        "worstRating": "1",
-                        "ratingValue": "<?php echo $review->getRatingValue(); ?>"
-                    }
-                },
-            <?php endforeach; ?>
         <?php endif; ?>
         <?php if ($block->getProduct()->getMpn()): ?>
             "mpn": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getProduct()->getMpn()); ?>",
