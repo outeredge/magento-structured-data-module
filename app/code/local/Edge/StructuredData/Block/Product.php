@@ -8,8 +8,13 @@ class Edge_StructuredData_Block_Product extends Mage_Core_Block_Template
     public function getChildren()
     {
         $product = $this->getProduct();
-        $childProducts = Mage::getModel('catalog/product_type_configurable')
+
+        $childProducts = [];
+        if ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            $childProducts = Mage::getModel('catalog/product_type_configurable')
             ->getUsedProducts(null, $product);
+        }
+
         return $childProducts;
     }
 
