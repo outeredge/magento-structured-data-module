@@ -5,7 +5,7 @@
 	"name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getTitle())); ?>",
 	"mainContentOfPage": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getContent())); ?>"
 	<?php if ($block->getMetaDescription()): ?>
-		,"description": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getMetaDescription())); ?>"
+		,"description": "<?php /* @escapeNotVerified */ echo trim($block->escapeQuote($block->stripTags($block->getMetaDescription()))); ?>"
 	<?php endif; ?>
 	<?php if ($block->getImage()): ?>
 		,"primaryImageOfPage": {
