@@ -15,7 +15,9 @@ class ReviewRenderer
         }
 
         $dom = new DOMDocument();
-        $dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $dom->loadHTML($html);
+        $dom->removeChild($dom->doctype);
+        $dom->replaceChild($dom->firstChild->firstChild->firstChild, $dom->firstChild);
         $xpath = new DOMXPath($dom);
         foreach (['itemprop', 'itemtype', 'itemscope'] as $schemaAttribute) {
             $nodes = $xpath->query('//*[@' . $schemaAttribute . ']');
