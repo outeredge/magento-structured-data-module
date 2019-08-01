@@ -27,29 +27,25 @@ class Edge_StructuredData_Block_Product extends Mage_Core_Block_Template
     }
 
     /**
-     * Need to implement review rating for the product page in here.
-     * @return string
+     * @return int
      */
     public function getReviewsRating()
-    {
-        return '';
+    {   
+        return $this->getReviewData()->getRatingSummary() / 20;
     }
 
     /**
-     * Need to implement review count for the product page in here.
-     * @return string
+     * @return int
      */
     public function getReviewsCount()
     {
-        return '';
+        return $this->getReviewData()->getReviewsCount();
     }
 
-    /**
-     * Need to implement reviews for the product page in here.
-     * @return array
-     */
-    public function getReviews()
+    private function getReviewData()
     {
-        return array();
+        $storeId = Mage::app()->getStore()->getId();
+        $product = $this->getProduct();
+        return Mage::getModel('review/review_summary')->setStoreId($storeId)->load($product->getId());
     }
 }
