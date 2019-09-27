@@ -5,7 +5,7 @@
     "@type": "WebPage",
     "publisher": {
         "@type": "Organization",
-        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStore()->getName()); ?>",
+        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/name')); ?>",
         "url": "<?php echo $block->getStore()->getBaseUrl() ?>",
         "logo": {
             "@type": "ImageObject",
