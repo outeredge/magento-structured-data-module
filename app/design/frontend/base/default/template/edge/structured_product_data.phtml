@@ -15,10 +15,10 @@
     },
     "mainEntity": {
         "@type": "Product",
-        <?php if ($this->getBrand()): ?>
+        <?php if ($this->getProduct()->getBrand()): ?>
             "brand": {
                 "@type": "Brand",
-                "name": "<?php /* @escapeNotVerified */ echo $this->stripTags($this->getBrand()); ?>"
+                "name": "<?php /* @escapeNotVerified */ echo $this->stripTags($this->getProduct()->getAttributeText("brand")); ?>"
             },
         <?php endif; ?>
         <?php if ($this->getReviewsCount()): ?>
@@ -38,14 +38,14 @@
             "mpn": "<?php /* @escapeNotVerified */ echo $block->stripTags($this->getProduct()->getMpn()); ?>",
         <?php endif; ?>
         <?php if ($this->getProduct()->getMaterial()): ?>
-            "material": "<?php /* @escapeNotVerified */ echo $this->getAttributeText('material'); ?>",
+            "material": "<?php /* @escapeNotVerified */ echo $this->getProduct()->getAttributeText('material'); ?>",
         <?php endif; ?>
         <?php if ($this->getProduct()->getColor()): ?>
-            "color": "<?php /* @escapeNotVerified */ echo $this->getAttributeText('color'); ?>",
+            "color": "<?php /* @escapeNotVerified */ echo $this->getProduct()->getAttributeText('color'); ?>",
         <?php endif; ?>
         "name": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getProduct()->getName())); ?>",
         "sku": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getProduct()->getSku())); ?>",
-        "description": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getDescription())); ?>",
+        "description": "<?php /* @escapeNotVerified */ echo $this->escapeHtml($this->stripTags($this->getProduct()->getDescription())); ?>",
         "image": "<?php /* @escapeNotVerified */ echo $this->stripTags(Mage::getBaseUrl().'media/catalog/product'. $this->getProduct()->getImage()); ?>",
         "offers": [
         {
@@ -61,6 +61,7 @@
                 <?php $_product = Mage::getModel('catalog/product')->load($option->getId()); ?>
                         {
                             "@type": "Offer",
+                            "url": "<?php echo $this->escapeHtml($this->getProduct()->getUrl()); ?>",
                             "sku": "<?php echo $this->escapeHtml($_product->getSku()); ?>",
                             "price": <?php echo $_product->getPrice(); ?>,
                             "priceCurrency": "<?php echo Mage::app()->getStore()->getCurrentCurrencyCode() ?>",
