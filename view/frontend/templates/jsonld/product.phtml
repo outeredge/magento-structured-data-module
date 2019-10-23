@@ -49,6 +49,7 @@
         "offers": [
         {
             "@type": "Offer",
+            "url": "<?php echo $block->getProduct()->getProductUrl(); ?>",
             "price": <?php echo $block->getProduct()->getPrice(); ?>,
             "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
             "availability": "http://schema.org/<?php echo $block->getProduct()->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
@@ -62,6 +63,7 @@
                 <?php $_product = $block->loadProduct($product); ?>
                 {
                     "@type": "Offer",
+                    "url": "<?php echo $block->getProduct()->getProductUrl(); ?>",
                     "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getSku()); ?>",
                     "price": <?php echo $_product->getPrice(); ?>,
                     "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
