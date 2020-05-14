@@ -1,84 +1,105 @@
+<?php $pricingHelper = $this->helper('Magento\Framework\Pricing\Helper\Data'); ?>
 <?php $children = $block->getChildren(); ?>
-<script type="application/ld+json">
 {
     "@context": "https://schema.org/",
-    "@type": "WebPage",
-    "publisher": {
-        "@type": "Organization",
-        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/name')); ?>",
-        "url": "<?php echo $block->getStore()->getBaseUrl() ?>",
-        "logo": {
-            "@type": "ImageObject",
-            "url": "<?php echo $block->getStoreLogoUrl(); ?>"
-        }
-    },
-    "mainEntity": {
-        "@type": "Product",
-        <?php if ($block->getBrand()): ?>
-            "brand": {
-                "@type": "Brand",
-                "name": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getBrand()); ?>"
-            },
-        <?php endif; ?>
-        <?php if ($block->getReviewsCount()): ?>
-            "aggregateRating": {
-                "@type": "AggregateRating",
-                "bestRating": "5",
-                "worstRating": "1",
-                "ratingValue": "<?php echo $block->getReviewsRating(); ?>",
-                "reviewCount": "<?php echo $block->getReviewsCount(); ?>",
-                "itemReviewed": {
-                    "@type": "Thing",
-                    "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>"
-                }
-            },
-        <?php endif; ?>
-        <?php if ($block->getProduct()->getMpn()): ?>
-            "mpn": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getProduct()->getMpn()); ?>",
-        <?php endif; ?>
-        <?php if ($block->getProduct()->getMaterial()): ?>
-            "material": "<?php /* @escapeNotVerified */ echo $block->getAttributeText('material'); ?>",
-        <?php endif; ?>
-        <?php if ($block->getProduct()->getColor()): ?>
-            "color": "<?php /* @escapeNotVerified */ echo $block->getAttributeText('color'); ?>",
-        <?php endif; ?>
-        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>",
-        "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getSku())); ?>",
-        "description": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getDescription())); ?>",
-        "image": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getImage($block->getProduct(), 'product_base_image')->getImageUrl()); ?>",
-        "offers": [
-        {
+    "@type": "Product",
+    <?php if ($block->getBrand()): ?>
+        "brand": {
+            "@type": "Brand",
+            "name": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getBrand()); ?>"
+        },
+    <?php endif; ?>
+    <?php if ($block->getReviewsCount()): ?>
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "bestRating": "5",
+            "worstRating": "1",
+            "ratingValue": "<?php echo $block->getReviewsRating(); ?>",
+            "reviewCount": "<?php echo $block->getReviewsCount(); ?>"
+        },
+    <?php endif; ?>
+    <?php if ($block->getProduct()->getMpn()): ?>
+        "mpn": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getProduct()->getMpn()); ?>",
+    <?php endif; ?>
+    <?php if ($block->getProduct()->getMaterial()): ?>
+        "material": "<?php /* @escapeNotVerified */ echo $block->getAttributeText('material'); ?>",
+    <?php endif; ?>
+    <?php if ($block->getProduct()->getColor()): ?>
+        "color": "<?php /* @escapeNotVerified */ echo $block->getAttributeText('color'); ?>",
+    <?php endif; ?>
+    "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>",
+    "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getProduct()->getSku())); ?>",
+    "description": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getDescription())); ?>",
+    "image": "<?php /* @escapeNotVerified */ echo $block->stripTags($block->getImage($block->getProduct(), 'product_base_image')->getImageUrl()); ?>",
+    <?php $weight = $block->getProduct()->getWeight(); ?>
+    "offers": {
+    <?php $weight = null; ?>
+    <?php $minWeight = null; ?>
+    <?php $maxWeight = null; ?>
+    <?php if(empty($children)): ?>
+        <?php $product = $block->getProduct(); ?>
+        <?php $weight = $product->getWeight(); ?>
             "@type": "Offer",
-            "url": "<?php echo $block->getProduct()->getProductUrl(); ?>",
-            "price": <?php echo $block->getProduct()->getPrice(); ?>,
+            "url": "<?php echo $product->getProductUrl(); ?>",
+            "price": <?php echo $product->getFinalPrice(); ?>,
             "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
-            "availability": "http://schema.org/<?php echo $block->getProduct()->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
+                <?php if($product->getFinalPrice() < $product->getPrice() && $product->getSpecialToDate()): ?>
+                    <?php $priceToDate = date_create($product->getSpecialToDate()); ?>
+                    "priceValidUntil": "<?php echo $priceToDate->format('Y-m-d'); ?>",
+                <?php endif; ?>
+            "availability": "http://schema.org/<?php echo $product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
             "itemCondition": "http://schema.org/NewCondition"
-        }<?php echo !empty($children) ? ',' : ''; ?>
-        <?php if(!empty($children)): ?>
-            <?php $end = end($children) ?>
-            <?php $lastKey = end($end);?>
-            <?php foreach($children as $options): ?>
-            <?php foreach($options as $key => $product): ?>
-                <?php $_product = $block->loadProduct($product); ?>
+    <?php else: ?>
+        <?php $minPrice = null; ?>
+        <?php $maxPrice = null; ?>
+		"@type": "AggregateOffer",
+		"priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
+		"offerCount": "<?php echo count($children); ?>",
+		"offers": [
+            <?php $lastKey = key(array_slice($children, -1, 1, true)); ?>
+            <?php foreach($children as $key => $_product): ?>
+                <?php $productFinalPrice = $_product->getFinalPrice(); ?>
+                <?php $productWeight = $_product->getWeight(); ?>
+                <?php $minPrice = $productFinalPrice < $minPrice || is_null($minPrice) ? $productFinalPrice : $minPrice; ?>
+                <?php $maxPrice = $productFinalPrice > $maxPrice || is_null($maxPrice) ? $productFinalPrice : $maxPrice; ?>
+                <?php $minWeight = $productWeight < $minWeight || is_null($minWeight) ? $productWeight : $minWeight; ?>
+                <?php $maxWeight = $productWeight > $maxWeight || is_null($maxWeight) ? $productWeight : $maxWeight; ?>
                 {
                     "@type": "Offer",
                     "url": "<?php echo $block->getProduct()->getProductUrl(); ?>",
+                    "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getName()); ?>",
                     "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getSku()); ?>",
-                    "price": <?php echo $_product->getPrice(); ?>,
+                    "price": <?php echo $pricingHelper->currency($productFinalPrice,false,false) ?>,
                     "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
+                    <?php if($productFinalPrice < $_product->getPrice() && $_product->getSpecialToDate()): ?>
+                        <?php $priceToDate = date_create($_product->getSpecialToDate()); ?>
+                        "priceValidUntil": "<?php echo $priceToDate->format('Y-m-d'); ?>",
+                    <?php endif; ?>
                     "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
                     "itemCondition": "http://schema.org/NewCondition"
                 }<?php echo $key == $lastKey ? '' : ','; ?>
             <?php endforeach; ?>
-            <?php endforeach; ?>
-        <?php endif; ?>
-        ],
-        "weight": {
-            "@type": "QuantitativeValue",
-            "value": "<?php echo $block->getProduct()->getWeight(); ?>",
-            "unitText": "<?php echo $block->getConfig('general/locale/weight_unit'); ?>"
-        }
+            <?php
+                if ($minWeight == $maxWeight) {
+                    $weight = $minWeight;
+                    $minWeight = null;
+                    $maxWeight = null;
+                }
+            ?>
+        ]
+        ,
+        "lowPrice": "<?php echo $pricingHelper->currency($minPrice,false,false) ?>",
+        "highPrice": "<?php echo $pricingHelper->currency($maxPrice,false,false) ?>"
     }
+    <?php endif; ?>
+    <?php if ($block->getConfig('structureddata/product/include_weight')): ?>
+    ,
+    "weight": {
+        "@type": "QuantitativeValue",
+        <?php if (!is_null($weight)): ?>"value": "<?php echo $weight; ?>",<?php endif;?>
+        <?php if (!is_null($minWeight)): ?>"minValue": "<?php echo $minWeight; ?>",<?php endif;?>
+        <?php if (!is_null($maxWeight)): ?>"maxValue": "<?php echo $maxWeight; ?>",<?php endif;?>
+        "unitText": "<?php echo $block->getConfig('general/locale/weight_unit'); ?>"
+    }
+    <?php endif; ?>
 }
-</script>

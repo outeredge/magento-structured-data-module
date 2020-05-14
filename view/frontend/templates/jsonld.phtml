@@ -1,0 +1,21 @@
+<script type="application/ld+json">
+[{
+    "@context": "https://schema.org/",
+    "@type": "<?php echo $block->getPageType() ?>",
+    "publisher": {
+        "@type": "Organization",
+        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStore()->getName()); ?>",
+        "url": "<?php echo $block->getStore()->getBaseUrl() ?>",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "<?php echo $block->getStoreLogoUrl(); ?>"
+        }
+    }
+    <?php echo $block->getChildHtml('main.entity') ?>
+    <?php $block->unsetChild('main.entity');?>
+}
+<?php if ($childHtml = $block->getChildHtml('', true)): ?>
+    ,<?php echo $childHtml ?>
+<?php endif; ?>
+]
+</script>
