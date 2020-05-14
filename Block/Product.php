@@ -6,7 +6,6 @@ use Magento\Catalog\Block\Product\View;
 use Magento\Review\Model\Review\SummaryFactory;
 use Magento\Review\Model\Review\Summary;
 use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
-use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Catalog\Block\Product\Context;
 use Magento\Framework\Url\EncoderInterface as UrlEncoderInterface;
 use Magento\Framework\Json\EncoderInterface as JsonEncoderInterface;
@@ -19,6 +18,8 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Catalog\Model\ProductFactory;
+use Magento\Framework\Module\Manager as ModuleManager;
+use Yotpo\Yotpo\Helper\RichSnippets as YotpoRichSnippets;
 
 class Product extends View
 {
@@ -38,9 +39,14 @@ class Product extends View
     protected $_reviewCollectionFactory;
 
     /**
-     * @var Logo
+     * @var ModuleManager
      */
-    protected $_logo;
+    protected $_moduleManager;
+
+    /**
+     * @var YotpoRichSnippets
+     */
+    protected $_yotpoRichSnippets;
 
     /**
      * @var string
@@ -70,7 +76,8 @@ class Product extends View
      * @param PriceCurrencyInterface $priceCurrency
      * @param SummaryFactory $reviewSummaryFactory
      * @param ReviewCollectionFactory $reviewCollectionFactory
-     * @param Logo $logo
+     * @param ModuleManager $moduleManager
+     * @param YotpoRichSnippets $yotpoRichSnippets
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -89,13 +96,15 @@ class Product extends View
         SummaryFactory $reviewSummaryFactory,
         ReviewCollectionFactory $reviewCollectionFactory,
         ProductFactory $productFactory,
-        Logo $logo,
+        ModuleManager $moduleManager,
+        YotpoRichSnippets $yotpoRichSnippets,
         array $data = []
     ) {
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
         $this->_productFactory = $productFactory;
-        $this->_logo = $logo;
+        $this->_moduleManager = $moduleManager;
+        $this->_yotpoRichSnippets = $yotpoRichSnippets;
         parent::__construct(
             $context,
             $urlEncoder,
@@ -109,16 +118,6 @@ class Product extends View
             $priceCurrency,
             $data
         );
-    }
-
-    public function getChildren()
-    {
-        $configurableCode = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
-        if(!$this->getConfig('structureddata/product/include_children') || $this->getProduct()->getTypeId() !== $configurableCode) {
-            return array();
-        }
-        
-        return $this->getProduct()->getTypeInstance()->getChildrenIds($this->getProduct()->getId(), true);
     }
 
     public function loadProduct($id)
@@ -136,14 +135,31 @@ class Product extends View
         return $this->_storeManager->getStore();
     }
 
-    public function getStoreLogoUrl()
+    public function isYotpoEnabled()
     {
-        return $this->_logo->getLogoSrc();
+        if ($this->_moduleManager->isOutputEnabled('Yotpo_Yotpo') && 
+            $this->_moduleManager->isEnabled('Yotpo_Yotpo') &&
+            $this->getConfig('yotpo/settings/active') == true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getChildren()
+    {
+        $configurableCode = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
+        if(!$this->getConfig('structureddata/product/include_children') || $this->getProduct()->getTypeId() !== $configurableCode) {
+            return array();
+        }
+        
+        return $this->getProduct()->getTypeInstance()->getUsedProducts($this->getProduct());
     }
 
     public function getDescription()
     {
-        if ($this->getConfig('structureddata/product/use_short_description')) {
+        if ($this->getConfig('structureddata/product/use_short_description') && $this->getProduct()->getShortDescription()) {
             $description = nl2br($this->getProduct()->getShortDescription());
         } else {
             $description = nl2br($this->getProduct()->getDescription());
@@ -184,15 +200,33 @@ class Product extends View
 
     public function getReviewsRating()
     {
-        $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() : 20;
-        return $ratingSummary / 20;
+        if($this->isYotpoEnabled()) {
+            $data = $this->_yotpoRichSnippets->getRichSnippet();
+            $ratingSummary = $data['average_score'];
+        }
+        else {
+            $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() / 20 : 1;
+        }
+        
+        return $ratingSummary;
     }
 
     public function getReviewsCount()
     {
-        if ($this->_reviewsCount === null) {
-            $this->_reviewsCount = !empty($this->getReviewData()) ? $this->getReviewData()->getReviewsCount() : 0;
+        if($this->_reviewsCount === null) {
+
+            if($this->isYotpoEnabled()) {
+                $data = $this->_yotpoRichSnippets->getRichSnippet();
+                $reviewCount = $data['reviews_count'];
+            }
+            else {
+                $reviewCount = !empty($this->getReviewData()) ? $this->getReviewData()->getReviewsCount() : null;
+            }
+
+            $this->_reviewsCount = $reviewCount;
+
         }
+
         return $this->_reviewsCount;
     }
 }

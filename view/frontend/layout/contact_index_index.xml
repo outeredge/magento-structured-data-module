@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
-        <referenceBlock name="head.additional">
-            <block ifconfig="structureddata/contact/enable" class="OuterEdge\StructuredData\Block\Contact" name="contact.structured.data.jsonld" template="OuterEdge_StructuredData::jsonld/contact.phtml"/>
+        <referenceBlock name="structured.data.jsonld">
+                <block ifconfig="structureddata/contact/enable" class="OuterEdge\StructuredData\Block\Contact" name="contact.structured.data.jsonld" as="main.entity" template="OuterEdge_StructuredData::jsonld/contact.phtml" />
         </referenceBlock>
     </body>
 </page>
