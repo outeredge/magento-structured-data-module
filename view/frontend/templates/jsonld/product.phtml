@@ -90,8 +90,8 @@
         ,
         "lowPrice": "<?php echo $pricingHelper->currency($minPrice,false,false) ?>",
         "highPrice": "<?php echo $pricingHelper->currency($maxPrice,false,false) ?>"
-    }
     <?php endif; ?>
+    }
     <?php if ($block->getConfig('structureddata/product/include_weight')): ?>
     ,
     "weight": {
