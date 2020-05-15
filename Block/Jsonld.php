@@ -92,7 +92,7 @@ class Jsonld extends \Magento\Framework\View\Element\Template
 
     public function getPageType()
     {
-        if($this->_pageType == null) {
+        if ($this->_pageType == null) {
             $module     = $this->_request->getModuleName();
             $controller = $this->_request->getControllerName();
 
