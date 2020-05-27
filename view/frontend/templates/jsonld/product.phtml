@@ -1,6 +1,6 @@
 <?php $pricingHelper = $this->helper('Magento\Framework\Pricing\Helper\Data'); ?>
 <?php $children = $block->getChildren(); ?>
-{
+},{
     "@context": "https://schema.org/",
     "@type": "Product",
     <?php if ($block->getBrand()): ?>
@@ -102,4 +102,3 @@
         "unitText": "<?php echo $block->getConfig('general/locale/weight_unit'); ?>"
     }
     <?php endif; ?>
-}
