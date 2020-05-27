@@ -14,7 +14,7 @@
     <?php echo $block->getChildHtml('main.entity') ?>
     <?php $block->unsetChild('main.entity');?>
 <?php if ($childHtml = $block->getChildHtml('', true)): ?>
-    ,<?php echo $childHtml ?>
+    <?php echo $childHtml ?>
 <?php endif; ?>
 }]
 </script>
