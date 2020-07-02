@@ -217,7 +217,7 @@ class Product extends View
 
             if($this->isYotpoEnabled()) {
                 $data = $this->_yotpoRichSnippets->getRichSnippet();
-                $reviewCount = $data['reviews_count'];
+                $reviewCount = isset($data['reviews_count']) ? $data['reviews_count'] : null;
             }
             else {
                 $reviewCount = !empty($this->getReviewData()) ? $this->getReviewData()->getReviewsCount() : null;
