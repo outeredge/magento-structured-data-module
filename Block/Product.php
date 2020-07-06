@@ -149,11 +149,25 @@ class Product extends View
 
     public function getChildren()
     {
-        $configurableCode = \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE;
-        if (!$this->getConfig('structureddata/product/include_children') || $this->getProduct()->getTypeId() !== $configurableCode) {
-            return array();
+        if (!$this->getConfig('structureddata/product/include_children')) {
+            return [];
         }
-        
+
+        if ($this->getProduct()->getTypeId() == \Magento\Bundle\Model\Product\Type::TYPE_CODE) {
+            $children = [];
+            $productsIds = $this->getProduct()->getTypeInstance()->getChildrenIds($this->getProduct()->getId(), true);
+            foreach ($productsIds as $product) {
+                if ($child = $this->loadProduct(reset($product))) {
+                    $children[] = $child;
+                }
+            }
+            return $children;
+        }
+
+        if ($this->getProduct()->getTypeId() != \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+            return [];
+        }
+
         return $this->getProduct()->getTypeInstance()->getUsedProducts($this->getProduct());
     }
 
