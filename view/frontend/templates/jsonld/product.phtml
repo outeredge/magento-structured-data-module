@@ -36,8 +36,8 @@
     <?php $weight = null; ?>
     <?php $minWeight = null; ?>
     <?php $maxWeight = null; ?>
+    <?php $product = $block->getProduct(); ?>
     <?php if(empty($children)): ?>
-        <?php $product = $block->getProduct(); ?>
         <?php $weight = $product->getWeight(); ?>
             "@type": "Offer",
             "url": "<?php echo $product->getProductUrl(); ?>",
@@ -87,9 +87,18 @@
                 }
             ?>
         ]
+        <?php if ($product->getTypeId() == 'bundle') : ?>
+            <?php $rangeBundle = $block->getBundlePriceRange($product->getId()); ?>
+            <?php $minPrice = $rangeBundle['minPrice']; ?>
+            <?php $maxPrice = $rangeBundle['maxPrice']; ?>
+        <?php else: ?>
+            <?php $minPrice = $pricingHelper->currency($minPrice,false,false) ?>",
+            <?php $maxPrice = $pricingHelper->currency($maxPrice,false,false) ?>"
+        <?php endif; ?>
         ,
-        "lowPrice": "<?php echo $pricingHelper->currency($minPrice,false,false) ?>",
-        "highPrice": "<?php echo $pricingHelper->currency($maxPrice,false,false) ?>"
+        "lowPrice": "<?php echo $minPrice ?>",
+        "highPrice": "<?php echo $maxPrice ?>"
+       
     <?php endif; ?>
     }
     <?php if ($block->getConfig('structureddata/product/include_weight')): ?>
