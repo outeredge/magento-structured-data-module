@@ -87,7 +87,7 @@
                 }
             ?>
         ]
-        <?php if($block->getProduct()->getTypeId() == 'bundle') : ?>
+        <?php if ($product->getTypeId() == 'bundle') : ?>
             <?php $rangeBundle = $block->getBundlePriceRange($product->getId()); ?>
             <?php $minPrice = $rangeBundle['minPrice']; ?>
             <?php $maxPrice = $rangeBundle['maxPrice']; ?>
