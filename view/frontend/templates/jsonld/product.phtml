@@ -76,7 +76,10 @@
                         "priceValidUntil": "<?php echo $priceToDate->format('Y-m-d'); ?>",
                     <?php endif; ?>
                     "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
-                    "itemCondition": "http://schema.org/NewCondition"
+                    "itemCondition": "http://schema.org/NewCondition",
+                    <?php if ($block->getConfig('structureddata/product/price_include_vat')): ?>
+                        "valueAddedTaxIncluded": "<?php echo $block->checkTaxIncluded() ?>"
+                    <?php endif; ?>
                 }<?php echo $key == $lastKey ? '' : ','; ?>
             <?php endforeach; ?>
             <?php
@@ -98,7 +101,6 @@
         ,
         "lowPrice": "<?php echo $minPrice ?>",
         "highPrice": "<?php echo $maxPrice ?>"
-       
     <?php endif; ?>
     }
     <?php if ($block->getConfig('structureddata/product/include_weight')): ?>
