@@ -254,4 +254,14 @@ class Product extends View
 
         return compact("minPrice", "maxPrice");
     }
+
+    public function checkTaxIncluded()
+    {
+        $taxDisplayType = $this->_scopeConfig->getValue('tax/display/type', ScopeInterface::SCOPE_STORE);
+        if ($taxDisplayType == 2) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
