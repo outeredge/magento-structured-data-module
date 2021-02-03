@@ -243,4 +243,15 @@ class Product extends View
 
         return $this->_reviewsCount;
     }
+
+    public function getBundlePriceRange($productId)
+    {
+        $bundleObj = $this->loadProduct($productId)
+            ->getPriceInfo()
+            ->getPrice('final_price');
+        $minPrice = $bundleObj->getMinimalPrice();
+        $maxPrice = $bundleObj->getMaximalPrice();
+
+        return compact("minPrice", "maxPrice");
+    }
 }
