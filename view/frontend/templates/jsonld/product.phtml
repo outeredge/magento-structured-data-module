@@ -3,7 +3,7 @@
 },{
     "@context": "https://schema.org/",
     "@type": "Product",
-    "@id": "<?php echo $block->getProduct()->getProductUrl(); ?>",
+    "@id": "<?php echo $block->getProduct()->getProductUrl(); ?>#product",
     <?php if ($block->getBrand()): ?>
         "brand": {
             "@type": "Brand",
