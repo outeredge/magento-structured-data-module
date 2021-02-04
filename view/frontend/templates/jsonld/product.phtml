@@ -78,9 +78,7 @@
                     <?php endif; ?>
                     "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
                     "itemCondition": "http://schema.org/NewCondition",
-                    <?php if ($block->getConfig('structureddata/product/price_include_vat')): ?>
-                        "valueAddedTaxIncluded": "<?php echo $block->checkTaxIncluded() ?>"
-                    <?php endif; ?>
+		    "valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ? 'true' : 'false' ?>
                 }<?php echo $key == $lastKey ? '' : ','; ?>
             <?php endforeach; ?>
             <?php
