@@ -259,9 +259,9 @@ class Product extends View
     {
         $taxDisplayType = $this->_scopeConfig->getValue('tax/display/type', ScopeInterface::SCOPE_STORE);
         if ($taxDisplayType == 2) {
-            return true;
+            return 'true';
         } else {
-            return false;
+            return 'false';
         }
     }
 }
