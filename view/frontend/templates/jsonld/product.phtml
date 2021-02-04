@@ -48,6 +48,7 @@
                     <?php $priceToDate = date_create($product->getSpecialToDate()); ?>
                     "priceValidUntil": "<?php echo $priceToDate->format('Y-m-d'); ?>",
                 <?php endif; ?>
+            "valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ?>,
             "availability": "http://schema.org/<?php echo $product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
             "itemCondition": "http://schema.org/NewCondition"
     <?php else: ?>
@@ -78,7 +79,7 @@
                     <?php endif; ?>
                     "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
                     "itemCondition": "http://schema.org/NewCondition",
-		    "valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ? 'true' : 'false' ?>
+                    "valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ?>
                 }<?php echo $key == $lastKey ? '' : ','; ?>
             <?php endforeach; ?>
             <?php
