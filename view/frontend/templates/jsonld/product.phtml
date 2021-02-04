@@ -42,13 +42,17 @@
         <?php $weight = $product->getWeight(); ?>
             "@type": "Offer",
             "url": "<?php echo $product->getProductUrl(); ?>",
-            "price": <?php echo $product->getFinalPrice(); ?>,
+            "price": <?php echo $pricingHelper->currency($product->getFinalPrice(),false,false); ?>,
             "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
-                <?php if($product->getFinalPrice() < $product->getPrice() && $product->getSpecialToDate()): ?>
-                    <?php $priceToDate = date_create($product->getSpecialToDate()); ?>
-                    "priceValidUntil": "<?php echo $priceToDate->format('Y-m-d'); ?>",
-                <?php endif; ?>
-            "valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ?>,
+            <?php if($product->getFinalPrice() < $product->getPrice() && $product->getSpecialToDate()): ?>
+                <?php $priceToDate = date_create($product->getSpecialToDate()); ?>
+                "priceValidUntil": "<?php echo $priceToDate->format('Y-m-d'); ?>",
+            <?php endif; ?>
+            "priceSpecification": {
+		"price": <?php echo $pricingHelper->currency($product->getFinalPrice(),false,false); ?>,
+		"priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",                        
+		"valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ?>
+	    },
             "availability": "http://schema.org/<?php echo $product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
             "itemCondition": "http://schema.org/NewCondition"
     <?php else: ?>
@@ -73,13 +77,17 @@
                     "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getSku()); ?>",
                     "price": <?php echo $pricingHelper->currency($productFinalPrice,false,false) ?>,
                     "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
+                    "priceSpecification": {
+		        "price": <?php echo $pricingHelper->currency($productFinalPrice,false,false) ?>,
+                        "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",                        
+		        "valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ?>
+		    },
                     <?php if($productFinalPrice < $_product->getPrice() && $_product->getSpecialToDate()): ?>
                         <?php $priceToDate = date_create($_product->getSpecialToDate()); ?>
                         "priceValidUntil": "<?php echo $priceToDate->format('Y-m-d'); ?>",
-                    <?php endif; ?>
+                    <?php endif; ?>                    
                     "availability": "http://schema.org/<?php echo $_product->isAvailable() ? 'InStock' : 'OutOfStock'; ?>",
-                    "itemCondition": "http://schema.org/NewCondition",
-                    "valueAddedTaxIncluded": <?php echo $block->checkTaxIncluded() ?>
+                    "itemCondition": "http://schema.org/NewCondition"                    
                 }<?php echo $key == $lastKey ? '' : ','; ?>
             <?php endforeach; ?>
             <?php
