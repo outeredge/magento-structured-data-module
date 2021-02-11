@@ -103,8 +103,8 @@
             <?php $minPrice = $rangeBundle['minPrice']; ?>
             <?php $maxPrice = $rangeBundle['maxPrice']; ?>
         <?php else: ?>
-            <?php $minPrice = $pricingHelper->currency($minPrice,false,false) ?>",
-            <?php $maxPrice = $pricingHelper->currency($maxPrice,false,false) ?>"
+            <?php $minPrice = $pricingHelper->currency($minPrice,false,false); ?>
+            <?php $maxPrice = $pricingHelper->currency($maxPrice,false,false); ?>
         <?php endif; ?>
         ,
         "lowPrice": "<?php echo $minPrice ?>",
