@@ -3,7 +3,7 @@
 },{
     "@context": "https://schema.org/",
     "@type": "Product",
-    "@id": "<?php echo $block->getProduct()->getUrlInStore(); ?>#product",
+    "@id": "<?php echo strtok($block->getProduct()->getUrlInStore(), '?'); ?>#Product",
     <?php if ($block->getBrand()): ?>
         "brand": {
             "@type": "Brand",
@@ -41,7 +41,7 @@
     <?php if(empty($children)): ?>
         <?php $weight = $product->getWeight(); ?>
             "@type": "Offer",
-            "url": "<?php echo $product->getUrlInStore(); ?>",
+            "url": "<?php echo strtok($product->getUrlInStore(), '?'); ?>",
             "price": <?php echo $pricingHelper->currency($product->getFinalPrice(),false,false); ?>,
             "priceCurrency": "<?php echo $block->getStore()->getCurrentCurrency()->getCode() ?>",
             <?php if($product->getFinalPrice() < $product->getPrice() && $product->getSpecialToDate()): ?>
@@ -72,7 +72,7 @@
                 <?php $maxWeight = $productWeight > $maxWeight || is_null($maxWeight) ? $productWeight : $maxWeight; ?>
                 {
                     "@type": "Offer",
-                    "url": "<?php echo $block->getProduct()->getUrlInStore(); ?>",
+                    "url": "<?php echo strtok($block->getProduct()->getUrlInStore(), '?'); ?>",
                     "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getName()); ?>",
                     "sku": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($_product->getSku()); ?>",
                     "price": <?php echo $pricingHelper->currency($productFinalPrice,false,false) ?>,
