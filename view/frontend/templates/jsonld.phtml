@@ -1,3 +1,11 @@
+<?php $isProductPage = stristr($block->getRequest()->getFullActionName(), 'catalog_product_view'); ?>
+<?php $childHtml = $block->getChildHtml('', true); ?>
+<?php if ($isProductPage && $childHtml): ?>
+<script type="application/ld+json">
+    <?php echo $childHtml ?>
+</script>
+<?php endif; ?>
+
 <script type="application/ld+json">
 [{
     "@context": "https://schema.org/",
@@ -13,7 +21,7 @@
     }
     <?php echo $block->getChildHtml('main.entity') ?>
     <?php $block->unsetChild('main.entity');?>
-<?php if ($childHtml = $block->getChildHtml('', true)): ?>
+<?php if (!$isProductPage && $childHtml): ?>
     <?php echo $childHtml ?>
 <?php endif; ?>
 }]
