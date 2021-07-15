@@ -1,5 +1,6 @@
 <?php $isProductPage = stristr($block->getRequest()->getFullActionName(), 'catalog_product_view'); ?>
 <?php $childHtml = $block->getChildHtml('', true); ?>
+<?php $mainEntity = $block->getChildHtml('main.entity'); ?>
 <?php if ($isProductPage && $childHtml): ?>
 <script type="application/ld+json">
     <?php echo $childHtml ?>
@@ -19,10 +20,13 @@
             "url": "<?php echo $block->getStoreLogoUrl(); ?>"
         }
     }
-    <?php echo $block->getChildHtml('main.entity') ?>
+    <?php if ($mainEntity != $childHtml): ?>
+        <?php echo $mainEntity; ?>
+    <?php endif; ?>
     <?php $block->unsetChild('main.entity');?>
-<?php if (!$isProductPage && $childHtml): ?>
-    <?php echo $childHtml ?>
-<?php endif; ?>
+
+    <?php if (!$isProductPage && $childHtml): ?>
+        <?php echo $childHtml ?>
+    <?php endif; ?>
 }]
 </script>
