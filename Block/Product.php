@@ -181,17 +181,35 @@ class Product extends View
         return preg_replace('/([\r\n\t])/',' ', $description);
     }
 
+    public function getBrandFieldFromConfig()
+    {
+        if ($value = $this->getConfig('structureddata/product/product_brand_field')) {
+            return $value;
+        }
+        return false;
+    }
+
     public function getBrand()
     {
         if ($this->_brand === null) {
-            if ($this->getProduct()->getBrand()) {
-                $this->_brand = $this->getProduct()->getAttributeText('brand');
-            } elseif ($this->getProduct()->getManufacturer()) {
-                $this->_brand = $this->getProduct()->getAttributeText('manufacturer');
-            } else {
-                $this->_brand = false;
+
+            if ($value = $this->getBrandFieldFromConfig()) {
+               if ($this->getProduct()->getData($value)) {
+                    $this->_brand = $this->getProduct()->getAttributeText($value);
+               }
+            }
+
+            if ($this->_brand === null) {    
+                if ($this->getProduct()->getBrand()) {
+                    $this->_brand = $this->getProduct()->getAttributeText('brand');
+                } elseif ($this->getProduct()->getManufacturer()) {
+                    $this->_brand = $this->getProduct()->getAttributeText('manufacturer');
+                } else {
+                    $this->_brand = false;
+                }
             }
         }
+
         return $this->_brand;
     }
 
