@@ -3,11 +3,12 @@
     "text": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->stripTags($block->getContent())); ?>"
 }
 <?php if ($block->getMetaDescription()): ?>
-    ,"description": "<?= /* @noEscape */ trim($block->escapeQuote($block->stripTags($block->getMetaDescription()))); ?>"
+    ,"description": "
+        <?= $block->escapeQuote(trim($block->escapeQuote($block->stripTags($block->getMetaDescription())))); ?>"
 <?php endif; ?>
 <?php if ($block->getImage()): ?>
     ,"primaryImageOfPage": {
         "@type": "ImageObject",
-        "url": "<?= /* @noEscape */ $block->escapeQuote($block->getImage()); ?>"
+        "url": "<?= $block->escapeQuote($block->getImage()); ?>"
     }
 <?php endif; ?>

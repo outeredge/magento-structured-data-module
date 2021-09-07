@@ -3,7 +3,7 @@
 {
     "@context": "https://schema.org/",
     "@type": "Product",
-    "@id": "<?= /* @noEscape */ strtok($block->getProduct()->getUrlInStore(), '?'); ?>#Product",
+    "@id": "<?= strtok($block->getProduct()->getUrlInStore(), '?'); ?>#Product",
     <?php if ($block->getBrand()): ?>
         "brand": {
             "@type": "Brand",

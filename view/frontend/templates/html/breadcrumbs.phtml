@@ -30,7 +30,7 @@
     <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>
     {
             "@type": "ListItem",
-            "position": "<?= /* @noEscape */ $position ?>",
+            "position": "<?= (int)$position ?>",
             "item": {
                 "@id": "<?= $block->escapeUrl($crumbInfo['link']) ?>",
                 "name": "<?= $block->escapeHtml($crumbInfo['label']) ?>"
