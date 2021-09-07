@@ -27,7 +27,7 @@ class Product extends View
      * @var Product Loader
      */
     protected $_productFactory;
-  
+
     /**
      * @var SummaryFactory
      */
@@ -137,10 +137,9 @@ class Product extends View
 
     public function isYotpoEnabled()
     {
-        if ($this->_moduleManager->isOutputEnabled('Yotpo_Yotpo') && 
+        if ($this->_moduleManager->isOutputEnabled('Yotpo_Yotpo') &&
             $this->_moduleManager->isEnabled('Yotpo_Yotpo') &&
-            $this->getConfig('yotpo/settings/active') == true)
-        {
+            $this->getConfig('yotpo/settings/active') == true) {
             return true;
         }
 
@@ -164,7 +163,8 @@ class Product extends View
             return $children;
         }
 
-        if ($this->getProduct()->getTypeId() != \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
+        if ($this->getProduct()->getTypeId()
+            != \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
             return [];
         }
 
@@ -173,12 +173,13 @@ class Product extends View
 
     public function getDescription()
     {
-        if ($this->getConfig('structureddata/product/use_short_description') && $this->getProduct()->getShortDescription()) {
+        if ($this->getConfig('structureddata/product/use_short_description')
+            && $this->getProduct()->getShortDescription()) {
             $description = nl2br($this->getProduct()->getShortDescription());
         } else {
             $description = nl2br($this->getProduct()->getDescription());
         }
-        return preg_replace('/([\r\n\t])/',' ', $description);
+        return preg_replace('/([\r\n\t])/', ' ', $description);
     }
 
     public function getBrandFieldFromConfig()
@@ -194,12 +195,12 @@ class Product extends View
         if ($this->_brand === null) {
 
             if ($value = $this->getBrandFieldFromConfig()) {
-               if ($this->getProduct()->getData($value)) {
+                if ($this->getProduct()->getData($value)) {
                     $this->_brand = $this->getProduct()->getAttributeText($value);
-               }
+                }
             }
 
-            if ($this->_brand === null) {    
+            if ($this->_brand === null) {
                 if ($this->getProduct()->getBrand()) {
                     $this->_brand = $this->getProduct()->getAttributeText('brand');
                 } elseif ($this->getProduct()->getManufacturer()) {
@@ -232,26 +233,24 @@ class Product extends View
 
     public function getReviewsRating()
     {
-        if($this->isYotpoEnabled()) {
+        if ($this->isYotpoEnabled()) {
             $data = $this->_yotpoRichSnippets->getRichSnippet();
             $ratingSummary = $data['average_score'];
-        }
-        else {
+        } else {
             $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() / 20 : 1;
         }
-        
+
         return $ratingSummary;
     }
 
     public function getReviewsCount()
     {
-        if($this->_reviewsCount === null) {
+        if ($this->_reviewsCount === null) {
 
-            if($this->isYotpoEnabled()) {
+            if ($this->isYotpoEnabled()) {
                 $data = $this->_yotpoRichSnippets->getRichSnippet();
                 $reviewCount = isset($data['reviews_count']) ? $data['reviews_count'] : null;
-            }
-            else {
+            } else {
                 $reviewCount = !empty($this->getReviewData()) ? $this->getReviewData()->getReviewsCount() : null;
             }
 

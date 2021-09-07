@@ -1,13 +1,13 @@
-,"name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getTitle())); ?>",
+,"name": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->stripTags($block->getTitle())); ?>",
 "mainContentOfPage": {
-    "text": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->stripTags($block->getContent())); ?>"
+    "text": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->stripTags($block->getContent())); ?>"
 }
 <?php if ($block->getMetaDescription()): ?>
-    ,"description": "<?php /* @escapeNotVerified */ echo trim($block->escapeQuote($block->stripTags($block->getMetaDescription()))); ?>"
+    ,"description": "<?= /* @noEscape */ trim($block->escapeQuote($block->stripTags($block->getMetaDescription()))); ?>"
 <?php endif; ?>
 <?php if ($block->getImage()): ?>
     ,"primaryImageOfPage": {
         "@type": "ImageObject",
-        "url": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getImage()); ?>"
+        "url": "<?= /* @noEscape */ $block->escapeQuote($block->getImage()); ?>"
     }
 <?php endif; ?>

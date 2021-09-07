@@ -1,16 +1,16 @@
-<?php if ($crumbs && is_array($crumbs)) : ?>
+<?php if ($crumbs && is_array($crumbs)): ?>
 <div class="breadcrumbs">
     <ul class="items">
-        <?php foreach ($crumbs as $crumbName => $crumbInfo) : ?>
+        <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>
             <li class="item <?= $block->escapeHtmlAttr($crumbName) ?>">
-            <?php if ($crumbInfo['link']) : ?>
+            <?php if ($crumbInfo['link']): ?>
                 <a href="<?= $block->escapeUrl($crumbInfo['link']) ?>"
                    title="<?= $block->escapeHtml($crumbInfo['title']) ?>">
                     <?= $block->escapeHtml($crumbInfo['label']) ?>
                 </a>
-            <?php elseif ($crumbInfo['last']) : ?>
+            <?php elseif ($crumbInfo['last']): ?>
                 <strong><?= $block->escapeHtml($crumbInfo['label']) ?></strong>
-            <?php else : ?>
+            <?php else: ?>
                 <?= $block->escapeHtml($crumbInfo['label']) ?>
             <?php endif; ?>
             </li>
@@ -20,23 +20,23 @@
 <?php endif; ?>
 
 
-<?php if ($crumbs && is_array($crumbs)) : ?>
+<?php if ($crumbs && is_array($crumbs)): ?>
 <script type="application/ld+json">
 {
     <?php $position = 1; ?>
     "@context": "http://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-    <?php foreach ($crumbs as $crumbName => $crumbInfo) : ?>
+    <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>
     {
             "@type": "ListItem",
-            "position": "<?php echo $position ?>",
+            "position": "<?= /* @noEscape */ $position ?>",
             "item": {
-                "@id": "<?php echo $block->escapeUrl($crumbInfo['link']) ?>",
-                "name": "<?php echo $block->escapeHtml($crumbInfo['label']) ?>"
+                "@id": "<?= $block->escapeUrl($crumbInfo['link']) ?>",
+                "name": "<?= $block->escapeHtml($crumbInfo['label']) ?>"
             }
     }
-    <?php echo $crumbInfo['last'] ? '' : ',' ?>
+        <?= $crumbInfo['last'] ? '' : ',' ?>
     <?php endforeach; ?>
     ]
 }

@@ -78,7 +78,7 @@ class Cms extends Template
         if (!$this->_content) {
             $content = $this->_filterProvider->getPageFilter()->filter($this->getPage()->getContent());
             $content = nl2br($content);
-            $content = preg_replace('/([\r\n\t])/',' ', $content);
+            $content = preg_replace('/([\r\n\t])/', ' ', $content);
             $this->_content = $content;
         }
         return $this->_content;
@@ -97,7 +97,16 @@ class Cms extends Template
         if ($this->_image === null) {
             $this->_image = false;
 
-            foreach(['image', 'small_image', 'thumbnail', 'primary_image', 'secondary_image', 'tertiary_image'] as $image) {
+            $imageTypeArray = [
+                'image',
+                'small_image',
+                'thumbnail',
+                'primary_image',
+                'secondary_image',
+                'tertiary_image'
+            ];
+
+            foreach ($imageTypeArray as $image) {
                 if ($this->getPage()->getData($image)) {
                     $this->_image = $this->getPage()->getData($image);
                     break;

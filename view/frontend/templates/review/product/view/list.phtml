@@ -20,24 +20,26 @@
 <?php if (count($_items)):?>
 <div class="block review-list" id="customer-reviews">
     <div class="block-title">
-        <strong><?php /* @escapeNotVerified */ echo __('Customer Reviews') ?></strong>
+        <strong><?= /* @escapeNotVerified */ __('Customer Reviews') ?></strong>
     </div>
     <div class="block-content">
         <div class="toolbar review-toolbar">
-            <?php echo $block->getChildHtml('toolbar') ?>
+            <?= $block->getChildHtml('toolbar') ?>
         </div>
         <ol class="items review-items">
         <?php foreach ($_items as $_review):?>
             <li class="item review-item">
-                <div class="review-title"><?php echo $block->escapeHtml($_review->getTitle()) ?></div>
+                <div class="review-title"><?= $block->escapeHtml($_review->getTitle()) ?></div>
                 <?php if (count($_review->getRatingVotes())): ?>
                     <div class="review-ratings">
                     <?php foreach ($_review->getRatingVotes() as $_vote): ?>
                     <div class="rating-summary item">
-                        <span class="label rating-label"><span><?php echo $block->escapeHtml($_vote->getRatingCode()) ?></span></span>
-                        <div class="rating-result" title="<?php /* @escapeNotVerified */ echo $_vote->getPercent() ?>%">
-                            <span style="width:<?php /* @escapeNotVerified */ echo $_vote->getPercent() ?>%">
-                                <span><?php /* @escapeNotVerified */ echo $_vote->getPercent() ?>%</span>
+                        <span class="label rating-label">
+                            <span><?= $block->escapeHtml($_vote->getRatingCode()) ?></span>
+                        </span>
+                        <div class="rating-result" title="<?= /* @escapeNotVerified */  $_vote->getPercent() ?>%">
+                            <span style="width:<?= /* @escapeNotVerified */  $_vote->getPercent() ?>%">
+                                <span><?= /* @escapeNotVerified */  $_vote->getPercent() ?>%</span>
                             </span>
                         </div>
                     </div>
@@ -45,23 +47,25 @@
                     </div>
                 <?php endif; ?>
                 <div class="review-content">
-                    <?php echo nl2br($block->escapeHtml($_review->getDetail())) ?>
+                    <?= nl2br($block->escapeHtml($_review->getDetail())) ?>
                 </div>
                 <div class="review-details">
                     <p class="review-author">
-                        <span class="review-details-label"><?php /* @escapeNotVerified */ echo __('Review by')?></span>
-                        <strong class="review-details-value"><?php echo $block->escapeHtml($_review->getNickname()) ?></strong>
+                        <span class="review-details-label"><?= /* @escapeNotVerified */  __('Review by')?></span>
+                        <strong class="review-details-value"><?= $block->escapeHtml($_review->getNickname()) ?></strong>
                     </p>
                     <p class="review-date">
-                        <span class="review-details-label"><?php /* @escapeNotVerified */ echo __('Posted on') ?></span>
-                        <time class="review-details-value" datetime="<?php /* @escapeNotVerified */ echo $block->formatDate($_review->getCreatedAt(), $format) ?>"><?php /* @escapeNotVerified */ echo $block->formatDate($_review->getCreatedAt(), $format) ?></time>
+                        <span class="review-details-label"><?= __('Posted on') ?></span>
+                        <time class="review-details-value" datetime="<?= $block->formatDate($_review->getCreatedAt(), $format) ?>">
+                            <?= /* @escapeNotVerified */  $block->formatDate($_review->getCreatedAt(), $format) ?>
+                        </time>
                     </p>
                 </div>
             </li>
         <?php endforeach; ?>
         </ol>
         <div class="toolbar review-toolbar">
-            <?php echo $block->getChildHtml('toolbar') ?>
+            <?= $block->getChildHtml('toolbar') ?>
         </div>
     </div>
 </div>

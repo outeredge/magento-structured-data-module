@@ -1,27 +1,27 @@
 ,
 "mainEntity": {
-    "@type": "<?php echo $block->getConfig('structureddata/contact/type') ?>",
-    "@id": "<?php echo $block->getStore()->getBaseUrl() ?>",
-    "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStore()->getName()); ?>",
-    "image": "<?php echo $block->getStoreLogoUrl(); ?>",
-    <?php if(trim($block->escapeQuote($block->getStreetAddress()),  ' ,\t\n\r\0\x0B') !== ''): ?>
+    "@type": "<?= $block->getConfig('structureddata/contact/type') ?>",
+    "@id": "<?= $block->getStore()->getBaseUrl() ?>",
+    "name": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getStore()->getName()); ?>",
+    "image": "<?= $block->getStoreLogoUrl(); ?>",
+    <?php if (trim($block->escapeQuote($block->getStreetAddress()), ' ,\t\n\r\0\x0B') !== ''): ?>
     "address": {
         "@type": "PostalAddress",
-        "streetAddress": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStreetAddress()); ?>",
-        "addressLocality": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/city')); ?>",
-        "addressRegion": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/region_id')); ?>",
-        "postalCode": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/postcode')); ?>",
-        "addressCountry": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/country_id')); ?>"
+        "streetAddress": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getStreetAddress()); ?>",
+        "addressLocality": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getConfig('general/store_information/city')); ?>",
+        "addressRegion": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getConfig('general/store_information/region_id')); ?>",
+        "postalCode": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getConfig('general/store_information/postcode')); ?>",
+        "addressCountry": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getConfig('general/store_information/country_id')); ?>"
     },
     <?php endif; ?>
-    "telephone": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('general/store_information/phone')); ?>",
-    "email": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getConfig('trans_email/ident_general/email')); ?>",
-    "url": "<?php echo $block->getStore()->getBaseUrl() ?>"
+    "telephone": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getConfig('general/store_information/phone')); ?>",
+    "email": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->getConfig('trans_email/ident_general/email')); ?>",
+    "url": "<?= $block->getStore()->getBaseUrl() ?>"
 <?php if ($block->isLocalBusiness() && trim($block->getConfig('structureddata/contact/latitude')) !== ''): ?>
     ,"geo": {
-        "@type": "GeoCoordinates", 
-        "latitude": "<?php echo $block->getConfig('structureddata/contact/latitude') ?>",
-        "longitude": "<?php echo $block->getConfig('structureddata/contact/longitude') ?>"
+        "@type": "GeoCoordinates",
+        "latitude": "<?= $block->getConfig('structureddata/contact/latitude') ?>",
+        "longitude": "<?= $block->getConfig('structureddata/contact/longitude') ?>"
     }
 <?php endif; ?>
 }

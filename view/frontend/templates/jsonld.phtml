@@ -3,30 +3,30 @@
 <?php $mainEntity = $block->getChildHtml('main.entity'); ?>
 <?php if ($isProductPage && $childHtml): ?>
 <script type="application/ld+json">
-    <?php echo $childHtml ?>
+    <?= /* @noEscape */ $childHtml ?>
 </script>
 <?php endif; ?>
 
 <script type="application/ld+json">
 [{
     "@context": "https://schema.org/",
-    "@type": "<?php echo $block->getPageType() ?>",
+    "@type": "<?= /* @noEscape */ $block->getPageType() ?>",
     "publisher": {
         "@type": "Organization",
-        "name": "<?php /* @escapeNotVerified */ echo $block->escapeQuote($block->getStore()->getName()); ?>",
-        "url": "<?php echo $block->getStore()->getBaseUrl() ?>",
+        "name": "<?= /* @noEscape */ $block->escapeQuote($block->getStore()->getName()); ?>",
+        "url": "<?= /* @noEscape */ $block->getStore()->getBaseUrl() ?>",
         "logo": {
             "@type": "ImageObject",
-            "url": "<?php echo $block->getStoreLogoUrl(); ?>"
+            "url": "<?= /* @noEscape */ $block->getStoreLogoUrl(); ?>"
         }
     }
     <?php if ($mainEntity != $childHtml): ?>
-        <?php echo $mainEntity; ?>
+        <?= /* @noEscape */ $mainEntity; ?>
     <?php endif; ?>
     <?php $block->unsetChild('main.entity');?>
 
     <?php if (!$isProductPage && $childHtml): ?>
-        <?php echo $childHtml ?>
+        <?= /* @noEscape */ $childHtml ?>
     <?php endif; ?>
 }]
 </script>
