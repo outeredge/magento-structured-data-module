@@ -1,7 +1,7 @@
 ,
 "mainEntity": {
-    "@type": "<?= $block->escapeQuote($block->getConfig('structureddata/contact/type')) ?>",
-    "@id": "<?= $block->$escapeQuote($block->getStore()->getBaseUrl()); ?>",
+    "@type": "<?= $block->escapeQuote($block->getConfig('structureddata/contact/type')); ?>",
+    "@id": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
     "name": "<?= $block->escapeQuote($block->getStore()->getName()); ?>",
     "image": "<?= $block->escapeUrl($block->getStoreLogoUrl()); ?>",
     <?php if (trim($block->escapeQuote($block->getStreetAddress()), ' ,\t\n\r\0\x0B') !== ''): ?>
