@@ -13,13 +13,13 @@ use DOMDocument;
 
 class Jsonld extends \Magento\Framework\View\Element\Template
 {
-    CONST PAGE_TYPE_WEBPAGE        = "WebPage";
-    CONST PAGE_TYPE_ABOUTPAGE      = "AboutPage";
-    CONST PAGE_TYPE_SEARCHPAGE     = "SearchResultsPage";
-    CONST PAGE_TYPE_COLLECTIONPAGE = "CollectionPage";
-    CONST PAGE_TYPE_ITEMPAGE       = "ItemPage";
-    CONST PAGE_TYPE_CONTACTPAGE    = "ContactPage";
-    CONST PAGE_TYPE_CHECKOUTPAGE   = "CheckoutPage";
+    const PAGE_TYPE_WEBPAGE        = "WebPage";
+    const PAGE_TYPE_ABOUTPAGE      = "AboutPage";
+    const PAGE_TYPE_SEARCHPAGE     = "SearchResultsPage";
+    const PAGE_TYPE_COLLECTIONPAGE = "CollectionPage";
+    const PAGE_TYPE_ITEMPAGE       = "ItemPage";
+    const PAGE_TYPE_CONTACTPAGE    = "ContactPage";
+    const PAGE_TYPE_CHECKOUTPAGE   = "CheckoutPage";
 
     /**
      * @var StoreManagerInterface
@@ -98,7 +98,7 @@ class Jsonld extends \Magento\Framework\View\Element\Template
 
             switch ($module) {
                 case 'catalog':
-                    if($controller == 'product') {
+                    if ($controller == 'product') {
                         $this->_pageType = $this::PAGE_TYPE_ITEMPAGE;
                         break;
                     }
@@ -122,7 +122,6 @@ class Jsonld extends \Magento\Framework\View\Element\Template
         }
         return $this->_pageType;
     }
-  
 
     public function getStoreLogoUrl()
     {
