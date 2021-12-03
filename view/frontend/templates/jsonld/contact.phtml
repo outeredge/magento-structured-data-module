@@ -15,7 +15,7 @@
         "addressRegion": "<?= $block->escapeQuote($block->getConfig('general/store_information/region_id')); ?>",
         <?php endif; ?>
         <?php if ($block->getConfig('general/store_information/postcode')):?>
-        "postalCode": "<?= $block->escapeQuote($block->getConfig('general/store_information/postcode')); ?>",
+        "postalCode": "<?= $block->escapeQuote((string)$block->getConfig('general/store_information/postcode')); ?>",
         <?php endif; ?>
         <?php if ($block->getConfig('general/store_information/country_id')):?>
         "addressCountry": "<?= $block->escapeQuote($block->getConfig('general/store_information/country_id')); ?>"
@@ -23,7 +23,7 @@
     },
     <?php endif; ?>
     <?php if ($block->getConfig('general/store_information/phone')):?>
-    "telephone": "<?= $block->escapeQuote($block->getConfig('general/store_information/phone')); ?>",
+    "telephone": "<?= $block->escapeQuote((string)$block->getConfig('general/store_information/phone')); ?>",
     <?php endif; ?>
     <?php if ($block->getConfig('trans_email/ident_general/email')):?>
     "email": "<?= $block->escapeQuote($block->getConfig('trans_email/ident_general/email')); ?>",
@@ -32,8 +32,8 @@
 <?php if ($block->isLocalBusiness() && trim($block->getConfig('structureddata/contact/latitude')) !== ''): ?>
     ,"geo": {
         "@type": "GeoCoordinates",
-        "latitude": "<?= $block->escapeQuote($block->getConfig('structureddata/contact/latitude')) ?>",
-        "longitude": "<?= $block->escapeQuote($block->getConfig('structureddata/contact/longitude')) ?>"
+        "latitude": "<?= $block->escapeQuote((string)$block->getConfig('structureddata/contact/latitude')) ?>",
+        "longitude": "<?= $block->escapeQuote((string)$block->getConfig('structureddata/contact/longitude')) ?>"
     }
 <?php endif; ?>
 }

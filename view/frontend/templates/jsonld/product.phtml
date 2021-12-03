@@ -1,4 +1,4 @@
-<?php $pricingHelper = $block->getData('viewModel') ?>
+<?php $pricingHelper = $block->getData('view_model') ?>
 <?php $children = $block->getChildren(); ?>
 {
     "@context": "https://schema.org/",
@@ -15,12 +15,12 @@
             "@type": "AggregateRating",
             "bestRating": "5",
             "worstRating": "1",
-            "ratingValue": "<?= $block->escapeQuote($block->getReviewsRating()); ?>",
-            "reviewCount": "<?= $block->escapeQuote($block->getReviewsCount()); ?>"
+            "ratingValue": "<?= $block->escapeQuote((string)$block->getReviewsRating()); ?>",
+            "reviewCount": "<?= $block->escapeQuote((string)$block->getReviewsCount()); ?>"
         },
     <?php endif; ?>
     <?php if ($block->getProduct()->getMpn()): ?>
-        "mpn": "<?= $block->escapeQuote($block->stripTags($block->getProduct()->getMpn())); ?>",
+        "mpn": "<?= $block->escapeQuote((string)$block->stripTags($block->getProduct()->getMpn())); ?>",
     <?php endif; ?>
     <?php if ($block->getProduct()->getMaterial()): ?>
         "material": "<?= $block->escapeQuote($block->getAttributeText('material')); ?>",
@@ -29,7 +29,7 @@
         "color": "<?= $block->escapeQuote($block->getAttributeText('color')); ?>",
     <?php endif; ?>
     "name": "<?= $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>",
-    "sku": "<?= $block->escapeQuote($block->stripTags($block->getProduct()->getSku())); ?>",
+    "sku": "<?= $block->escapeQuote((string)$block->stripTags($block->getProduct()->getSku())); ?>",
     "description": "<?= $block->escapeHtml($block->stripTags($block->getDescription())); ?>",
     "image": "<?= $block->escapeUrl(
         $block->stripTags($block->getImage($block->getProduct(), 'product_base_image')->getImageUrl())
@@ -44,14 +44,14 @@
         <?php $weight = $product->getWeight(); ?>
             "@type": "Offer",
             "url": "<?= $block->escapeUrl(strtok($product->getUrlInStore(), '?')); ?>",
-            "price": <?= $block->escapeQuote($pricingHelper->currency($product->getFinalPrice(), false, false)); ?>,
+            "price": <?= $block->escapeQuote((string)$pricingHelper->currency($product->getFinalPrice(), false, false)); ?>,
             "priceCurrency": "<?= $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode()); ?>",
             <?php if ($product->getFinalPrice() < $product->getPrice() && $product->getSpecialToDate()): ?>
                 <?php $priceToDate = date_create($product->getSpecialToDate()); ?>
                 "priceValidUntil": "<?= $block->escapeQuote($priceToDate->format('Y-m-d')); ?>",
             <?php endif; ?>
             "priceSpecification": {
-        "price": <?= $block->escapeQuote($pricingHelper->currency($product->getFinalPrice(), false, false)); ?>,
+        "price": <?= $block->escapeQuote((string)$pricingHelper->currency($product->getFinalPrice(), false, false)); ?>,
         "priceCurrency": "<?= $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode()); ?>",
         "valueAddedTaxIncluded": <?= $block->escapeQuote($block->checkTaxIncluded()); ?>
         },
@@ -87,12 +87,12 @@
                     "@type": "Offer",
                     "url": "<?= $block->escapeUrl(strtok($block->getProduct()->getUrlInStore(), '?')); ?>",
                     "name": "<?= $block->escapeQuote($block->escapeQuote($_product->getName())); ?>",
-                    "sku": "<?= $block->escapeQuote($block->escapeQuote($_product->getSku())); ?>",
-                    "price": <?= $block->escapeQuote($pricingHelper->currency($productFinalPrice, false, false)); ?>,
+                    "sku": "<?= $block->escapeQuote((string)$block->escapeQuote($_product->getSku())); ?>",
+                    "price": <?= $block->escapeQuote((string)$pricingHelper->currency($productFinalPrice, false, false)); ?>,
                     "priceCurrency": "<?= $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode()); ?>",
                     "priceSpecification": {
                         "price": <?=
-                            $block->escapeQuote($pricingHelper->currency($productFinalPrice, false, false));
+                            $block->escapeQuote((string)$pricingHelper->currency($productFinalPrice, false, false));
                         ?>,
                         "priceCurrency": "<?=
                             $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode());
@@ -124,17 +124,17 @@
             <?php $maxPrice = $pricingHelper->currency($maxPrice, false, false); ?>
         <?php endif; ?>
         ,
-        "lowPrice": "<?= $block->escapeQuote($minPrice); ?>",
-        "highPrice": "<?= $block->escapeQuote($maxPrice); ?>"
+        "lowPrice": "<?= $block->escapeQuote((string)$minPrice); ?>",
+        "highPrice": "<?= $block->escapeQuote((string)$maxPrice); ?>"
     <?php endif; ?>
     }
     <?php if ($block->getConfig('structureddata/product/include_weight')): ?>
     ,
     "weight": {
         "@type": "QuantitativeValue",
-        <?php if (!($weight === null)): ?>"value": "<?= $block->escapeQuote($weight); ?>",<?php endif;?>
-        <?php if (!($minWeight === null)): ?>"minValue": "<?= $block->escapeQuote($minWeight); ?>",<?php endif;?>
-        <?php if (!($maxWeight === null)): ?>"maxValue": "<?= $block->escapeQuote($maxWeight); ?>",<?php endif;?>
+        <?php if (!($weight === null)): ?>"value": "<?= $block->escapeQuote((string)$weight); ?>",<?php endif;?>
+        <?php if (!($minWeight === null)): ?>"minValue": "<?= $block->escapeQuote((string)$minWeight); ?>",<?php endif;?>
+        <?php if (!($maxWeight === null)): ?>"maxValue": "<?= $block->escapeQuote((string)$maxWeight); ?>",<?php endif;?>
         "unitText": "<?= $block->escapeQuote($block->getConfig('general/locale/weight_unit')); ?>"
     }
     <?php endif; ?>
