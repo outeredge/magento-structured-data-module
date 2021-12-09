@@ -3,7 +3,7 @@
 <?php $mainEntity = $block->getChildHtml('main.entity'); ?>
 <?php if ($isProductPage && $childHtml): ?>
 <script type="application/ld+json">
-    <?= $block->escapeQuote($childHtml) ?>
+    <?= /* @noEscape */ $childHtml ?>
 </script>
 <?php endif; ?>
 
