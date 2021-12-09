@@ -7,7 +7,7 @@
     <?php if ($block->getBrand()): ?>
         "brand": {
             "@type": "Brand",
-            "name": "<?= $block->escapeQuote($block->stripTags($block->getBrand())); ?>"
+            "name": "<?= $block->escapeQuote((string)$block->stripTags($block->getBrand())); ?>"
         },
     <?php endif; ?>
     <?php if ($block->getReviewsCount()): ?>
@@ -23,10 +23,10 @@
         "mpn": "<?= $block->escapeQuote((string)$block->stripTags($block->getProduct()->getMpn())); ?>",
     <?php endif; ?>
     <?php if ($block->getProduct()->getMaterial()): ?>
-        "material": "<?= $block->escapeQuote($block->getAttributeText('material')); ?>",
+        "material": "<?= $block->escapeQuote((string)$block->getAttributeText('material')); ?>",
     <?php endif; ?>
     <?php if ($block->getProduct()->getColor()): ?>
-        "color": "<?= $block->escapeQuote($block->getAttributeText('color')); ?>",
+        "color": "<?= $block->escapeQuote((string)$block->getAttributeText('color')); ?>",
     <?php endif; ?>
     "name": "<?= $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>",
     "sku": "<?= $block->escapeQuote((string)$block->stripTags($block->getProduct()->getSku())); ?>",
@@ -86,7 +86,7 @@
                 {
                     "@type": "Offer",
                     "url": "<?= $block->escapeUrl(strtok($block->getProduct()->getUrlInStore(), '?')); ?>",
-                    "name": "<?= $block->escapeQuote($block->escapeQuote($_product->getName())); ?>",
+                    "name": "<?= $block->escapeQuote((string)$block->escapeQuote($_product->getName())); ?>",
                     "sku": "<?= $block->escapeQuote((string)$block->escapeQuote($_product->getSku())); ?>",
                     "price": <?= $block->escapeQuote((string)$pricingHelper->currency($productFinalPrice, false, false)); ?>,
                     "priceCurrency": "<?= $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode()); ?>",
