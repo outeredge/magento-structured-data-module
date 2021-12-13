@@ -21,12 +21,12 @@
         }
     }
     <?php if ($mainEntity != $childHtml): ?>
-        <?= $block->escapeQuote($mainEntity); ?>
+        <?= /* @noEscape */ $mainEntity; ?>
     <?php endif; ?>
     <?php $block->unsetChild('main.entity');?>
 
     <?php if (!$isProductPage && $childHtml): ?>
-        <?= $block->escapeHtml($childHtml); ?>
+        <?= /* @noEscape */ $childHtml; ?>
     <?php endif; ?>
 }]
 </script>
