@@ -58,7 +58,7 @@ Our open source module allows you to quickly add structured data markup to any M
 #### Install via Composer
 
 ```
-composer require outeredge/magento-structured-data-module ~ 2.2.0
+composer require outeredge/magento-structured-data-module ~2.2.0
 ```
 
 #### Review configuration for Structure Data Module
