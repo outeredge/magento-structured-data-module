@@ -133,7 +133,7 @@ class Cms extends Template
     protected function setImageFromContent()
     {
         $doc = new DOMDocument();
-        @$doc->loadHtml($this->getContent());
+        $doc->loadHtml($this->getContent());
         $tags = $doc->getElementsByTagName('img');
         if ($tags->length > 0) {
             foreach ($tags as $tag) {
