@@ -65,7 +65,9 @@ composer require outeredge/magento-structured-data-module
 
 Configuration is available in `Stores > Configuration > outer/edge > Structured Data`. The following options are available:
 
-##### Stuctured Data (Product)
+#### Stuctured Data (Product)
+
+![structured_data-product](https://user-images.githubusercontent.com/2035088/152131539-a2e320b4-b819-4c62-b42f-df96c4fd7872.png)
 
 * **Enable:** Enable or disable structured data on product pages.
 * **Use Short Description:** Use `short_description` attribute for the `description` markup. By default `description` will be used.
@@ -73,13 +75,17 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 * **Include Product Weights:** Ad `weight` schema to product page strutured data.
 * **Product Brand/Manufacturer field:** Choose which Magento attribute is used for the `brand` schema. If not specified the module will automatically check for `manufacturer` and `brand` attributes.
 
-##### Structured Data (CMS Page)
+#### Structured Data (CMS Page)
+
+![structured_data-cms](https://user-images.githubusercontent.com/2035088/152131708-ba038f9f-7f94-4654-9128-6d861fd1b397.png)
 
 * **Enable:** Enable or disable structured data on CMS pages.
 * **Enable About Page:** Enable or disable `"@type": "AboutPage"`.
 * **About Page:** Select the CMS page for  `"@type": "AboutPage"`.
 
-##### Structured Data (Contact Page)
+#### Structured Data (Contact Page)
+
+![structured_data-contact](https://user-images.githubusercontent.com/2035088/152131796-563d33b1-2721-4727-b278-b7490fe6920d.png)
 
 * **Enable:** Enable or disable structured data on Contact page.
 * **Type:** Select whether business in a Local Business or Organization.
