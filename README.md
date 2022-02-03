@@ -4,7 +4,50 @@
 
 # outer/edge Structured Data Module for Magento 2
 
-Our open source module allows you to quickly add structured data markup to any Magento 2 store by simply installing our module and setting a few configuration options. The module provides the following structured data:
+Our open source module allows you to quickly add structured data markup to any Magento 2 store by simply installing our module and setting a few configuration options. Once this module is installed you will have valid structured data in the source of your product, contact and CMS pages. For example: 
+https://developers.google.com/search/docs/advanced/structured-data/product
+
+This will look similar to the below:
+
+```
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "@id": "https://example.co.uk/blue-t-shirt#Product",
+    "brand": {
+            "@type": "Brand",
+            "name": "Nike"
+    },
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "bestRating": "5",
+        "worstRating": "1",
+        "ratingValue": "4.55",
+        "reviewCount": "5"
+    },
+    "name": "Nike Blue T-Shirt",
+    "sku": "blue-t-shirt",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer viverra vitae nulla quis venenatis. Donec sollicitudin pharetra eros, in facilisis justo fringilla eu. In at consequat felis.",
+    "image": "https://example.co.uk/media/catalog/product/b/t/blue-t-shirt.jpg",
+    "offers": {
+        "@type": "Offer",
+        "url": "https://example.co.uk/blue-t-shirt",
+        "price": 18.99,
+        "priceCurrency": "GBP",
+        "priceSpecification": {
+            "price": 18.99,
+            "priceCurrency": "GBP",
+            "valueAddedTaxIncluded": true
+        },
+        "availability": "http://schema.org/InStock",
+        "itemCondition": "http://schema.org/NewCondition"
+    }
+}
+</script>
+```
+
+The module provides the following structured data:
 
 ### Product Page
 
@@ -92,10 +135,16 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 * **Latitude:** Specify latitude for local business.
 * **Longitude:** Specify longitude for local business.
 
+
+Once the module is installed and configured you will find the schema markup in your source code:
+
+![schema_screenshot](https://user-images.githubusercontent.com/2035088/152323033-7e48e3b4-4e72-4d72-9b92-8356ac38fe91.png)
+
 ### References
 
 #### Google docs for structured data format (using JSON-LD format)
 https://developers.google.com/search/docs/guides/intro-structured-data
+https://developers.google.com/search/docs/advanced/structured-data/product
 
 #### Structured data syntax is based on
 http://schema.org/
