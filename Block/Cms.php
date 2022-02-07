@@ -130,15 +130,22 @@ class Cms extends Template
         return $this->_image;
     }
 
+    /**
+     * Finds first image within CMS page content
+     */
     protected function setImageFromContent()
     {
-        $doc = new DOMDocument();
-        $doc->loadHtml($this->getContent());
-        $tags = $doc->getElementsByTagName('img');
-        if ($tags->length > 0) {
-            foreach ($tags as $tag) {
-                $this->_image = $tag->getAttribute('src');
-                break;
+        $content = $this->getContent();
+
+        if($content) {
+            $doc = new DOMDocument();
+            $doc->loadHtml($content);
+            $tags = $doc->getElementsByTagName('img');
+            if ($tags->length > 0) {
+                foreach ($tags as $tag) {
+                    $this->_image = $tag->getAttribute('src');
+                    break;
+                }
             }
         }
     }
