@@ -9,7 +9,6 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Cms\Model\Page;
 use Magento\Framework\App\Request\Http;
-use DOMDocument;
 
 class Jsonld extends \Magento\Framework\View\Element\Template
 {
