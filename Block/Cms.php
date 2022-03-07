@@ -139,7 +139,10 @@ class Cms extends Template
 
         if($content) {
             $doc = new DOMDocument();
+
+            libxml_use_internal_errors(true);
             $doc->loadHtml($content);
+
             $tags = $doc->getElementsByTagName('img');
             if ($tags->length > 0) {
                 foreach ($tags as $tag) {
