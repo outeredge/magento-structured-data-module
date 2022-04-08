@@ -19,7 +19,6 @@ use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Framework\Module\Manager as ModuleManager;
-use Yotpo\Yotpo\Helper\RichSnippets as YotpoRichSnippets;
 
 class Product extends View
 {
@@ -42,11 +41,6 @@ class Product extends View
      * @var ModuleManager
      */
     protected $_moduleManager;
-
-    /**
-     * @var YotpoRichSnippets
-     */
-    protected $_yotpoRichSnippets;
 
     /**
      * @var string
@@ -77,7 +71,6 @@ class Product extends View
      * @param SummaryFactory $reviewSummaryFactory
      * @param ReviewCollectionFactory $reviewCollectionFactory
      * @param ModuleManager $moduleManager
-     * @param YotpoRichSnippets $yotpoRichSnippets
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -97,14 +90,12 @@ class Product extends View
         ReviewCollectionFactory $reviewCollectionFactory,
         ProductFactory $productFactory,
         ModuleManager $moduleManager,
-        YotpoRichSnippets $yotpoRichSnippets,
         array $data = []
     ) {
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
         $this->_productFactory = $productFactory;
         $this->_moduleManager = $moduleManager;
-        $this->_yotpoRichSnippets = $yotpoRichSnippets;
         parent::__construct(
             $context,
             $urlEncoder,
@@ -140,7 +131,9 @@ class Product extends View
         if ($this->_moduleManager->isOutputEnabled('Yotpo_Yotpo') &&
             $this->_moduleManager->isEnabled('Yotpo_Yotpo') &&
             $this->getConfig('yotpo/settings/active') == true) {
-            return true;
+
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            return $objectManager->create(\Yotpo\Yotpo\Model\Api\Products::class)->getRichSnippet();
         }
 
         return false;
@@ -233,8 +226,7 @@ class Product extends View
 
     public function getReviewsRating()
     {
-        if ($this->isYotpoEnabled()) {
-            $data = $this->_yotpoRichSnippets->getRichSnippet();
+        if ($data = $this->isYotpoEnabled()) {
             $ratingSummary = $data['average_score'];
         } else {
             $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() / 20 : 1;
@@ -247,8 +239,7 @@ class Product extends View
     {
         if ($this->_reviewsCount === null) {
 
-            if ($this->isYotpoEnabled()) {
-                $data = $this->_yotpoRichSnippets->getRichSnippet();
+            if ($data = $this->isYotpoEnabled()) {
                 $reviewCount = isset($data['reviews_count']) ? $data['reviews_count'] : null;
             } else {
                 $reviewCount = !empty($this->getReviewData()) ? $this->getReviewData()->getReviewsCount() : null;
