@@ -7,6 +7,7 @@ use Magento\Review\Model\Review\SummaryFactory;
 use Magento\Review\Model\Review\Summary;
 use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
 use Magento\Catalog\Block\Product\Context;
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Url\EncoderInterface as UrlEncoderInterface;
 use Magento\Framework\Json\EncoderInterface as JsonEncoderInterface;
 use Magento\Framework\Stdlib\StringUtils;
@@ -126,14 +127,13 @@ class Product extends View
         return $this->_storeManager->getStore();
     }
 
-    public function isYotpoEnabled()
+    public function getYotpoProductSnippet()
     {
         if ($this->_moduleManager->isOutputEnabled('Yotpo_Yotpo') &&
             $this->_moduleManager->isEnabled('Yotpo_Yotpo') &&
-            $this->getConfig('yotpo/settings/active') == true) {
-
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            return $objectManager->create(\Yotpo\Yotpo\Model\Api\Products::class)->getRichSnippet();
+            $this->getConfig('yotpo/settings/active') == true
+        ) {
+            return ObjectManager::getInstance()->create('Yotpo\Yotpo\Model\Api\Products')->getRichSnippet();
         }
 
         return false;
@@ -226,7 +226,7 @@ class Product extends View
 
     public function getReviewsRating()
     {
-        if ($data = $this->isYotpoEnabled()) {
+        if ($data = $this->getYotpoProductSnippet()) {
             $ratingSummary = $data['average_score'];
         } else {
             $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() / 20 : 1;
@@ -239,7 +239,7 @@ class Product extends View
     {
         if ($this->_reviewsCount === null) {
 
-            if ($data = $this->isYotpoEnabled()) {
+            if ($data = $this->getYotpoProductSnippet()) {
                 $reviewCount = isset($data['reviews_count']) ? $data['reviews_count'] : null;
             } else {
                 $reviewCount = !empty($this->getReviewData()) ? $this->getReviewData()->getReviewsCount() : null;
