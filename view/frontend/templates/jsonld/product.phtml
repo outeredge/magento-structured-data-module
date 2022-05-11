@@ -66,20 +66,22 @@
         "offers": [
             <?php $lastKey = key(array_slice($children, -1, 1, true)); ?>
             <?php foreach ($children as $key => $_product): ?>
-                <?php $productFinalPrice = $_product->getFinalPrice(); ?>
-                <?php $productWeight = $_product->getWeight(); ?>
+                <?php
+                $productFinalPrice = $_product->getFinalPrice();
+                $productWeight = $_product->getWeight();
 
-                <?php if ($productFinalPrice < $minPrice || $minPrice === null): ?>
+                if ($productFinalPrice < $minPrice || $minPrice === null) {
                     $minPrice = $productFinalPrice;
-                <?php else: ?>
+                } else {
                     $minPrice = $minPrice;
-                <?php endif; ?>
+                }
 
-                <?php if ($productFinalPrice > $maxPrice || $maxPrice === null): ?>
+                if ($productFinalPrice > $maxPrice || $maxPrice === null) {
                     $maxPrice = $productFinalPrice;
-                <?php else: ?>
+                } else {
                     $maxPrice = $maxPrice;
-                <?php endif; ?>
+                }
+                ?>
 
                 <?php $minWeight = $productWeight < $minWeight || $minWeight === null ? $productWeight : $minWeight; ?>
                 <?php $maxWeight = $productWeight > $maxWeight || $maxWeight === null ? $productWeight : $maxWeight; ?>
