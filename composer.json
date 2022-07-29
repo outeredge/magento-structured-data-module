@@ -15,7 +15,7 @@
         }
     ],
     "require-dev": {
-        "magento/magento-coding-standard": "^22.0"
+        "outeredge/dev-dependencies": "^3.0"
     },
     "scripts": {
         "post-install-cmd": [
@@ -31,6 +31,11 @@
         ],
         "psr-4": {
             "OuterEdge\\StructuredData\\": ""
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "phpstan/extension-installer": true
         }
     }
 }
