@@ -1,0 +1,10 @@
+image: outeredge/edge-docker-php-dev:8.1
+
+vscode:
+  extensions:
+    - editorconfig.editorconfig
+    - felixfbecker.php-debug
+    - bmewburn.vscode-intelephense-client
+
+tasks:
+  - init: composer install

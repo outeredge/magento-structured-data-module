@@ -3,4 +3,7 @@
     <type name="Magento\Review\Block\Product\ReviewRenderer">
         <plugin name="OuterEdge_StructuredData::productReviewRendererPlugin" type="OuterEdge\StructuredData\Plugin\Review\Block\Product\ReviewRenderer"/>
     </type>
+    <type name="Magento\Framework\View\Element\AbstractBlock">
+        <plugin name="OuterEdge_StructuredData::escapeStripTags" type="OuterEdge\StructuredData\Plugin\EscapeStripTags"/>
+    </type>
 </config>
