@@ -229,7 +229,7 @@ class Product extends View
         if ($data = $this->getYotpoProductSnippet()) {
             $ratingSummary = $data['average_score'];
         } else {
-            $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() / 20 : 1;
+            $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() : 1;
         }
 
         return $ratingSummary;

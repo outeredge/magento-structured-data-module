@@ -13,7 +13,7 @@
     <?php if ($block->getReviewsCount()): ?>
         "aggregateRating": {
             "@type": "AggregateRating",
-            "bestRating": "5",
+            "bestRating": "100",
             "worstRating": "1",
             "ratingValue": "<?= $block->escapeQuote((string)$block->getReviewsRating()); ?>",
             "reviewCount": "<?= $block->escapeQuote((string)$block->getReviewsCount()); ?>"

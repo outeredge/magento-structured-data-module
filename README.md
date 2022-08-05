@@ -21,7 +21,7 @@ This will look similar to the below:
     },
     "aggregateRating": {
         "@type": "AggregateRating",
-        "bestRating": "5",
+        "bestRating": "100",
         "worstRating": "1",
         "ratingValue": "4.55",
         "reviewCount": "5"
