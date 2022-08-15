@@ -156,7 +156,7 @@ class Product extends View
             return $children;
         }
 
-        if ($this->getProduct()->getTypeId() == 'grouped') {
+        if ($this->getProduct()->getTypeId() == \Magento\GroupedProduct\Model\Product\Type\Grouped::TYPE_CODE) {
             $children = [];
             $products = $this->getProduct()->getTypeInstance()->getAssociatedProducts($this->getProduct());
             foreach ($products as $product) {
