@@ -8,6 +8,14 @@
             <label>Structured Data</label>
             <tab>outeredge</tab>
             <resource>OuterEdge_StructuredData::StructuredDataSettings</resource>
+            <group id="schema" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Add Structured Data</label>
+                <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Schema</label>
+                    <comment>This must be enabled for any Structured Data to be attached to content. Individual data type listed below can selectively be enabled or disabled if this option is set to "Yes".</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
             <group id="product" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Structured Data (Product)</label>
                 <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
