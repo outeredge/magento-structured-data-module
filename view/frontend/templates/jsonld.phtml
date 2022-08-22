@@ -13,7 +13,7 @@
     "@type": "<?= $block->escapeQuote($block->getPageType()) ?>",
     "publisher": {
         "@type": "Organization",
-        "name": "<?= $block->escapeQuote($block->getStore()->getName()); ?>",
+        "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name')); ?>",
         "url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
         "logo": {
             "@type": "ImageObject",
