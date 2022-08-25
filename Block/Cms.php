@@ -78,7 +78,9 @@ class Cms extends Template
         if (!$this->_content) {
             $content = $this->_filterProvider->getPageFilter()->filter($this->getPage()->getContent());
             $content = nl2br($content);
-            $content = preg_replace('/([\r\n\t])/', ' ', $content);
+            if ($content) {
+                $content = preg_replace('/([\r\n\t])/', ' ', $content);
+            }
             $this->_content = $content;
         }
         return $this->_content;

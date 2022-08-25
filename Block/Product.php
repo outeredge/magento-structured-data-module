@@ -181,7 +181,12 @@ class Product extends View
         } else {
             $description = nl2br($this->getProduct()->getDescription());
         }
-        return preg_replace('/([\r\n\t])/', ' ', $description);
+
+        if ($description) {
+            $description = preg_replace('/([\r\n\t])/', ' ', $description);
+        }
+
+        return $description;
     }
 
     public function getBrandFieldFromConfig()
