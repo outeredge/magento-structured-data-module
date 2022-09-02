@@ -13,11 +13,11 @@
     "@type": "<?= $block->escapeQuote($block->getPageType()) ?>",
     "publisher": {
         "@type": "Organization",
-        "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name')); ?>",
+        "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name') ?? ''); ?>",
         "url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
         "logo": {
             "@type": "ImageObject",
-            "url": "<?= $block->escapeUrl($block->escapeQuote($block->getStoreLogoUrl())); ?>"
+            "url": "<?= $block->escapeUrl($block->escapeQuote($block->getStoreLogoUrl()) ?? ''); ?>"
         }
     }
     <?php if ($mainEntity != $childHtml): ?>

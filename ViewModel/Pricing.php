@@ -7,10 +7,7 @@ use Magento\Framework\Pricing\Helper\Data as DataHelper;
 
 class Pricing implements ArgumentInterface
 {
-    /**
-     * @var DataHelper
-     */
-    private $dataHelper;
+    private DataHelper $dataHelper;
 
     /**
      * @param DataHelper $dataHelper

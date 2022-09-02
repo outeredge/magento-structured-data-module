@@ -12,13 +12,13 @@ use Magento\Framework\App\Request\Http;
 
 class Jsonld extends \Magento\Framework\View\Element\Template
 {
-    const PAGE_TYPE_WEBPAGE        = "WebPage";
-    const PAGE_TYPE_ABOUTPAGE      = "AboutPage";
-    const PAGE_TYPE_SEARCHPAGE     = "SearchResultsPage";
-    const PAGE_TYPE_COLLECTIONPAGE = "CollectionPage";
-    const PAGE_TYPE_ITEMPAGE       = "ItemPage";
-    const PAGE_TYPE_CONTACTPAGE    = "ContactPage";
-    const PAGE_TYPE_CHECKOUTPAGE   = "CheckoutPage";
+    public const PAGE_TYPE_WEBPAGE        = "WebPage";
+    public const PAGE_TYPE_ABOUTPAGE      = "AboutPage";
+    public const PAGE_TYPE_SEARCHPAGE     = "SearchResultsPage";
+    public const PAGE_TYPE_COLLECTIONPAGE = "CollectionPage";
+    public const PAGE_TYPE_ITEMPAGE       = "ItemPage";
+    public const PAGE_TYPE_CONTACTPAGE    = "ContactPage";
+    public const PAGE_TYPE_CHECKOUTPAGE   = "CheckoutPage";
 
     /**
      * @var StoreManagerInterface

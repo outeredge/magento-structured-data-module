@@ -62,7 +62,7 @@
         <?php $maxPrice = null; ?>
         "@type": "AggregateOffer",
         "priceCurrency": "<?= $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode()); ?>",
-        "offerCount": "<?= count($children); ?>",
+        "offerCount": "<?= is_countable($children) ? count($children) : 0; ?>",
         "offers": [
             <?php $lastKey = key(array_slice($children, -1, 1, true)); ?>
             <?php foreach ($children as $key => $_product): ?>

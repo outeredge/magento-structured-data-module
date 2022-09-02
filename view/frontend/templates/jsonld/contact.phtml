@@ -2,8 +2,8 @@
 "mainEntity": {
     "@type": "<?= $block->escapeQuote($block->getConfig('structureddata/contact/type')); ?>",
     "@id": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
-    "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name')); ?>",
-    "image": "<?= $block->escapeUrl($block->getStoreLogoUrl()); ?>",
+    "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name') ?? ''); ?>",
+    "image": "<?= $block->escapeUrl($block->getStoreLogoUrl() ?? ''); ?>",
     <?php if (trim($block->escapeQuote($block->getStreetAddress()), ' ,\t\n\r\0\x0B') !== ''): ?>
     "address": {
         "@type": "PostalAddress",
