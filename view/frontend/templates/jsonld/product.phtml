@@ -51,6 +51,7 @@
                 "priceValidUntil": "<?= $block->escapeQuote($priceToDate->format('Y-m-d')); ?>",
             <?php endif; ?>
             "priceSpecification": {
+        "@type": "UnitPriceSpecification",
         "price": <?= $block->escapeQuote((string)$pricingHelper->currency($product->getFinalPrice(), false, false)); ?>,
         "priceCurrency": "<?= $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode()); ?>",
         "valueAddedTaxIncluded": <?= $block->escapeQuote($block->checkTaxIncluded()); ?>
@@ -93,6 +94,7 @@
                     "price": <?= $block->escapeQuote((string)$pricingHelper->currency($productFinalPrice, false, false)); ?>,
                     "priceCurrency": "<?= $block->escapeQuote($block->getStore()->getCurrentCurrency()->getCode()); ?>",
                     "priceSpecification": {
+                        "@type": "UnitPriceSpecification",
                         "price": <?=
                             $block->escapeQuote((string)$pricingHelper->currency($productFinalPrice, false, false));
                         ?>,
