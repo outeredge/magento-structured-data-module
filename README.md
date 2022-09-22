@@ -36,6 +36,7 @@ This will look similar to the below:
         "price": 18.99,
         "priceCurrency": "GBP",
         "priceSpecification": {
+            "@type": "UnitPriceSpecification",
             "price": 18.99,
             "priceCurrency": "GBP",
             "valueAddedTaxIncluded": true
