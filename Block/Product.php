@@ -186,7 +186,7 @@ class Product extends View
             $description = preg_replace('/([\r\n\t])/', ' ', $description);
         }
 
-        return $description;
+        return substr($description, 0, 5000);
     }
 
     public function getBrandFieldFromConfig()
