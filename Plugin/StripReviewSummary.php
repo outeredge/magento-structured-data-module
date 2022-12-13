@@ -8,6 +8,10 @@ class StripReviewSummary
 {
     public function afterGetReviewsSummaryHtml(ReviewRenderer $subject, $result)
     {
+        if (empty($result)) {
+            return '';
+        }
+        
         $dom = new \DOMDocument;
         $dom->loadHTML($result);
         $xpath = new \DOMXPath($dom);
