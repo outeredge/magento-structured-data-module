@@ -9,7 +9,7 @@ class StripReviewSummary
     public function afterGetReviewsSummaryHtml(ReviewRenderer $subject, $result)
     {
         if (empty($result)) {
-            return '';
+            return $result;
         }
         
         $dom = new \DOMDocument;
