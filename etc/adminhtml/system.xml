@@ -40,6 +40,9 @@
                 <field id="product_brand_field" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Product Brand/Manufacturer field</label>
                 </field>
+                <field id="product_gtin_field" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product Gtin field</label>
+                </field>
             </group>
             <group id="cms" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Structured Data (CMS Page)</label>
