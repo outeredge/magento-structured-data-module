@@ -197,6 +197,16 @@ class Product extends View
         return false;
     }
 
+    public function getGtinFieldFromConfig()
+    {
+        if ($field = $this->getConfig('structureddata/product/product_gtin_field')) {
+            if ($value = $this->getProduct()->getData($field)) {
+                return $value;
+            }
+        }
+        return false;
+    }
+
     public function getBrand()
     {
         if ($this->_brand === null) {
