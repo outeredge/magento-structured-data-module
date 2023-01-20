@@ -31,7 +31,7 @@
     "name": "<?= $block->escapeQuote($block->stripTags($block->getProduct()->getName())); ?>",
     "sku": "<?= $block->escapeQuote((string)$block->stripTags($block->getProduct()->getSku())); ?>",
     <?php if ($block->getGtinFieldFromConfig()): ?>
-        "gtin": "<?= $block->escapeQuote($block->getGtinFieldFromConfig()); ?>",
+        "gtin": "<?= $block->escapeQuote((string)$block->getGtinFieldFromConfig()); ?>",
     <?php endif; ?>
     "description": "<?= $block->escapeHtml($block->stripTags($block->getDescription())); ?>",
     "image": "<?= $block->escapeUrl(
