@@ -70,14 +70,14 @@ class Cms extends Template
         if ($this->getPage()->getContentHeading()) {
             return nl2br($this->getPage()->getContentHeading());
         }
-        return nl2br($this->getPage()->getTitle());
+        return nl2br((string) $this->getPage()->getTitle());
     }
 
     public function getContent()
     {
         if (!$this->_content) {
             $content = $this->_filterProvider->getPageFilter()->filter($this->getPage()->getContent());
-            $content = nl2br($content);
+            $content = nl2br((string) $content);
             if ($content) {
                 $content = preg_replace('/([\r\n\t])/', ' ', $content);
             }
@@ -89,7 +89,7 @@ class Cms extends Template
     public function getMetaDescription()
     {
         if (!$this->_metaDescription) {
-            $this->_metaDescription = nl2br($this->getPage()->getMetaDescription());
+            $this->_metaDescription = nl2br((string) $this->getPage()->getMetaDescription());
         }
         return $this->_metaDescription;
     }

@@ -179,7 +179,7 @@ class Product extends View
             && $this->getProduct()->getShortDescription()) {
             $description = nl2br($this->getProduct()->getShortDescription());
         } else {
-            $description = nl2br($this->getProduct()->getDescription());
+            $description = nl2br((string) $this->getProduct()->getDescription());
         }
 
         if ($description) {
