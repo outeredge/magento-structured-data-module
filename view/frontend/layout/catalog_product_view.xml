@@ -2,11 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="structured.data.jsonld">
-            <block ifconfig="structureddata/product/enable" class="OuterEdge\StructuredData\Block\Product" name="product.structured.data.jsonld" template="OuterEdge_StructuredData::jsonld/product.phtml">
-                <arguments>
-                    <argument name="view_model" xsi:type="object">OuterEdge\StructuredData\ViewModel\Pricing</argument>
-                </arguments>
-            </block>
+            <block ifconfig="structureddata/product/enable" class="OuterEdge\StructuredData\Block\Product" name="product.structured.data.jsonld" template="OuterEdge_StructuredData::jsonld/product.phtml" />
         </referenceBlock>
 
         <attribute name="itemtype" value=""/>
