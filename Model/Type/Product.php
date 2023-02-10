@@ -372,7 +372,6 @@ class Product
     public function getReviewsCount()
     {
         if ($this->reviewsCount === null) {
-
             if ($data = $this->getYotpoProductSnippet()) {
                 $reviewCount = $data['reviews_count'] ?? null;
             } else {
@@ -380,7 +379,6 @@ class Product
             }
 
             $this->reviewsCount = $reviewCount;
-
         }
 
         return $this->reviewsCount;
