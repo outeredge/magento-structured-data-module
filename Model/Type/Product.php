@@ -150,7 +150,6 @@ class Product
             $this->_product = $product;
         }
 
-        // return $this->_product->getUrlInStore();
         $data = [
             "@context" => "https://schema.org/",
             "@type" => "Product",
@@ -160,8 +159,6 @@ class Product
             "description" => $this->escapeHtml((string)strip_tags($this->getDescription())),
             "image" => $this->escapeUrl(strip_tags($this->getImageUrl($this->_product, 'product_base_image')))
         ];
-
-        // return $data;
 
         if ($this->getBrand()) {
             $data['brand'] = [
