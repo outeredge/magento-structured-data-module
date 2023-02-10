@@ -3,11 +3,7 @@
 namespace OuterEdge\StructuredData\Block;
 
 use Magento\Catalog\Block\Product\View;
-use Magento\Review\Model\Review\SummaryFactory;
-use Magento\Review\Model\Review\Summary;
-use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
 use Magento\Catalog\Block\Product\Context;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Url\EncoderInterface as UrlEncoderInterface;
 use Magento\Framework\Json\EncoderInterface as JsonEncoderInterface;
 use Magento\Framework\Stdlib\StringUtils;
@@ -17,46 +13,15 @@ use Magento\Framework\Locale\FormatInterface;
 use Magento\Customer\Model\Session;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
-use Magento\Store\Model\ScopeInterface;
-use Magento\Catalog\Model\ProductFactory;
-use Magento\Framework\Module\Manager as ModuleManager;
+use OuterEdge\StructuredData\Model\Type\Product as ProductData;
 
 class Product extends View
 {
-    /**
-     * @var Product Loader
-     */
-    protected $_productFactory;
 
     /**
-     * @var SummaryFactory
+     * @var ProductData
      */
-    protected $_reviewSummaryFactory;
-
-    /**
-     * @var ReviewCollectionFactory
-     */
-    protected $_reviewCollectionFactory;
-
-    /**
-     * @var ModuleManager
-     */
-    protected $_moduleManager;
-
-    /**
-     * @var string
-     */
-    protected $_brand = null;
-
-    /**
-     * @var Summary
-     */
-    protected $_reviewData = null;
-
-    /**
-     * @var int
-     */
-    protected $_reviewsCount = null;
+    protected $_productData;
 
     /**
      * @param Context $context
@@ -69,9 +34,7 @@ class Product extends View
      * @param Session $customerSession
      * @param ProductRepositoryInterface $productRepository
      * @param PriceCurrencyInterface $priceCurrency
-     * @param SummaryFactory $reviewSummaryFactory
-     * @param ReviewCollectionFactory $reviewCollectionFactory
-     * @param ModuleManager $moduleManager
+     * @param ProductData $productData
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -87,16 +50,10 @@ class Product extends View
         Session $customerSession,
         ProductRepositoryInterface $productRepository,
         PriceCurrencyInterface $priceCurrency,
-        SummaryFactory $reviewSummaryFactory,
-        ReviewCollectionFactory $reviewCollectionFactory,
-        ProductFactory $productFactory,
-        ModuleManager $moduleManager,
+        ProductData $productData,
         array $data = []
     ) {
-        $this->_reviewSummaryFactory = $reviewSummaryFactory;
-        $this->_reviewCollectionFactory = $reviewCollectionFactory;
-        $this->_productFactory = $productFactory;
-        $this->_moduleManager = $moduleManager;
+        $this->_productData = $productData;
         parent::__construct(
             $context,
             $urlEncoder,
@@ -112,188 +69,8 @@ class Product extends View
         );
     }
 
-    public function loadProduct($id)
+    public function getSchemaJson()
     {
-        return $this->_productFactory->create()->load($id);
-    }
-
-    public function getConfig($config)
-    {
-        return $this->_scopeConfig->getValue($config, ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getStore()
-    {
-        return $this->_storeManager->getStore();
-    }
-
-    public function getYotpoProductSnippet()
-    {
-        if ($this->_moduleManager->isOutputEnabled('Yotpo_Yotpo') &&
-            $this->_moduleManager->isEnabled('Yotpo_Yotpo') &&
-            $this->getConfig('yotpo/settings/active') == true
-        ) {
-            return ObjectManager::getInstance()->create('Yotpo\Yotpo\Model\Api\Products')->getRichSnippet();
-        }
-
-        return false;
-    }
-
-    public function getChildren()
-    {
-        if (!$this->getConfig('structureddata/product/include_children')) {
-            return [];
-        }
-
-        if ($this->getProduct()->getTypeId() == \Magento\Bundle\Model\Product\Type::TYPE_CODE) {
-            $children = [];
-            $productsIds = $this->getProduct()->getTypeInstance()->getChildrenIds($this->getProduct()->getId(), true);
-            foreach ($productsIds as $product) {
-                if ($child = $this->loadProduct(reset($product))) {
-                    $children[] = $child;
-                }
-            }
-            return $children;
-        }
-
-        if ($this->getProduct()->getTypeId() == \Magento\GroupedProduct\Model\Product\Type\Grouped::TYPE_CODE) {
-            $children = [];
-            $products = $this->getProduct()->getTypeInstance()->getAssociatedProducts($this->getProduct());
-            foreach ($products as $product) {
-                $children[] = $product;
-            }
-            return $children;
-        }
-
-        if ($this->getProduct()->getTypeId()
-            != \Magento\ConfigurableProduct\Model\Product\Type\Configurable::TYPE_CODE) {
-            return [];
-        }
-
-        return $this->getProduct()->getTypeInstance()->getUsedProducts($this->getProduct());
-    }
-
-    public function getDescription()
-    {
-        if ($this->getConfig('structureddata/product/use_short_description')
-            && $this->getProduct()->getShortDescription()) {
-            $description = nl2br($this->getProduct()->getShortDescription());
-        } else {
-            $description = nl2br((string) $this->getProduct()->getDescription());
-        }
-
-        if ($description) {
-            $description = preg_replace('/([\r\n\t])/', ' ', $description);
-        }
-
-        return substr($description, 0, 5000);
-    }
-
-    public function getBrandFieldFromConfig()
-    {
-        if ($value = $this->getConfig('structureddata/product/product_brand_field')) {
-            return $value;
-        }
-        return false;
-    }
-
-    public function getGtinFieldFromConfig()
-    {
-        if ($field = $this->getConfig('structureddata/product/product_gtin_field')) {
-            if ($value = $this->getProduct()->getData($field)) {
-                return $value;
-            }
-        }
-        return false;
-    }
-
-    public function getBrand()
-    {
-        if ($this->_brand === null) {
-
-            if ($value = $this->getBrandFieldFromConfig()) {
-                if ($this->getProduct()->getData($value)) {
-                    $this->_brand = $this->getProduct()->getAttributeText($value);
-                }
-            }
-
-            if ($this->_brand === null) {
-                if ($this->getProduct()->getBrand()) {
-                    $this->_brand = $this->getProduct()->getAttributeText('brand');
-                } elseif ($this->getProduct()->getManufacturer()) {
-                    $this->_brand = $this->getProduct()->getAttributeText('manufacturer');
-                } else {
-                    $this->_brand = false;
-                }
-            }
-        }
-
-        return $this->_brand;
-    }
-
-    public function getAttributeText($attribute)
-    {
-        $attributeText = $this->getProduct()->getAttributeText($attribute);
-        if (is_array($attributeText)) {
-            $attributeText = implode(', ', $attributeText);
-        }
-        return $attributeText;
-    }
-
-    public function getReviewData()
-    {
-        if ($this->_reviewData === null) {
-            $this->_reviewData = $this->_reviewSummaryFactory->create()->load($this->getProduct()->getId());
-        }
-        return $this->_reviewData;
-    }
-
-    public function getReviewsRating()
-    {
-        if ($data = $this->getYotpoProductSnippet()) {
-            $ratingSummary = $data['average_score'];
-        } else {
-            $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() : 1;
-        }
-
-        return $ratingSummary;
-    }
-
-    public function getReviewsCount()
-    {
-        if ($this->_reviewsCount === null) {
-
-            if ($data = $this->getYotpoProductSnippet()) {
-                $reviewCount = $data['reviews_count'] ?? null;
-            } else {
-                $reviewCount = !empty($this->getReviewData()) ? $this->getReviewData()->getReviewsCount() : null;
-            }
-
-            $this->_reviewsCount = $reviewCount;
-
-        }
-
-        return $this->_reviewsCount;
-    }
-
-    public function getBundlePriceRange($productId)
-    {
-        $bundleObj = $this->loadProduct($productId)
-            ->getPriceInfo()
-            ->getPrice('final_price');
-        $minPrice = $bundleObj->getMinimalPrice();
-        $maxPrice = $bundleObj->getMaximalPrice();
-
-        return compact("minPrice", "maxPrice");
-    }
-
-    public function checkTaxIncluded()
-    {
-        $taxDisplayType = $this->_scopeConfig->getValue('tax/display/type', ScopeInterface::SCOPE_STORE);
-        if ($taxDisplayType == 2) {
-            return 'true';
-        } else {
-            return 'false';
-        }
+        return json_encode($this->_productData->getSchemaData($this->getProduct()), JSON_UNESCAPED_SLASHES);
     }
 }

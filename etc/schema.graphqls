@@ -1,0 +1,5 @@
+interface ProductInterface {
+    structured_data: String
+        @doc(description: "Schema.org Structured Data")
+        @resolver(class: "OuterEdge\\StructuredData\\Model\\Resolver\\Product\\StructuredData")
+}

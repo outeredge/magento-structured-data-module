@@ -50,7 +50,7 @@ This will look similar to the below:
 
 The module provides the following structured data:
 
-### Product Page
+### Product Page (GraphQL available)
 
 * @type
 * @id
@@ -140,6 +140,26 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 Once the module is installed and configured you will find the schema markup in your source code:
 
 ![schema_screenshot](https://user-images.githubusercontent.com/2035088/152323033-7e48e3b4-4e72-4d72-9b92-8356ac38fe91.png)
+
+## GraphQL
+
+Our structured data module provides for product schema to the built in Magento GraphGL endpoint. Simply request the `structured_data` field with your product data as per the example below and the data will be returned as a JSON array:
+
+```
+{
+  products(
+    filter: {
+        ...
+    }
+  ) {
+    items {
+      sku
+      name
+      structured_data
+    }
+  }
+}
+```
 
 ### References
 
