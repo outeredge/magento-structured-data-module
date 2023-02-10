@@ -2,7 +2,7 @@
 
 namespace OuterEdge\StructuredData\Model\Type;
 
-use Magento\Catalog\Block\Product\ImageBuilder;
+use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Framework\Escaper;
@@ -54,9 +54,9 @@ class Product
     protected $_moduleManager;
 
     /**
-     * @var ImageBuilder
+     * @var ImageHelper
      */
-    protected $imageBuilder;
+    protected $imageHelper;
 
     /**
      * @var PricingHelper
@@ -118,7 +118,7 @@ class Product
      * @param SummaryFactory $reviewSummaryFactory
      * @param ReviewCollectionFactory $reviewCollectionFactory
      * @param ModuleManager $moduleManager
-     * @param ImageBuilder $imageBuilder
+     * @param ImageHelper $imageHelper
      * @param PricingHelper $pricingHelper
      */
 	public function __construct(
@@ -129,7 +129,7 @@ class Product
         SummaryFactory $reviewSummaryFactory,
         ReviewCollectionFactory $reviewCollectionFactory,
         ModuleManager $moduleManager,
-        ImageBuilder $imageBuilder,
+        ImageHelper $imageHelper,
         PricingHelper $pricingHelper
 	)
 	{
@@ -140,7 +140,7 @@ class Product
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
         $this->_moduleManager = $moduleManager;
-        $this->imageBuilder = $imageBuilder;
+        $this->imageHelper = $imageHelper;
         $this->pricingHelper = $pricingHelper;
 	}
 
@@ -150,6 +150,7 @@ class Product
             $this->_product = $product;
         }
 
+        // return $this->_product->getUrlInStore();
         $data = [
             "@context" => "https://schema.org/",
             "@type" => "Product",
@@ -157,8 +158,10 @@ class Product
             "name" => $this->escapeQuote((string)strip_tags($this->_product->getName())),
             "sku" => $this->escapeQuote((string)strip_tags($this->_product->getSku())),
             "description" => $this->escapeHtml((string)strip_tags($this->getDescription())),
-            "image" => $this->escapeUrl(strip_tags($this->getImage($this->_product, 'product_base_image')->getImageUrl()))
+            "image" => $this->escapeUrl(strip_tags($this->getImageUrl($this->_product, 'product_base_image')))
         ];
+
+        // return $data;
 
         if ($this->getBrand()) {
             $data['brand'] = [
@@ -342,11 +345,11 @@ class Product
      * @param \Magento\Catalog\Model\Product $product
      * @param string $imageId
      * @param array $attributes
-     * @return \Magento\Catalog\Block\Product\Image
+     * @return string
      */
-    public function getImage($product, $imageId, $attributes = [])
+    public function getImageUrl($product, $imageId)
     {
-        return $this->imageBuilder->create($product, $imageId, $attributes);
+        return $this->imageHelper->init($product, $imageId)->getUrl();
     }
 
     public function getAttributeText($attribute)

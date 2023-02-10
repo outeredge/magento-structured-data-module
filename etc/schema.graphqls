@@ -1,0 +1,3 @@
+interface ProductInterface @typeResolver(class: "Magento\\CatalogGraphQl\\Model\\ProductInterfaceTypeResolverComposite") @doc(description: "The ProductInterface contains attributes that are common to all types of products. Note that descriptions may not be available for custom and EAV attributes.") {
+    structured_data: String @doc(description: "Schema.org Structured Data") @resolver(class: "OuterEdge\\StructuredData\\Model\\Resolver\\Product\\StructuredData")
+}
