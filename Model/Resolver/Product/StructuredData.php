@@ -54,7 +54,6 @@ class StructuredData implements ResolverInterface
         /** @var ProductInterface $product */
         $product = $value['model'];
 
-
         return json_encode($this->productData->getSchemaData($product), JSON_UNESCAPED_SLASHES);
     }
 }
