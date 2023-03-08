@@ -3,8 +3,8 @@
 namespace OuterEdge\StructuredData\Block;
 
 use Magento\Framework\View\Element\Template\Context;
-use Magento\Framework\UrlInterface;
 use Magento\Theme\Block\Html\Header\Logo;
+use Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Cms\Model\Page;
@@ -51,6 +51,7 @@ class Jsonld extends \Magento\Framework\View\Element\Template
      * @param Http $request
      * @param Page $page
      * @param Logo $logo
+     * @param LogoPathResolver $logoPathResolver
      * @param string $pageType
      * @param array $data
      * @codingStandardsIgnoreStart
@@ -62,11 +63,13 @@ class Jsonld extends \Magento\Framework\View\Element\Template
         Http $request,
         Page $page,
         Logo $logo,
+        LogoPathResolver $logoPathResolver,
         array $data = []
     ) {
+        $logo->setData('logoPathResolver', $logoPathResolver);
 
-        $this->_page = $page;
         $this->_logo = $logo;
+        $this->_page = $page;
         $this->_storeManager = $storeManager;
         $this->_request = $request;
         $this->_pageType = null;
