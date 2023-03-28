@@ -185,9 +185,8 @@ class Product
 
         if ($this->_product->getMpn()) {
             if ($this->_product->getColor()) {
-                $data['color'] = $this->escapeQuote((string)$this->_product->getColor());
-            }
-            if ($this->_product->getColour()) {
+                $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
+            }else if ($this->_product->getColour()) {
                 $data['color'] = $this->escapeQuote((string)$this->_product->getColour());
             }
         }
