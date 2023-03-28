@@ -108,8 +108,6 @@ class Product
      */
     protected $maxPrice = null;
 
-
-
     /**
      * @param Escaper $escaper,
      * @param ScopeConfigInterface $scopeConfig
@@ -186,7 +184,12 @@ class Product
         }
 
         if ($this->_product->getMpn()) {
-            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
+            if ($this->_product->getColor()) {
+                $data['color'] = $this->escapeQuote((string)$this->_product->getColor());
+            }
+            if ($this->_product->getColour()) {
+                $data['color'] = $this->escapeQuote((string)$this->_product->getColour());
+            }
         }
 
         if ($this->getGtin()) {
