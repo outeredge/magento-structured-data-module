@@ -183,12 +183,10 @@ class Product
             $data['material'] = $this->escapeQuote((string)$this->getAttributeText('material'));
         }
 
-        if ($this->_product->getMpn()) {
-            if ($this->_product->getColor()) {
-                $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
-            } elseif ($this->_product->getColour()) {
-                $data['color'] = $this->escapeQuote((string)$this->_product->getColour());
-            }
+        if ($this->_product->getColor()) {
+            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
+        } elseif ($this->_product->getColour()) {
+            $data['color'] = $this->escapeQuote((string)$this->_product->getColour());
         }
 
         if ($this->getGtin()) {
