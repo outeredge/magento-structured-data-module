@@ -8,7 +8,7 @@ class StripReviewSummary
 {
     public function afterGetReviewsSummaryHtml(ReviewRenderer $subject, $result)
     {
-        if (empty($result)) {
+        if (empty(trim($result))) {
             return $result;
         }
         
