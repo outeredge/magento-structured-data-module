@@ -53,8 +53,8 @@ class Contact extends Template
     public function getStreetAddress()
     {
         return implode(', ', array_map('trim', [
-            $this->getConfig('general/store_information/street_line1'),
-            $this->getConfig('general/store_information/street_line2')
+            (string) $this->getConfig('general/store_information/street_line1'),
+            (string) $this->getConfig('general/store_information/street_line2')
         ]));
     }
 }
