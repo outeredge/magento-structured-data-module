@@ -9,14 +9,13 @@
             <tab>outeredge</tab>
             <resource>OuterEdge_StructuredData::StructuredDataSettings</resource>
             <group id="product" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Structured Data (Product Page)</label>
+                <label>Structured Data (Products)</label>
                 <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable</label>
+                    <label>Enable for Product Page</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <label>Structured Data (Category Page)</label>
                 <field id="enable_category" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable</label>
+                    <label>Enable for Category Page</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="use_short_description" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
