@@ -2,7 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="structured.data.jsonld">
-            <block ifconfig="structureddata/cms/enable" class="OuterEdge\StructuredData\Block\Cms" name="cms.structured.data.jsonld" template="OuterEdge_StructuredData::jsonld/cms.phtml"/>
+            <block ifconfig="structureddata/cms/enable" class="OuterEdge\StructuredData\Block\Cms" name="additional.schema" template="OuterEdge_StructuredData::jsonld/cms.phtml"/>
         </referenceBlock>
     </body>
 </page>

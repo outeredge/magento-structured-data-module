@@ -2,7 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="structured.data.jsonld">
-            <block ifconfig="structureddata/product/enable" class="OuterEdge\StructuredData\Block\Product" name="product.structured.data.jsonld" template="OuterEdge_StructuredData::jsonld/product.phtml" />
+            <block ifconfig="structureddata/product/enable" class="OuterEdge\StructuredData\Block\Product" name="main.entity" template="OuterEdge_StructuredData::jsonld/schema.phtml" />
         </referenceBlock>
 
         <attribute name="itemtype" value=""/>
