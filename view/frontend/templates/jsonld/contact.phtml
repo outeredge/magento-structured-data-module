@@ -1,5 +1,4 @@
-,
-"mainEntity": {
+{
     "@type": "<?= $block->escapeQuote($block->getConfig('structureddata/contact/type')); ?>",
     "@id": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
     "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name') ?? ''); ?>",
@@ -29,11 +28,11 @@
     "email": "<?= $block->escapeQuote($block->getConfig('trans_email/ident_general/email')); ?>",
     <?php endif; ?>
     "url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>"
-<?php if ($block->isLocalBusiness() && trim($block->getConfig('structureddata/contact/latitude')) !== ''): ?>
+    <?php if ($block->isLocalBusiness() && trim($block->getConfig('structureddata/contact/latitude')) !== ''): ?>
     ,"geo": {
         "@type": "GeoCoordinates",
         "latitude": "<?= $block->escapeQuote((string)$block->getConfig('structureddata/contact/latitude')) ?>",
         "longitude": "<?= $block->escapeQuote((string)$block->getConfig('structureddata/contact/longitude')) ?>"
     }
-<?php endif; ?>
-}
+    <?php endif; ?>
+    }
