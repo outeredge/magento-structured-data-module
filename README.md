@@ -4,7 +4,11 @@
 
 # outer/edge Structured Data Module for Magento 2
 
-Our open source module allows you to quickly add structured data markup (also known as Rich Snippets) to any Magento 2 store by simply installing our module and setting a few configuration options. Once this module is installed you will have valid structured data in the source of your product, contact and CMS pages. For example:
+[Hyvä](https://hyva.io) and [Breeze](https://breezefront.com/) compatible.
+
+Our open source module allows you to quickly add structured data markup (also known as Rich Snippets) to any Magento 2 store by simply installing our module and setting a few configuration options. 
+
+Once this module is installed you will have valid structured data in the source of your product, contact and CMS pages. For example:
 https://developers.google.com/search/docs/advanced/structured-data/product
 
 This will look similar to the below:
