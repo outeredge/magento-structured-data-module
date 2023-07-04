@@ -11,6 +11,7 @@ use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
 use Magento\Review\Model\Review\Summary;
 use Magento\Review\Model\Review\SummaryFactory;
+use Magento\Review\Model\ResourceModel\Rating\Option\Vote\CollectionFactory as RatingOptionVoteFactory;
 use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -42,6 +43,11 @@ class Product
      * @var SummaryFactory
      */
     protected $_reviewSummaryFactory;
+
+    /**
+     * @var RatingOptionFactory
+     */
+    protected $_ratingOptionVoteFactory;
 
     /**
      * @var ReviewCollectionFactory
@@ -114,6 +120,7 @@ class Product
      * @param StoreManagerInterface $storeManager
      * @param ProductFactory $productFactory
      * @param SummaryFactory $reviewSummaryFactory
+     * @param RatingOptionFactory $ratingOptionFactory
      * @param ReviewCollectionFactory $reviewCollectionFactory
      * @param ModuleManager $moduleManager
      * @param ImageHelper $imageHelper
@@ -125,6 +132,7 @@ class Product
         StoreManagerInterface $storeManager,
         ProductFactory $productFactory,
         SummaryFactory $reviewSummaryFactory,
+        RatingOptionVoteFactory $ratingOptionVoteFactory,
         ReviewCollectionFactory $reviewCollectionFactory,
         ModuleManager $moduleManager,
         ImageHelper $imageHelper,
@@ -136,6 +144,7 @@ class Product
         $this->_storeManager = $storeManager;
         $this->_productFactory = $productFactory;
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
+        $this->_ratingOptionVoteFactory = $ratingOptionVoteFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
         $this->_moduleManager = $moduleManager;
         $this->imageHelper = $imageHelper;
@@ -173,6 +182,37 @@ class Product
                 "ratingValue" => $this->escapeQuote((string)$this->getReviewsRating()),
                 "reviewCount" => $this->escapeQuote((string)$this->getReviewsCount())
             ];
+
+            if ($this->getConfig('structureddata/product/include_reviews')) {
+                $data['review'] = [];
+                foreach ($this->getReviewCollection() as $review) {
+                    $votes = $this->getVoteCollection($review->getId());
+
+                    $averageRating = 0;
+                    $ratingCount = count($votes);
+                    foreach ($votes as $vote) {
+                        $averageRating = $averageRating + $vote->getValue();
+                    }
+                    $finalRating = $averageRating / $ratingCount;
+
+                    $data['review'][] = [
+                        "@type" => "Review",
+                        "author" => [
+                        "@type" => "Person",
+                        "name" => $this->escapeQuote((string)$review->getData('nickname'))
+                        ],
+                        "datePublished" => $this->escapeQuote($review->getCreatedAt()),
+                        "name" => $this->escapeQuote((string)$review->getTitle()),
+                        "reviewBody" => $this->escapeQuote((string)$review->getDetail()),
+                        "reviewRating" => [
+                            "@type" => "Rating",
+                            "ratingValue" => $finalRating,
+                            "bestRating" => "5",
+                            "worstRating" => "1"
+                        ]
+                    ];
+                }
+            }
         }
 
         if ($this->_product->getMpn()) {
@@ -390,6 +430,27 @@ class Product
             $this->_reviewData = $this->_reviewSummaryFactory->create()->load($this->_product->getId());
         }
         return $this->_reviewData;
+    }
+
+    public function getReviewCollection()
+    {
+        $collection = $this->_reviewCollectionFactory->create()
+            ->addStatusFilter(
+                \Magento\Review\Model\Review::STATUS_APPROVED
+            )->addEntityFilter(
+                'product',
+                $this->_product->getId()
+            )->setDateOrder();
+
+        return $collection;
+    }
+
+    public function getVoteCollection($reviewId)
+    {
+        $collection = $this->_ratingOptionVoteFactory->create()
+            ->addFilter('review_id', $reviewId);
+
+        return $collection;
     }
 
     public function getYotpoProductSnippet()

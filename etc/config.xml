@@ -2,6 +2,9 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <structureddata>
+            <product>
+                <include_reviews>0</include_reviews>
+            </product>
             <contact>
                 <type>Organization</type>
             </contact>
