@@ -45,7 +45,7 @@ class Product
     protected $_reviewSummaryFactory;
 
     /**
-     * @var RatingOptionFactory
+     * @var RatingOptionVoteFactory
      */
     protected $_ratingOptionVoteFactory;
 
