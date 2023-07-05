@@ -2,19 +2,36 @@
 
 namespace OuterEdge\StructuredData\Block;
 
+use Magento\Framework\View\Element\Template\Context;
 use Magento\Catalog\Block\Product\ListProduct;
 use Magento\Eav\Model\Entity\Collection\AbstractCollection;
 
-class Category extends ListProduct
+class Category extends \Magento\Framework\View\Element\Template
 {
+    /**
+     * @var ListProduct
+     */
+    protected $listProductBlock;
+
     /**
      * @var AbstractCollection
      */
     protected $_productCollection = null;
 
+    public function __construct(
+        ListProduct $listProductBlock,
+        Context $context,
+        array $data = [])
+    {
+        $this->listProductBlock = $listProductBlock;
+
+        parent::__construct($context, $data);
+    }
+
     public function getSchemaJson()
     {
-        return json_encode($this->getSchemaData($this->getLoadedProductCollection()), JSON_UNESCAPED_SLASHES);
+        $collection = $this->listProductBlock->getLoadedProductCollection();
+        return json_encode($this->getSchemaData($collection), JSON_UNESCAPED_SLASHES);
     }
 
     public function getSchemaData(AbstractCollection $productCollection)
@@ -31,7 +48,7 @@ class Category extends ListProduct
                 "@context" => "https://schema.org/",
                 "@type" => "ListItem",
                 "position" => $i++,
-                "url" => $this->getProductUrl($product)
+                "url" => $product->getProductUrl()
             ];
         }
 

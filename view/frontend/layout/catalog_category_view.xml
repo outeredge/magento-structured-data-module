@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <!-- Move markup to end of category page to avoid loading entire product collection -->
+        <move element="structured.data.jsonld" destination="before.body.end" after="-" />
+
         <referenceBlock name="structured.data.jsonld">
             <block ifconfig="structureddata/product/enable_category" class="OuterEdge\StructuredData\Block\Category" name="main.entity" template="OuterEdge_StructuredData::jsonld/schema.phtml" />
         </referenceBlock>
