@@ -72,7 +72,7 @@ class Product
     /**
      * @var ProductModel
      */
-    protected $_product = null;
+    public $_product = null;
 
     /**
      * @var Summary
