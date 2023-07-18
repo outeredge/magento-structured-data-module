@@ -164,7 +164,7 @@ class Product
             "name" => $this->escapeQuote((string)strip_tags($this->_product->getName())),
             "sku" => $this->escapeQuote((string)strip_tags($this->_product->getSku())),
             "description" => $this->escapeHtml((string)strip_tags($this->getDescription())),
-            "image" => $this->escapeUrl(strip_tags($this->getImageUrl($this->_product, 'product_base_image')))
+            "image" => $this->escapeUrl(strip_tags($this->getImageUrl($this->_product, 'product_page_image_medium')))
         ];
 
         if ($this->getBrand()) {

@@ -3,8 +3,7 @@
     "text": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->stripTags($block->getContent())); ?>"
 }
 <?php if ($block->getMetaDescription()): ?>
-    ,"description": "
-        <?= $block->escapeQuote(trim($block->escapeQuote($block->stripTags($block->getMetaDescription())))); ?>"
+    ,"description": "<?= $block->escapeQuote(preg_replace('/\s+/', ' ', trim($block->stripTags($block->getMetaDescription())))); ?>"
 <?php endif; ?>
 <?php if ($block->getImage()): ?>
     ,"primaryImageOfPage": {

@@ -1,7 +1,7 @@
 <?php $mainEntity = $block->getChildHtml('main.entity'); ?>
 <?php $additionalSchema = $block->getChildHtml('additional.schema'); ?>
 <script type="application/ld+json">
-[{
+{
     "@context": "https://schema.org/",
     "@type": "<?= $block->escapeQuote($block->getPageType()) ?>",
     "publisher": {
@@ -20,5 +20,5 @@
     <?php if ($additionalSchema): ?>
         <?= /* @noEscape */ $additionalSchema; ?>
     <?php endif; ?>
-}]
+}
 </script>
