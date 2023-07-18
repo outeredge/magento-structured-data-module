@@ -5,6 +5,7 @@ namespace OuterEdge\StructuredData\Model\Type;
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ProductFactory;
+use Magento\CatalogInventory\Api\StockStateInterface;
 use Magento\Framework\Escaper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager as ModuleManager;
@@ -33,6 +34,11 @@ class Product
      * @var ProductFactory
      */
     protected $_productFactory;
+
+    /**
+     * @var StockStateInterface
+     */
+    protected $_stockState;
 
     /**
      * @var StoreManagerInterface
@@ -131,6 +137,7 @@ class Product
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
         ProductFactory $productFactory,
+        StockStateInterface $stockState,
         SummaryFactory $reviewSummaryFactory,
         RatingOptionVoteFactory $ratingOptionVoteFactory,
         ReviewCollectionFactory $reviewCollectionFactory,
@@ -143,6 +150,7 @@ class Product
         $this->_scopeConfig = $scopeConfig;
         $this->_storeManager = $storeManager;
         $this->_productFactory = $productFactory;
+        $this->_stockState = $stockState;
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
         $this->_ratingOptionVoteFactory = $ratingOptionVoteFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
@@ -302,7 +310,17 @@ class Product
     }
 
     protected function getOffer(ProductModel $product) {
-        $availability = $product->isAvailable() ? 'InStock' : 'OutOfStock';
+        $availability      = 'OutOfStock';
+        $quantityAvailable = $this->_stockState->getStockQty($product->getId());
+        $backorderStatus   = $product->getExtensionAttributes()->getStockItem()->getBackorders();
+
+        if($product->isAvailable()) {
+            if ($quantityAvailable > 0 || $backorderStatus == \Magento\CatalogInventory\Model\Stock::BACKORDERS_YES_NONOTIFY) {
+                $availability = 'InStock';
+            } elseif ($backorderStatus == \Magento\CatalogInventory\Model\Stock::BACKORDERS_YES_NOTIFY) {
+                $availability = 'BackOrder';
+            }
+        }
 
         $data = [
             "@type" => "Offer",
