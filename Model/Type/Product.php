@@ -5,6 +5,7 @@ namespace OuterEdge\StructuredData\Model\Type;
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ProductFactory;
+use Magento\CatalogInventory\Model\Stock;
 use Magento\CatalogInventory\Api\StockStateInterface;
 use Magento\Framework\Escaper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -15,6 +16,7 @@ use Magento\Review\Model\Review\SummaryFactory;
 use Magento\Review\Model\ResourceModel\Rating\Option\Vote\CollectionFactory as RatingOptionVoteFactory;
 use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
 use Magento\Store\Model\ScopeInterface;
+
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
 
@@ -314,10 +316,10 @@ class Product
         $quantityAvailable = $this->_stockState->getStockQty($product->getId());
         $backorderStatus   = $product->getExtensionAttributes()->getStockItem()->getBackorders();
 
-        if($product->isAvailable()) {
-            if ($quantityAvailable > 0 || $backorderStatus == \Magento\CatalogInventory\Model\Stock::BACKORDERS_YES_NONOTIFY) {
+        if ($product->isAvailable()) {
+            if ($quantityAvailable > 0 || $backorderStatus == Stock::BACKORDERS_YES_NONOTIFY) {
                 $availability = 'InStock';
-            } elseif ($backorderStatus == \Magento\CatalogInventory\Model\Stock::BACKORDERS_YES_NOTIFY) {
+            } elseif ($backorderStatus == Stock::BACKORDERS_YES_NOTIFY) {
                 $availability = 'BackOrder';
             }
         }
