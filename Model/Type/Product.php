@@ -314,7 +314,11 @@ class Product
     protected function getOffer(ProductModel $product) {
         $availability      = 'OutOfStock';
         $quantityAvailable = $this->_stockState->getStockQty($product->getId());
-        $backorderStatus   = $product->getExtensionAttributes()->getStockItem()->getBackorders();
+	$backorderStatus   = null;
+
+	if ($stockItem = $product->getExtensionAttributes()->getStockItem()) {
+            $backorderStatus = $stockItem->getBackorders();
+	}
 
         if ($product->isAvailable()) {
             if ($quantityAvailable > 0 || $backorderStatus == Stock::BACKORDERS_YES_NONOTIFY) {
