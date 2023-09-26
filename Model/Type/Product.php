@@ -184,7 +184,7 @@ class Product
             ];
         }
 
-        if ($this->getReviewsCount()) {
+        if ($this->getConfig('structureddata/product/include_reviews') && $this->getReviewsCount()) {
             $data['aggregateRating'] = [
                 "@type" => "AggregateRating",
                 "bestRating" => "100",
@@ -193,35 +193,33 @@ class Product
                 "reviewCount" => $this->escapeQuote((string)$this->getReviewsCount())
             ];
 
-            if ($this->getConfig('structureddata/product/include_reviews')) {
-                $data['review'] = [];
-                foreach ($this->getReviewCollection() as $review) {
-                    $votes = $this->getVoteCollection($review->getId());
+            $data['review'] = [];
+            foreach ($this->getReviewCollection() as $review) {
+                $votes = $this->getVoteCollection($review->getId());
 
-                    $averageRating = 0;
-                    $ratingCount = count($votes);
-                    foreach ($votes as $vote) {
-                        $averageRating = $averageRating + $vote->getValue();
-                    }
-                    $finalRating = $averageRating / $ratingCount;
-
-                    $data['review'][] = [
-                        "@type" => "Review",
-                        "author" => [
-                        "@type" => "Person",
-                        "name" => $this->escapeQuote((string)$review->getData('nickname'))
-                        ],
-                        "datePublished" => $this->escapeQuote($review->getCreatedAt()),
-                        "name" => $this->escapeQuote((string)$review->getTitle()),
-                        "reviewBody" => $this->escapeQuote((string)$review->getDetail()),
-                        "reviewRating" => [
-                            "@type" => "Rating",
-                            "ratingValue" => $finalRating,
-                            "bestRating" => "5",
-                            "worstRating" => "1"
-                        ]
-                    ];
+                $averageRating = 0;
+                $ratingCount = count($votes);
+                foreach ($votes as $vote) {
+                    $averageRating = $averageRating + $vote->getValue();
                 }
+                $finalRating = $averageRating / $ratingCount;
+
+                $data['review'][] = [
+                    "@type" => "Review",
+                    "author" => [
+                    "@type" => "Person",
+                    "name" => $this->escapeQuote((string)$review->getData('nickname'))
+                    ],
+                    "datePublished" => $this->escapeQuote($review->getCreatedAt()),
+                    "name" => $this->escapeQuote((string)$review->getTitle()),
+                    "reviewBody" => $this->escapeQuote((string)$review->getDetail()),
+                    "reviewRating" => [
+                        "@type" => "Rating",
+                        "ratingValue" => $finalRating,
+                        "bestRating" => "5",
+                        "worstRating" => "1"
+                    ]
+                ];
             }
         }
 
