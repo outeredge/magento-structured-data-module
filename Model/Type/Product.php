@@ -348,7 +348,7 @@ class Product
 
         if ($product->getTypeInstance() instanceof \Magento\Catalog\Model\Product\Type\Simple) {
             $data['itemOffered'] = [
-                "@type" => "IndividualProduct",
+                "@type" => "Product",
                 "name" => $this->escapeQuote((string)strip_tags($product->getName())),
                 "sku" => $this->escapeQuote((string)strip_tags($product->getSku())),
             ];
