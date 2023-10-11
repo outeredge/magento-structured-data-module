@@ -346,6 +346,14 @@ class Product
             $data['priceValidUntil'] = $this->escapeQuote($priceToDate->format('Y-m-d'));
         }
 
+        if ($product->getTypeInstance() instanceof \Magento\Catalog\Model\Product\Type\Simple) {
+            $data['itemOffered'] = [
+                "@type" => "IndividualProduct",
+                "name" => $this->escapeQuote((string)strip_tags($product->getName())),
+                "sku" => $this->escapeQuote((string)strip_tags($product->getSku())),
+            ];
+        }
+
         return $data;
     }
 
