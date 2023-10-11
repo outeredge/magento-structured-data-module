@@ -309,7 +309,7 @@ class Product
         return $data;
     }
 
-    protected function getOffer(ProductModel $product) {
+    public function getOffer(ProductModel $product) {
         $availability      = 'OutOfStock';
         $quantityAvailable = $this->_stockState->getStockQty($product->getId());
 	$backorderStatus   = null;
