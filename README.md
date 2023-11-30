@@ -165,6 +165,15 @@ Our structured data module provides for product schema to the built in Magento G
 }
 ```
 
+
+## Uninstalling the module
+
+####  Remove via Composer
+
+```
+composer remove outeredge/magento-structured-data-module
+```
+
 ### References
 
 #### Google docs for structured data format (using JSON-LD format)
