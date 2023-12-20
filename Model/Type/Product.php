@@ -16,7 +16,6 @@ use Magento\Review\Model\Review\SummaryFactory;
 use Magento\Review\Model\ResourceModel\Rating\Option\Vote\CollectionFactory as RatingOptionVoteFactory;
 use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
 use Magento\Store\Model\ScopeInterface;
-
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
 
@@ -184,7 +183,9 @@ class Product
             ];
         }
 
-        if ($this->getConfig('structureddata/product/include_reviews') && $this->getReviewsCount()) {
+        if ($this->_moduleManager->isEnabled('Magento_Review') &&
+            $this->getConfig('structureddata/product/include_reviews') &&
+            $this->getReviewsCount()) {
             $data['aggregateRating'] = [
                 "@type" => "AggregateRating",
                 "bestRating" => "100",
