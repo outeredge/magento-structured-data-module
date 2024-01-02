@@ -203,9 +203,8 @@ class Product
                 foreach ($votes as $vote) {
                     $averageRating = $averageRating + $vote->getValue();
                 }
-                $finalRating = $averageRating / $ratingCount;
 
-                $data['review'][] = [
+                $reviewData = [
                     "@type" => "Review",
                     "author" => [
                     "@type" => "Person",
@@ -213,14 +212,21 @@ class Product
                     ],
                     "datePublished" => $this->escapeQuote($review->getCreatedAt()),
                     "name" => $this->escapeQuote((string)$review->getTitle()),
-                    "reviewBody" => $this->escapeQuote((string)$review->getDetail()),
-                    "reviewRating" => [
+                    "reviewBody" => $this->escapeQuote((string)$review->getDetail())
+                ];
+
+                if ($ratingCount > 0) {
+                    $finalRating = $averageRating / $ratingCount;
+
+                    $reviewData["reviewRating"] = [
                         "@type" => "Rating",
                         "ratingValue" => $finalRating,
                         "bestRating" => "5",
                         "worstRating" => "1"
-                    ]
-                ];
+                    ];
+                }
+
+                $data['review'][] = $reviewData;
             }
         }
 
