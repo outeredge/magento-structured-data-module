@@ -2,6 +2,7 @@
 
 namespace OuterEdge\StructuredData\Model\Type;
 
+use Magento\Catalog\Helper\Data as TaxHelper;
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ProductFactory;
@@ -60,6 +61,8 @@ class Product
      * @var ReviewCollectionFactory
      */
     protected $_reviewCollectionFactory;
+
+    protected $taxHelper;
 
     /**
      * @var ModuleManager
@@ -144,7 +147,8 @@ class Product
         ReviewCollectionFactory $reviewCollectionFactory,
         ModuleManager $moduleManager,
         ImageHelper $imageHelper,
-        PricingHelper $pricingHelper
+        PricingHelper $pricingHelper,
+        TaxHelper $taxHelper
 	)
 	{
         $this->_escaper = $escaper;
@@ -158,6 +162,7 @@ class Product
         $this->_moduleManager = $moduleManager;
         $this->imageHelper = $imageHelper;
         $this->pricingHelper = $pricingHelper;
+        $this->taxHelper = $taxHelper;
 	}
 
     public function getSchemaData(ProductModel $product)
@@ -285,15 +290,15 @@ class Product
 
             if ($product->getTypeId() == 'bundle') {
                 $rangeBundle = $this->getBundlePriceRange($product->getId());
-                $this->minPrice = $rangeBundle['minPrice'];
-                $this->maxPrice = $rangeBundle['maxPrice'];
-            } else {
-                $this->minPrice = $this->pricingHelper->currency($this->minPrice, false, false);
-                $this->maxPrice = $this->pricingHelper->currency($this->maxPrice, false, false);
+                $this->minPrice = $rangeBundle['minPrice']->getValue();
+                $this->maxPrice = $rangeBundle['maxPrice']->getValue();
             }
 
-            $data['offers']['lowPrice'] = $this->escapeQuote((string)$this->minPrice);
-            $data['offers']['highPrice'] = $this->escapeQuote((string)$this->maxPrice);
+            $minPricewithTax = $this->taxHelper->getTaxPrice($product, $this->minPrice, $this->checkTaxIncluded());
+            $maxPricewithTax = $this->taxHelper->getTaxPrice($product, $this->maxPrice, $this->checkTaxIncluded());
+
+            $data['offers']['lowPrice'] = $this->escapeQuote((string)$this->pricingHelper->currency($minPricewithTax, false, false));
+            $data['offers']['highPrice'] = $this->escapeQuote((string)$this->pricingHelper->currency($maxPricewithTax, false, false));
         }
 
         if ($this->getConfig('structureddata/product/include_weight')) {
@@ -333,18 +338,20 @@ class Product
             }
         }
 
+        $pricewithTax = $this->taxHelper->getTaxPrice($product, $product->getFinalPrice(), $this->checkTaxIncluded());
+
         $data = [
             "@type" => "Offer",
             "url" => $this->escapeUrl(strtok($product->getUrlInStore(), '?')),
-            "price" => $this->escapeQuote((string)$this->pricingHelper->currency($product->getFinalPrice(), false, false)),
+            "price" => $this->escapeQuote((string)$this->pricingHelper->currency($pricewithTax, false, false)),
             "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
             "availability" => "http://schema.org/$availability",
             "itemCondition" => "http://schema.org/NewCondition",
             "priceSpecification" => [
                 "@type" => "UnitPriceSpecification",
-                "price" => $this->escapeQuote((string)$this->pricingHelper->currency($product->getFinalPrice(), false, false)),
+                "price" => $this->escapeQuote((string)$this->pricingHelper->currency($pricewithTax, false, false)),
                 "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
-                "valueAddedTaxIncluded" => $this->escapeQuote($this->checkTaxIncluded())
+                "valueAddedTaxIncluded" => $this->escapeQuote($this->checkTaxIncluded() ? 'true' : 'false')
             ]
         ];
 
@@ -551,10 +558,10 @@ class Product
     public function checkTaxIncluded()
     {
         $taxDisplayType = $this->getConfig('tax/display/type');
-        if ($taxDisplayType == 2) {
-            return 'true';
+        if ($taxDisplayType == 2 || $taxDisplayType == 3) {
+            return true;
         } else {
-            return 'false';
+            return false;
         }
     }
 
