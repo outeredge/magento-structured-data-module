@@ -532,7 +532,7 @@ class Product
             return [];
         }
 
-        return $this->_product->getTypeInstance()->getUsedProducts($this->_product);
+        return $this->_product->getTypeInstance()->getSalableUsedProducts($this->_product);
     }
 
     public function getBrandFieldFromConfig()
