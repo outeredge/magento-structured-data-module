@@ -19,6 +19,9 @@ use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollect
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
+use Magento\CatalogInventory\Api\StockConfigurationInterface;
+use Magento\CatalogInventory\Model\Spi\StockRegistryProviderInterface;
+use Magento\CatalogInventory\Model\Spi\StockStateProviderInterface;
 
 class Product
 {
@@ -36,11 +39,6 @@ class Product
      * @var ProductFactory
      */
     protected $_productFactory;
-
-    /**
-     * @var StockStateInterface
-     */
-    protected $_stockState;
 
     /**
      * @var StoreManagerInterface
@@ -141,21 +139,22 @@ class Product
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
         ProductFactory $productFactory,
-        StockStateInterface $stockState,
         SummaryFactory $reviewSummaryFactory,
         RatingOptionVoteFactory $ratingOptionVoteFactory,
         ReviewCollectionFactory $reviewCollectionFactory,
         ModuleManager $moduleManager,
         ImageHelper $imageHelper,
         PricingHelper $pricingHelper,
-        TaxHelper $taxHelper
+        TaxHelper $taxHelper,
+        protected StockStateProviderInterface $stockStateProvider,
+        protected StockRegistryProviderInterface $stockRegistryProvider,
+        protected StockConfigurationInterface $stockConfiguration
 	)
 	{
         $this->_escaper = $escaper;
         $this->_scopeConfig = $scopeConfig;
         $this->_storeManager = $storeManager;
         $this->_productFactory = $productFactory;
-        $this->_stockState = $stockState;
         $this->_reviewSummaryFactory = $reviewSummaryFactory;
         $this->_ratingOptionVoteFactory = $ratingOptionVoteFactory;
         $this->_reviewCollectionFactory = $reviewCollectionFactory;
@@ -321,19 +320,20 @@ class Product
         return $data;
     }
 
-    public function getOffer(ProductModel $product) {
+    public function getOffer(ProductModel $product)
+    {
         $availability      = 'OutOfStock';
-        $quantityAvailable = $this->_stockState->getStockQty($product->getId());
-	$backorderStatus   = null;
 
-	if ($stockItem = $product->getExtensionAttributes()->getStockItem()) {
-            $backorderStatus = $stockItem->getBackorders();
-	}
+        $scopeId = $this->stockConfiguration->getDefaultScopeId();
+        $stockItem = $this->stockRegistryProvider->getStockItem($product->getId(), $scopeId);
+        $quantityAvailable = $this->stockStateProvider->getStockQty($stockItem);
+
+        $backorderStatus = $stockItem->getBackorders();
 
         if ($product->isAvailable()) {
-            if ($quantityAvailable > 0 || $backorderStatus == Stock::BACKORDERS_YES_NONOTIFY) {
-                $availability = 'InStock';
-            } elseif ($backorderStatus == Stock::BACKORDERS_YES_NOTIFY) {
+            $availability = 'InStock';
+
+            if ($quantityAvailable <= 0 && $backorderStatus == Stock::BACKORDERS_YES_NOTIFY) {
                 $availability = 'BackOrder';
             }
         }
