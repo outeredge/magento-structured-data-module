@@ -253,17 +253,47 @@ class Product
             $data['gtin'] = $this->escapeQuote((string)strip_tags($this->getGtin()));
         }
 
+        $this->weight = $this->_product->getWeight();
+        $data['offers'] = $this->getOffer($this->_product);
+        $data = $this->includeWeight($data);
+        
+        return $data;
+    }
+
+    protected function includeWeight($data)
+    {
+        if ($this->getConfig('structureddata/product/include_weight')) {
+            $data['weight'] = [
+                '@type' => "QuantitativeValue",
+                'unitText' => $this->escapeQuote($this->getConfig('general/locale/weight_unit'))
+            ];
+
+            if ($this->weight !== null) {
+                $data['weight']['value'] = $this->weight;
+            }
+            if ($this->minWeight !== null) {
+                $data['weight']['minValue'] = $this->minWeight;
+            }
+            if ($this->maxWeight !== null) {
+                $data['weight']['maxValue'] = $this->maxWeight;
+            }
+            return $data;
+        }
+    }
+
+    public function getChildOffers($product)
+    {
+        $this->_product = $product;
+        
         $children = $this->getChildren();
-        if (empty($children)) {
-            $this->weight = $this->_product->getWeight();
-            $data['offers'] = $this->getOffer($this->_product);
-        } else {
-            $offers  = [];
+        if ($children) {
+
+            $offers = $data = [];
             $lastKey = key(array_slice($children, -1, 1, true));
 
-            foreach ($children as $key => $_product) {
-                $productFinalPrice = $_product->getFinalPrice();
-                $productWeight     = $_product->getWeight();
+            foreach ($children as $key => $_childProduct) {
+                $productFinalPrice = $_childProduct->getFinalPrice();
+                $productWeight     = $_childProduct->getWeight();
 
                 $this->minPrice  = $productFinalPrice < $this->minPrice || $this->minPrice === null ? $productFinalPrice : $this->minPrice;
                 $this->maxPrice  = $productFinalPrice > $this->maxPrice || $this->maxPrice === null ? $productFinalPrice : $this->maxPrice;
@@ -271,7 +301,12 @@ class Product
                 $this->minWeight = $productWeight < $this->minWeight || $this->minWeight === null ? $productWeight : $this->minWeight;
                 $this->maxWeight = $productWeight > $this->maxWeight || $this->maxWeight === null ? $productWeight : $this->maxWeight;
 
-                $offers[] = $this->getOffer($_product);
+                $offers[] = $this->getOffer($_childProduct);
+
+                if ($_childProduct->getVisibility() == Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
+                    $offers['url'] = $this->escapeUrl(strtok($this->_product ->getUrlInStore(), '?')),
+                }                
+
                 $key == $lastKey ? '' : ',';
             }
 
@@ -299,23 +334,8 @@ class Product
 
             $data['offers']['lowPrice'] = $this->escapeQuote((string)$this->pricingHelper->currency($minPricewithTax, false, false));
             $data['offers']['highPrice'] = $this->escapeQuote((string)$this->pricingHelper->currency($maxPricewithTax, false, false));
-        }
 
-        if ($this->getConfig('structureddata/product/include_weight')) {
-            $data['weight'] = [
-                '@type' => "QuantitativeValue",
-                'unitText' => $this->escapeQuote($this->getConfig('general/locale/weight_unit'))
-            ];
-
-            if ($this->weight !== null) {
-                $data['weight']['value'] = $this->weight;
-            }
-            if ($this->minWeight !== null) {
-                $data['weight']['minValue'] = $this->minWeight;
-            }
-            if ($this->maxWeight !== null) {
-                $data['weight']['maxValue'] = $this->maxWeight;
-            }
+            $data = $this->includeWeight($data);
         }
 
         return $data;
