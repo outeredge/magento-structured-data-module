@@ -2,7 +2,6 @@
 
 namespace OuterEdge\StructuredData\Model\Api;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Phrase;
 use Magento\Framework\Webapi\Exception;
 use OuterEdge\StructuredData\Api\OffersRepositoryInterface;
@@ -20,7 +19,7 @@ class OffersRepository implements OffersRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function get($sku)
+    public function offers($sku)
     {            
         if (empty($sku)) {
             throw new Exception(new Phrase('Missing or empty sku value'));
@@ -31,7 +30,7 @@ class OffersRepository implements OffersRepositoryInterface
             throw new Exception(new Phrase('Cant load product'));
         }
 
-        $data = $this->structuredDataProduct->getChildOffers($product)
+        $data = $this->structuredDataProduct->getChildOffers($product);
 
         return [['success' => true, 'message' => $data]];
     }

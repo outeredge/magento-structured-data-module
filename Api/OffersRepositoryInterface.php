@@ -8,5 +8,5 @@ interface OffersRepositoryInterface
      * @param string $sku
      * @return array
      */
-    public function get($sku);
+    public function offers($sku);
 }
