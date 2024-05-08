@@ -6,4 +6,7 @@
     <type name="Magento\Review\Block\Product\ReviewRenderer">
         <plugin name="OuterEdge_StructuredData::stripReviewSummary" type="OuterEdge\StructuredData\Plugin\StripReviewSummary"/>
     </type>
+
+    <!--API-->
+    <preference for="OuterEdge\StructuredData\Api\OffersRepositoryInterface" type="OuterEdge\StructuredData\Model\Api\OffersRepository"/>
 </config>
