@@ -304,10 +304,11 @@ class Product
                 $this->maxWeight = $productWeight > $this->maxWeight || $this->maxWeight === null ? $productWeight : $this->maxWeight;
 
                 $offers[] = $this->getOffer($_childProduct);
+                $offers[$key]['sku'] = $_childProduct->getSku();
+
                 if ($_childProduct->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
                     $offers[$key]['url'] = $this->_product->getProductUrl();
                 }
-
                 $key == $lastKey ? '' : ',';
             }
 
