@@ -50,10 +50,28 @@
                     </depends>
                 </field>
                 <field id="product_brand_field" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Product Brand/Manufacturer field</label>
+                    <label>Brand/Manufacturer attribute code</label>
                 </field>
                 <field id="product_gtin_field" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Product Gtin field</label>
+                    <label>Gtin attribute code</label>
+                </field>
+                <field id="field_mpn" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>MPN attribute code</label>
+                </field>
+                <field id="field_isbn" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>ISBN attribute code</label>
+                </field>
+                <field id="field_color" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Color attribute code</label>
+                </field>
+                <field id="field_size" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Size attribute code</label>
+                </field>
+                <field id="field_material" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Material attribute code</label>
+                </field>
+                <field id="field_keywords" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Keywords attribute code</label>
                 </field>
             </group>
             <group id="cms" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
