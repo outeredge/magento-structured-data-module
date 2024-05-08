@@ -19,6 +19,7 @@ use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollect
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
+use Magento\Catalog\Model\Product\Visibility;
 
 class Product
 {
@@ -256,7 +257,7 @@ class Product
         $this->weight = $this->_product->getWeight();
         $data['offers'] = $this->getOffer($this->_product);
         $data = $this->includeWeight($data);
-        
+
         return $data;
     }
 
@@ -277,14 +278,15 @@ class Product
             if ($this->maxWeight !== null) {
                 $data['weight']['maxValue'] = $this->maxWeight;
             }
-            return $data;
         }
+
+        return $data;
     }
 
     public function getChildOffers($product)
     {
         $this->_product = $product;
-        
+
         $children = $this->getChildren();
         if ($children) {
 
@@ -302,10 +304,9 @@ class Product
                 $this->maxWeight = $productWeight > $this->maxWeight || $this->maxWeight === null ? $productWeight : $this->maxWeight;
 
                 $offers[] = $this->getOffer($_childProduct);
-
-                if ($_childProduct->getVisibility() == Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
-                    $offers['url'] = $this->escapeUrl(strtok($this->_product ->getUrlInStore(), '?')),
-                }                
+                if ($_childProduct->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
+                    $offers[$key]['url'] = $this->_product->getProductUrl();
+                }
 
                 $key == $lastKey ? '' : ',';
             }
@@ -324,17 +325,16 @@ class Product
             }
 
             if ($product->getTypeId() == 'bundle') {
-                $rangeBundle = $this->getBundlePriceRange($product->getId());
+                $rangeBundle = $this->getBundlePriceRange($this->_product->getId());
                 $this->minPrice = $rangeBundle['minPrice']->getValue();
                 $this->maxPrice = $rangeBundle['maxPrice']->getValue();
             }
 
-            $minPricewithTax = $this->taxHelper->getTaxPrice($product, $this->minPrice, $this->checkTaxIncluded());
-            $maxPricewithTax = $this->taxHelper->getTaxPrice($product, $this->maxPrice, $this->checkTaxIncluded());
+            $minPricewithTax = $this->taxHelper->getTaxPrice($this->_product, $this->minPrice, $this->checkTaxIncluded());
+            $maxPricewithTax = $this->taxHelper->getTaxPrice($this->_product, $this->maxPrice, $this->checkTaxIncluded());
 
             $data['offers']['lowPrice'] = $this->escapeQuote((string)$this->pricingHelper->currency($minPricewithTax, false, false));
             $data['offers']['highPrice'] = $this->escapeQuote((string)$this->pricingHelper->currency($maxPricewithTax, false, false));
-
             $data = $this->includeWeight($data);
         }
 

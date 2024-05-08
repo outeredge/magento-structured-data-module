@@ -20,18 +20,11 @@ class OffersRepository implements OffersRepositoryInterface
      * @inheritdoc
      */
     public function offers($sku)
-    {            
+    {
         if (empty($sku)) {
             throw new Exception(new Phrase('Missing or empty sku value'));
         }
 
-        $product = $this->productRepository->get($sku);
-        if (empty($product)) {
-            throw new Exception(new Phrase('Cant load product'));
-        }
-
-        $data = $this->structuredDataProduct->getChildOffers($product);
-
-        return [['success' => true, 'message' => $data]];
+        return [['success' => true, 'message' => $this->structuredDataProduct->getChildOffers($this->productRepository->get($sku))]];
     }
 }
