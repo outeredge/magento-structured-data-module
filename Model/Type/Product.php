@@ -420,8 +420,8 @@ class Product
     public function getGtin()
     {
         if ($field = $this->getConfig('structureddata/product/product_gtin_field')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
@@ -430,8 +430,8 @@ class Product
     public function getMpn()
     {
         if ($field = $this->getConfig('structureddata/product/field_mpn')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
@@ -440,8 +440,8 @@ class Product
     public function getIsbn()
     {
         if ($field = $this->getConfig('structureddata/product/field_isbn')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
@@ -450,8 +450,8 @@ class Product
     public function getColor()
     {
         if ($field = $this->getConfig('structureddata/product/field_color')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
@@ -460,8 +460,8 @@ class Product
     public function getSize()
     {
         if ($field = $this->getConfig('structureddata/product/field_size')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
@@ -470,8 +470,8 @@ class Product
     public function getMaterial()
     {
         if ($field = $this->getConfig('structureddata/product/field_material')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
@@ -480,8 +480,8 @@ class Product
     public function getKeywords()
     {
         if ($field = $this->getConfig('structureddata/product/field_keywords')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
