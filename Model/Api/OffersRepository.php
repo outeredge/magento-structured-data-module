@@ -25,6 +25,6 @@ class OffersRepository implements OffersRepositoryInterface
             throw new Exception(new Phrase('Missing or empty sku value'));
         }
 
-        return [['success' => true, 'message' => $this->structuredDataProduct->getChildOffers($this->productRepository->get($sku))]];
+        return [$this->structuredDataProduct->getChildOffers($this->productRepository->get($sku))];
     }
 }
