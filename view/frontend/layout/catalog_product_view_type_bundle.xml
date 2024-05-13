@@ -7,7 +7,7 @@
             </arguments>
         </referenceBlock>
         <referenceBlock name="structured.data.jsonld">
-            <block ifconfig="structureddata/cms/enable" class="Magento\Catalog\Block\Product\View" name="product.offers.schema" template="OuterEdge_StructuredData::jsonld/product.phtml"/>
+            <block ifconfig="structureddata/product/enable" class="Magento\Catalog\Block\Product\View" name="product.offers.schema" template="OuterEdge_StructuredData::jsonld/product.phtml"/>
         </referenceBlock>
     </body>
 </page>
