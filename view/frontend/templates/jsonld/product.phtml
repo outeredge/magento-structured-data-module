@@ -7,7 +7,7 @@
 <script>
     // Function to fetch offers JSON
     function fetchOffersSchema(SKU) {
-        fetch('rest/V1/structure_data/offers/' + SKU)
+        fetch(window.BASE_URL + 'rest/V1/structure_data/offers/' + SKU)
         .then(response => response.json())
         .then((data) => {
             if (!data.length && !data[0].offers) return;
