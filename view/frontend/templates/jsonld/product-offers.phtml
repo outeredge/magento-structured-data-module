@@ -4,7 +4,7 @@
         $productSku = $product->getSku();
     }
 ?>
-<script>
+<script async>
     // Function to fetch offers JSON
     function fetchOffersSchema(SKU) {
         fetch(window.BASE_URL + 'rest/V1/structure_data/offers/' + SKU)
