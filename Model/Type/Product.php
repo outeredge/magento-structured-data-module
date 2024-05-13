@@ -254,9 +254,13 @@ class Product
             $data['gtin'] = $this->escapeQuote((string)strip_tags($this->getGtin()));
         }
 
-        $this->weight = $this->_product->getWeight();
-        $data['offers'] = $this->getOffer($this->_product);
-        $data = $this->includeWeight($data);
+        if ($this->_product->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
+            || !$this->getConfig('structureddata/product/include_children')
+        ) {
+            $this->weight = $this->_product->getWeight();
+            $data = $this->includeWeight($data);
+            $data['offers'] = $this->getOffer($this->_product);
+        }
 
         return $data;
     }
@@ -289,7 +293,6 @@ class Product
 
         $children = $this->getChildren();
         if ($children) {
-
             $offers = $data = [];
             $lastKey = key(array_slice($children, -1, 1, true));
 
@@ -523,7 +526,7 @@ class Product
         return false;
     }
 
-    public function getChildren()
+    protected function getChildren()
     {
         if (!$this->getConfig('structureddata/product/include_children')) {
             return [];
