@@ -1,6 +1,8 @@
 <?php $mainEntity = $block->getChildHtml('main.entity'); ?>
 <?php $additionalSchema = $block->getChildHtml('additional.schema'); ?>
-<script type="application/ld+json">
+<?php $productOffersSchema = $block->getChildHtml('product.offers.schema'); ?>
+
+<script type="application/ld+json" id="structured-data">
 {
     "@context": "https://schema.org/",
     "@type": "<?= $block->escapeQuote($block->getPageType()) ?>",
@@ -22,3 +24,4 @@
     <?php endif; ?>
 }
 </script>
+<?= /* @noEscape */ $productOffersSchema; ?>
