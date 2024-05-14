@@ -449,6 +449,10 @@ class Product
             if (!empty($this->_product->getData($field))) {
                 return $this->getAttributeText($field);
             }
+        } elseif ($this->_product->getColor()) { // removing these lines will require a major version bump
+            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
+       	} elseif ($this->_product->getColour()) {
+            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('colour'));
         }
 	    
         return false;
