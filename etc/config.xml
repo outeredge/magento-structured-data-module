@@ -4,7 +4,7 @@
         <structureddata>
             <product>
                 <include_reviews>0</include_reviews>
-                <product_gtin_field>Gtin</product_gtin_field>
+                <product_gtin_field>gtin</product_gtin_field>
                 <field_mpn>mpn</field_mpn>
                 <field_material>material</field_material>
             </product>
