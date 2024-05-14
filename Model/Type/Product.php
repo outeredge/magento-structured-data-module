@@ -236,22 +236,32 @@ class Product
             }
         }
 
-        if ($this->_product->getMpn()) {
-            $data['mpn'] = $this->escapeQuote((string)strip_tags($this->_product->getMpn()));
-        }
-
-        if ($this->_product->getMaterial()) {
-            $data['material'] = $this->escapeQuote((string)$this->getAttributeText('material'));
-        }
-
-        if ($this->_product->getColor()) {
-            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
-        } elseif ($this->_product->getColour()) {
-            $data['color'] = $this->escapeQuote((string)$this->_product->getColour());
-        }
-
         if ($this->getGtin()) {
             $data['gtin'] = $this->escapeQuote((string)strip_tags($this->getGtin()));
+        }
+
+        if ($this->getMpn()) {
+            $data['mpn'] = $this->escapeQuote((string)strip_tags($this->getMpn()));
+        }
+
+        if ($this->getIsbn()) {
+            $data['isbn'] = $this->escapeQuote((string)strip_tags($this->getIsbn()));
+        }
+
+        if ($this->getSize()) {
+            $data['size'] = $this->escapeQuote((string)strip_tags($this->getSize()));
+        }
+
+        if ($this->getMaterial()) {
+            $data['material'] = $this->escapeQuote((string)strip_tags($this->getMaterial()));
+        }
+
+        if ($this->getColor()) {
+            $data['color'] = $this->escapeQuote((string)strip_tags($this->getColor()));
+        }
+
+        if ($this->getKeywords()) {
+            $data['keywords'] = $this->escapeQuote((string)strip_tags($this->getKeywords()));
         }
 
         if ($this->_product->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
@@ -388,6 +398,22 @@ class Product
         return $data;
     }
 
+    public function getDescription()
+    {
+        if ($this->getConfig('structureddata/product/use_short_description')
+            && $this->_product->getShortDescription()) {
+            $description = nl2br($this->_product->getShortDescription());
+        } else {
+            $description = nl2br((string) $this->_product->getDescription());
+        }
+
+        if ($description) {
+            $description = preg_replace('/([\r\n\t])/', ' ', $description);
+        }
+
+        return substr($description, 0, 5000);
+    }
+
     public function getBrand()
     {
         if ($this->brand === null) {
@@ -411,27 +437,76 @@ class Product
         return $this->brand;
     }
 
-    public function getDescription()
-    {
-        if ($this->getConfig('structureddata/product/use_short_description')
-            && $this->_product->getShortDescription()) {
-            $description = nl2br($this->_product->getShortDescription());
-        } else {
-            $description = nl2br((string) $this->_product->getDescription());
-        }
-
-        if ($description) {
-            $description = preg_replace('/([\r\n\t])/', ' ', $description);
-        }
-
-        return substr($description, 0, 5000);
-    }
-
     public function getGtin()
     {
         if ($field = $this->getConfig('structureddata/product/product_gtin_field')) {
-            if ($value = $this->_product->getData($field)) {
-                return $value;
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
+            }
+        }
+        return false;
+    }
+
+    public function getMpn()
+    {
+        if ($field = $this->getConfig('structureddata/product/field_mpn')) {
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
+            }
+        }
+        return false;
+    }
+
+    public function getIsbn()
+    {
+        if ($field = $this->getConfig('structureddata/product/field_isbn')) {
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
+            }
+        }
+        return false;
+    }
+
+    public function getColor()
+    {
+        if ($field = $this->getConfig('structureddata/product/field_color')) {
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
+            }
+        } elseif ($this->_product->getColor()) { // removing these lines will require a major version bump
+            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
+       	} elseif ($this->_product->getColour()) {
+            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('colour'));
+        }
+	    
+        return false;
+    }
+
+    public function getSize()
+    {
+        if ($field = $this->getConfig('structureddata/product/field_size')) {
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
+            }
+        }
+        return false;
+    }
+
+    public function getMaterial()
+    {
+        if ($field = $this->getConfig('structureddata/product/field_material')) {
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
+            }
+        }
+        return false;
+    }
+
+    public function getKeywords()
+    {
+        if ($field = $this->getConfig('structureddata/product/field_keywords')) {
+            if (!empty($this->_product->getData($field))) {
+                return $this->getAttributeText($field);
             }
         }
         return false;
