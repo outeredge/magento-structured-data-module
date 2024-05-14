@@ -257,10 +257,6 @@ class Product
 
         if ($this->getColor()) {
             $data['color'] = $this->escapeQuote((string)strip_tags($this->getColor()));
-        } elseif ($this->_product->getColor()) {
-            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
-        } elseif ($this->_product->getColour()) {
-            $data['color'] = $this->escapeQuote((string)$this->_product->getColour());
         }
 
         if ($this->getKeywords()) {
@@ -454,6 +450,7 @@ class Product
                 return $this->getAttributeText($field);
             }
         }
+	    
         return false;
     }
 
