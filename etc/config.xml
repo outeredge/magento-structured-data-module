@@ -7,6 +7,7 @@
                 <product_gtin_field>gtin</product_gtin_field>
                 <field_mpn>mpn</field_mpn>
                 <field_material>material</field_material>
+                <field_color>color</field_color>
             </product>
             <contact>
                 <type>Organization</type>
