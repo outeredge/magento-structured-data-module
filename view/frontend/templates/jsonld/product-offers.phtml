@@ -1,30 +1,31 @@
 <?php
     $product = $block->getProduct();
-    if ($product) {
-        $productSku = $product->getSku();
-    }
+    if ($product && $product->getSku()):
 ?>
 <script async>
-    // Function to fetch offers JSON
     function fetchOffersSchema(SKU) {
         fetch(window.BASE_URL + 'rest/V1/structure_data/offers/' + SKU)
         .then(response => response.json())
         .then((data) => {
             if (!data.length && !data[0].offers) return;
-            injectOffersSchema(data[0]);
+
+            const structuredData = document.getElementById('structured-data');
+            if (!structuredData) return;
+
+            const structuredDataJson = JSON.parse(structuredData.textContent);
+            structuredDataJson.mainEntity.offers = data[0].offers;
+            structuredData.textContent = JSON.stringify(structuredDataJson);
         });
     }
 
-    // Function to inject offers schema into structured data
-    function injectOffersSchema(offersData) {
-        const structuredData = document.getElementById('structured-data');
-        const structuredDataJson = JSON.parse(structuredData.textContent);
-        structuredDataJson.mainEntity.offers = offersData.offers;
-        structuredData.textContent = JSON.stringify(structuredDataJson);
+    function waitForBaseUrl(callback) {
+        if (typeof window.BASE_URL !== 'undefined') {
+            callback();
+        } else {
+            setTimeout(() => waitForBaseUrl(callback), 100);
+        }
     }
 
-    // Call fetchOffersSchema function with the product ID
-    var productSKU = "<?= $productSku ?>";
-    if (productSKU) fetchOffersSchema(productSKU);
+    waitForBaseUrl(() => fetchOffersSchema('<?= $product->getSku() ?>'));
 </script>
-
+<?php endif; ?>
