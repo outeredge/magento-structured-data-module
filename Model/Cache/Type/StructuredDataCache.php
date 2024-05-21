@@ -1,6 +1,6 @@
 <?php
 
-namespace OuterEdge\StructuredData\Model\Cache;
+namespace OuterEdge\StructuredData\Model\Cache\Type;
 
 use Magento\Framework\Cache\Frontend\Decorator\TagScope;
 use Magento\Framework\App\Cache\Type\FrontendPool;
