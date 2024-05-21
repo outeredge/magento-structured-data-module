@@ -5,11 +5,11 @@ namespace OuterEdge\StructuredData\Model\Cache;
 use Magento\Framework\Cache\Frontend\Decorator\TagScope;
 use Magento\Framework\App\Cache\Type\FrontendPool;
 
-class Type extends TagScope
+class StructuredDataCache extends TagScope
 {
-    const TYPE_IDENTIFIER = 'structureddatacache_';
+    const TYPE_IDENTIFIER = 'outeredge_structureddata_cache_';
 
-    const CACHE_TAG = 'STRUCTUREDDATA';
+    const CACHE_TAG = 'OUTEREDGE_STRUCTUREDDATA_CACHE';
 
     public function __construct(
         FrontendPool $cacheFrontendPool
