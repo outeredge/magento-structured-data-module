@@ -32,10 +32,10 @@ class OffersRepository implements OffersRepositoryInterface
 
         $result = $this->getCache($sku);
         if (!$result) {
-            $result = [$this->structuredDataProduct->getChildOffers($this->productRepository->get($sku))];
+            $result = $this->structuredDataProduct->getChildOffers($this->productRepository->get($sku));
             $this->saveCache($sku, $result);
         }
-        return $result;
+        return [$result];
     }
 
     protected function saveCache($sku, $data)
