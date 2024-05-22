@@ -40,7 +40,7 @@ class OffersRepository implements OffersRepositoryInterface
 
     protected function saveCache($sku, $data)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER . str_replace(' ', '_', $sku);
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. str_replace(' ', '_', $sku);
         $this->cache->save(
             $this->serializer->serialize($data),
             $cacheId,
@@ -51,7 +51,7 @@ class OffersRepository implements OffersRepositoryInterface
 
     protected function getCache($sku)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER . str_replace(' ', '_', $sku);
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. str_replace(' ', '_', $sku);
 
         if ($result = $this->cache->load($cacheId)) {
             return $this->serializer->unserialize($result);

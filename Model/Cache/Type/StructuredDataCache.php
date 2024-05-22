@@ -7,7 +7,7 @@ use Magento\Framework\App\Cache\Type\FrontendPool;
 
 class StructuredDataCache extends TagScope
 {
-    const TYPE_IDENTIFIER = 'outeredge_structureddata_cache_';
+    const TYPE_IDENTIFIER = 'outeredge_structureddata_cache';
 
     const CACHE_TAG = 'OUTEREDGE_STRUCTUREDDATA_CACHE';
 
