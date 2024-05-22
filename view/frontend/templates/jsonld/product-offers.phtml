@@ -1,10 +1,10 @@
 <?php
     $product = $block->getProduct();
-    if ($product && $product->getSku()):
+    if ($product && $product->getEntityId()):
 ?>
 <script async>
-    function fetchOffersSchema(SKU) {
-        fetch(window.BASE_URL + 'rest/V1/structure_data/offers/' + SKU)
+    function fetchOffersSchema(ID) {
+        fetch(window.BASE_URL + 'rest/V1/structure_data/offers/' + ID)
         .then(response => response.json())
         .then((data) => {
             if (!data.length && !data[0].offers) return;
@@ -26,6 +26,6 @@
         }
     }
 
-    waitForBaseUrl(() => fetchOffersSchema('<?= $product->getSku() ?>'));
+    waitForBaseUrl(() => fetchOffersSchema('<?= $product->getEntityId() ?>'));
 </script>
 <?php endif; ?>

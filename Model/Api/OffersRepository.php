@@ -16,7 +16,7 @@ class OffersRepository implements OffersRepositoryInterface
     public function __construct(
         protected Product $structuredDataProduct,
         protected ProductRepositoryInterface $productRepository,
-        protected CacheInterface $cache,
+        protected StructuredDataCache $cache,
         protected SerializerInterface $serializer
     ) {
     }
@@ -24,34 +24,33 @@ class OffersRepository implements OffersRepositoryInterface
     /**
      * @inheritdoc
      */
-    public function offers($sku)
+    public function offers($productId)
     {
-        if (empty($sku)) {
-            throw new Exception(new Phrase('Missing or empty sku value'));
+        if (empty($productId)) {
+            throw new Exception(new Phrase('Missing or empty product id'));
         }
 
-        $result = $this->getCache($sku);
+        $result = $this->getCache($productId);
         if (!$result) {
-            $result = $this->structuredDataProduct->getChildOffers($this->productRepository->get($sku));
-            $this->saveCache($sku, $result);
+            $result = $this->structuredDataProduct->getChildOffers($this->productRepository->getById($productId));
+            $this->saveCache($productId, $result);
         }
         return [$result];
     }
 
-    protected function saveCache($sku, $data)
+    protected function saveCache($productId, $data)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. str_replace(' ', '_', $sku);
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
         $this->cache->save(
             $this->serializer->serialize($data),
             $cacheId,
             [StructuredDataCache::CACHE_TAG],
-            86400
         );
     }
 
-    protected function getCache($sku)
+    protected function getCache($productId)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. str_replace(' ', '_', $sku);
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
 
         if ($result = $this->cache->load($cacheId)) {
             return $this->serializer->unserialize($result);
