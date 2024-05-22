@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Cache/etc/cache.xsd">
     <type name="outeredge_structureddata_cache" translate="label,description" instance="OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache">
-        <label>OuterEdge Structured Data Cache</label>
-        <description>OuterEdge Structured Data Cache</description>
+        <label>outer/edge Structured Data Cache</label>
+        <description>Cache for Structured Data</description>
     </type>
 </config>
