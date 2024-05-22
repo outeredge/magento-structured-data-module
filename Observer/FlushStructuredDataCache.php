@@ -20,7 +20,7 @@ class FlushStructuredDataCache implements ObserverInterface
         $object = $observer->getEvent()->getObject();
 
         if ($object instanceof Product && $object->hasDataChanges()) {
-            $cacheId = StructuredDataCache::TYPE_IDENTIFIER .'_'. str_replace(' ', '_', $sku);
+            $cacheId = StructuredDataCache::TYPE_IDENTIFIER .'_'. str_replace(' ', '_', $object->getSku());
             $this->cache->remove($cacheId);
         }
     }
