@@ -16,7 +16,7 @@ class OffersRepository implements OffersRepositoryInterface
     public function __construct(
         protected Product $structuredDataProduct,
         protected ProductRepositoryInterface $productRepository,
-        protected StructuredDataCache $cache,
+        protected CacheInterface $cache,
         protected SerializerInterface $serializer
     ) {
     }

@@ -6,11 +6,12 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 use Magento\Catalog\Model\Product;
+use Magento\Framework\App\CacheInterface;
 
 class FlushStructuredDataCache implements ObserverInterface
 {
     public function __construct(
-        protected StructuredDataCache $cache
+        protected CacheInterface $cache
     ) {
     }
 
