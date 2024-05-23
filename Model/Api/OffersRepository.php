@@ -44,7 +44,7 @@ class OffersRepository implements OffersRepositoryInterface
         $this->cache->save(
             $this->serializer->serialize($data),
             $cacheId,
-            [StructuredDataCache::CACHE_TAG],
+            [StructuredDataCache::CACHE_TAG]
         );
     }
 
