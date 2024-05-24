@@ -2,7 +2,7 @@
     "name": "outeredge/magento-structured-data-module",
     "description": "Magento Structured Data Module by outer/edge",
     "type": "magento2-module",
-    "version": "4.2.1",
+    "version": "5.0.0",
     "license": [
         "MIT"
     ],
@@ -15,7 +15,7 @@
         }
     ],
     "require": {
-        "php": "^7.4|^8.1"
+        "php": "^8.1"
     },
     "require-dev": {
         "outeredge/dev-dependencies": "^3.0"
