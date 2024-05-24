@@ -6,6 +6,9 @@
     <type name="Magento\Review\Block\Product\ReviewRenderer">
         <plugin name="OuterEdge_StructuredData::stripReviewSummary" type="OuterEdge\StructuredData\Plugin\StripReviewSummary"/>
     </type>
+    <type name="Magento\Framework\App\Cache">
+        <plugin name="flush_structured_data_cache" type="OuterEdge\StructuredData\Plugin\FlushStructuredDataCache"/>
+    </type>
 
     <!--API-->
     <preference for="OuterEdge\StructuredData\Api\OffersRepositoryInterface" type="OuterEdge\StructuredData\Model\Api\OffersRepository"/>
