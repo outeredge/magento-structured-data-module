@@ -20,6 +20,9 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\Framework\App\CacheInterface;
+use Magento\Framework\Serialize\SerializerInterface;
+use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 
 class Product
 {
@@ -149,7 +152,9 @@ class Product
         ModuleManager $moduleManager,
         ImageHelper $imageHelper,
         PricingHelper $pricingHelper,
-        TaxHelper $taxHelper
+        TaxHelper $taxHelper,
+        protected CacheInterface $cache,
+        protected SerializerInterface $serializer
 	)
 	{
         $this->_escaper = $escaper;
@@ -357,6 +362,10 @@ class Product
 
     public function getOffer(ProductModel $product)
     {
+        if ($result = $this->getCache($product->getId())) {
+            return $result;
+        }
+
         $availability      = 'OutOfStock';
         $quantityAvailable = $this->_stockState->getStockQty($product->getId());
         $backorderStatus   = null;
@@ -395,6 +404,7 @@ class Product
             $data['priceValidUntil'] = $this->escapeQuote($priceToDate->format('Y-m-d'));
         }
 
+        $this->saveCache($product->getId(), $data);
         return $data;
     }
 
@@ -478,7 +488,7 @@ class Product
        	} elseif ($this->_product->getColour()) {
             $data['color'] = $this->escapeQuote((string)$this->getAttributeText('colour'));
         }
-	    
+
         return false;
     }
 
@@ -706,5 +716,25 @@ class Product
     public function escapeQuote($data)
     {
         return htmlspecialchars($data, ENT_QUOTES | ENT_SUBSTITUTE, null, false);
+    }
+
+    protected function saveCache($productId, $data)
+    {
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
+        $this->cache->save(
+            $this->serializer->serialize($data),
+            $cacheId,
+            [StructuredDataCache::CACHE_TAG]
+        );
+    }
+
+    protected function getCache($productId)
+    {
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
+
+        if ($result = $this->cache->load($cacheId)) {
+            return $this->serializer->unserialize($result);
+        }
+        return false;
     }
 }
