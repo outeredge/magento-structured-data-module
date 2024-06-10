@@ -319,6 +319,10 @@ class Product
                 $offers[] = $this->getOffer($_childProduct);
                 $offers[$key]['sku'] = $_childProduct->getSku();
 
+                if (!$product->isAvailable()) {
+                    $offers[$key]['availability'] = "http://schema.org/OutOfStock";
+                }
+
                 if ($_childProduct->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
                     $offers[$key]['url'] = $this->_product->getProductUrl();
                 }
