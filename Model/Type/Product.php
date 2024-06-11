@@ -319,10 +319,6 @@ class Product
                 $offers[] = $this->getOffer($_childProduct);
                 $offers[$key]['sku'] = $_childProduct->getSku();
 
-                if (!$product->isAvailable()) {
-                    $offers[$key]['availability'] = "http://schema.org/OutOfStock";
-                }
-
                 if ($_childProduct->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
                     $offers[$key]['url'] = $this->_product->getProductUrl();
                 }
@@ -374,6 +370,18 @@ class Product
 
             if ($quantityAvailable <= 0 && $backorderStatus == Stock::BACKORDERS_YES_NOTIFY) {
                 $availability = 'BackOrder';
+            }
+        }
+
+        if ($this->_moduleManager->isEnabled('Magento_Inventory')) {
+            $sourceItem = ObjectManager::getInstance()
+                ->create('Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku')
+                ->execute($this->getStore()->getCode(), $product->getSku());
+
+            if ($sourceItem->getStatus()) {
+                $availability = 'InStock';
+            } else {
+                $availability = 'OutOfStock';
             }
         }
 
@@ -482,7 +490,7 @@ class Product
        	} elseif ($this->_product->getColour()) {
             $data['color'] = $this->escapeQuote((string)$this->getAttributeText('colour'));
         }
-	    
+
         return false;
     }
 
