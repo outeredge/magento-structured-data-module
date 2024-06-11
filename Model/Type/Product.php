@@ -20,6 +20,7 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 
 class Product
 {
@@ -149,7 +150,8 @@ class Product
         ModuleManager $moduleManager,
         ImageHelper $imageHelper,
         PricingHelper $pricingHelper,
-        TaxHelper $taxHelper
+        TaxHelper $taxHelper,
+        protected ProductRepositoryInterface $productRepository
 	)
 	{
         $this->_escaper = $escaper;
@@ -359,6 +361,7 @@ class Product
     {
         $availability      = 'OutOfStock';
         $quantityAvailable = $this->_stockState->getStockQty($product->getId());
+        $product           = $this->productRepository->get($product->getSku());
         $backorderStatus   = null;
 
         if ($stockItem = $product->getExtensionAttributes()->getStockItem()) {
@@ -370,18 +373,6 @@ class Product
 
             if ($quantityAvailable <= 0 && $backorderStatus == Stock::BACKORDERS_YES_NOTIFY) {
                 $availability = 'BackOrder';
-            }
-        }
-
-        if ($this->_moduleManager->isEnabled('Magento_Inventory')) {
-            $sourceItem = ObjectManager::getInstance()
-                ->create('Magento\InventorySourceDeductionApi\Model\GetSourceItemBySourceCodeAndSku')
-                ->execute($this->getStore()->getCode(), $product->getSku());
-
-            if ($sourceItem->getStatus()) {
-                $availability = 'InStock';
-            } else {
-                $availability = 'OutOfStock';
             }
         }
 
