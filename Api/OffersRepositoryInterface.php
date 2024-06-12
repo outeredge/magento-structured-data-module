@@ -5,8 +5,8 @@ namespace OuterEdge\StructuredData\Api;
 interface OffersRepositoryInterface
 {
     /**
-     * @param string $sku
-     * @return array
+     * @param string $productId
+     * @return mixed[]
      */
-    public function offers($sku);
+    public function offers($productId);
 }
