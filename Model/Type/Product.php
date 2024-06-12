@@ -2,6 +2,7 @@
 
 namespace OuterEdge\StructuredData\Model\Type;
 
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Helper\Data as TaxHelper;
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product as ProductModel;
@@ -26,63 +27,6 @@ use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 
 class Product
 {
-    /**
-     * @var Escaper
-     */
-    protected $_escaper;
-
-    /**
-     * @var ScopeConfigInterface
-     */
-    protected $_scopeConfig;
-
-    /**
-     * @var ProductFactory
-     */
-    protected $_productFactory;
-
-    /**
-     * @var StockStateInterface
-     */
-    protected $_stockState;
-
-    /**
-     * @var StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
-     * @var SummaryFactory
-     */
-    protected $_reviewSummaryFactory;
-
-    /**
-     * @var RatingOptionVoteFactory
-     */
-    protected $_ratingOptionVoteFactory;
-
-    /**
-     * @var ReviewCollectionFactory
-     */
-    protected $_reviewCollectionFactory;
-
-    protected $taxHelper;
-
-    /**
-     * @var ModuleManager
-     */
-    protected $_moduleManager;
-
-    /**
-     * @var ImageHelper
-     */
-    protected $imageHelper;
-
-    /**
-     * @var PricingHelper
-     */
-    protected $pricingHelper;
-
     /**
      * @var ProductModel
      */
@@ -141,34 +85,22 @@ class Product
      * @param PricingHelper $pricingHelper
      */
 	public function __construct(
-        Escaper $escaper,
-        ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager,
-        ProductFactory $productFactory,
-        StockStateInterface $stockState,
-        SummaryFactory $reviewSummaryFactory,
-        RatingOptionVoteFactory $ratingOptionVoteFactory,
-        ReviewCollectionFactory $reviewCollectionFactory,
-        ModuleManager $moduleManager,
-        ImageHelper $imageHelper,
-        PricingHelper $pricingHelper,
-        TaxHelper $taxHelper,
+        protected Escaper $_escaper,
+        protected ScopeConfigInterface $_scopeConfig,
+        protected StoreManagerInterface $_storeManager,
+        protected ProductFactory $_productFactory,
+        protected StockStateInterface $_stockState,
+        protected SummaryFactory $_reviewSummaryFactory,
+        protected RatingOptionVoteFactory $_ratingOptionVoteFactory,
+        protected ReviewCollectionFactory $_reviewCollectionFactory,
+        protected ModuleManager $_moduleManager,
+        protected ImageHelper $imageHelper,
+        protected PricingHelper $pricingHelper,
+        protected TaxHelper $taxHelper,
+        protected ProductRepositoryInterface $productRepository,
         protected CacheInterface $cache,
         protected SerializerInterface $serializer
-	)
-	{
-        $this->_escaper = $escaper;
-        $this->_scopeConfig = $scopeConfig;
-        $this->_storeManager = $storeManager;
-        $this->_productFactory = $productFactory;
-        $this->_stockState = $stockState;
-        $this->_reviewSummaryFactory = $reviewSummaryFactory;
-        $this->_ratingOptionVoteFactory = $ratingOptionVoteFactory;
-        $this->_reviewCollectionFactory = $reviewCollectionFactory;
-        $this->_moduleManager = $moduleManager;
-        $this->imageHelper = $imageHelper;
-        $this->pricingHelper = $pricingHelper;
-        $this->taxHelper = $taxHelper;
+	) {
 	}
 
     public function getSchemaData(ProductModel $product)
@@ -367,6 +299,7 @@ class Product
         }
 
         $availability      = 'OutOfStock';
+        $product           = $this->productRepository->getById($product->getId());
         $quantityAvailable = $this->_stockState->getStockQty($product->getId());
         $backorderStatus   = null;
 
