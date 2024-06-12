@@ -1,6 +1,6 @@
 <?php
 
-namespace OuterEdge\StructuredData\Plugin;
+namespace OuterEdge\StructuredData\Plugin\Cache;
 
 use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 use Magento\Framework\App\Cache;

@@ -7,7 +7,7 @@
         <plugin name="OuterEdge_StructuredData::stripReviewSummary" type="OuterEdge\StructuredData\Plugin\StripReviewSummary"/>
     </type>
     <type name="Magento\Framework\App\Cache">
-        <plugin name="flush_structured_data_cache" type="OuterEdge\StructuredData\Plugin\FlushStructuredDataCache"/>
+        <plugin name="flush_structured_data_cache" type="OuterEdge\StructuredData\Plugin\Cache\FlushStructuredDataCache"/>
     </type>
 
     <!--API-->

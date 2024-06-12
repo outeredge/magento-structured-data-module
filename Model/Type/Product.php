@@ -2,6 +2,7 @@
 
 namespace OuterEdge\StructuredData\Model\Type;
 
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Helper\Data as TaxHelper;
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product as ProductModel;
@@ -20,7 +21,9 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Catalog\Model\Product\Visibility;
-use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\App\CacheInterface;
+use Magento\Framework\Serialize\SerializerInterface;
+use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 
 class Product
 {
@@ -94,7 +97,9 @@ class Product
         protected ImageHelper $imageHelper,
         protected PricingHelper $pricingHelper,
         protected TaxHelper $taxHelper,
-        protected ProductRepositoryInterface $productRepository
+        protected ProductRepositoryInterface $productRepository,
+        protected CacheInterface $cache,
+        protected SerializerInterface $serializer
 	) {
 	}
 
@@ -289,6 +294,10 @@ class Product
 
     public function getOffer(ProductModel $product)
     {
+        if ($result = $this->getCache($product->getId())) {
+            return $result;
+        }
+
         $availability      = 'OutOfStock';
         $product           = $this->productRepository->getById($product->getId());
         $quantityAvailable = $this->_stockState->getStockQty($product->getId());
@@ -328,6 +337,7 @@ class Product
             $data['priceValidUntil'] = $this->escapeQuote($priceToDate->format('Y-m-d'));
         }
 
+        $this->saveCache($product->getId(), $data);
         return $data;
     }
 
@@ -639,5 +649,25 @@ class Product
     public function escapeQuote($data)
     {
         return htmlspecialchars($data, ENT_QUOTES | ENT_SUBSTITUTE, null, false);
+    }
+
+    protected function saveCache($productId, $data)
+    {
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
+        $this->cache->save(
+            $this->serializer->serialize($data),
+            $cacheId,
+            [StructuredDataCache::CACHE_TAG]
+        );
+    }
+
+    protected function getCache($productId)
+    {
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
+
+        if ($result = $this->cache->load($cacheId)) {
+            return $this->serializer->unserialize($result);
+        }
+        return false;
     }
 }
