@@ -12,7 +12,7 @@ class FlushStructuredDataCache
     public function beforeClean(Cache $subject, $tags = [])
     {
         if ($tags) {
-            foreach($tags as $tag) {
+            foreach((array)$tags as $tag) {
                 $tagName = preg_replace('/\d/', '', $tag);
                 if (in_array($tagName, $this->tagsList)) {
                     $prodId = str_replace($tagName, '', $tag);
