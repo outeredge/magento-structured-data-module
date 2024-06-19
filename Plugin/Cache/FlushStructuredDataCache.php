@@ -11,14 +11,16 @@ class FlushStructuredDataCache
 
     public function beforeClean(Cache $subject, $tags = [])
     {
-        foreach($tags as $tag) {
-            $tagName = preg_replace('/\d/', '', $tag);
-            if (in_array($tagName, $this->tagsList)) {
-                $prodId = str_replace($tagName, '', $tag);
-                $cacheId = StructuredDataCache::TYPE_IDENTIFIER .'_'. $prodId;
-                $subject->remove($cacheId);
+        if ($tags) {
+            foreach((array)$tags as $tag) {
+                $tagName = preg_replace('/\d/', '', $tag);
+                if (in_array($tagName, $this->tagsList)) {
+                    $prodId = str_replace($tagName, '', $tag);
+                    $cacheId = StructuredDataCache::TYPE_IDENTIFIER .'_'. $prodId;
+                    $subject->remove($cacheId);
+                }
             }
         }
-        return [$tags];
+        return null;
     }
 }
