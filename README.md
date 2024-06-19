@@ -115,17 +115,25 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 
 #### Structured Data (Product)
 
-![structured_data-product](https://user-images.githubusercontent.com/2035088/152131539-a2e320b4-b819-4c62-b42f-df96c4fd7872.png)
+![structured_data-product](/assets/config-product.png)
 
 * **Enable:** Enable or disable structured data on product pages.
 * **Use Short Description:** Use `short_description` attribute for the `description` markup. By default `description` will be used.
 * **Include ChildProducts:** Choose whether to include individual offer for each child (simple) product for structured data on configurable product pages.
 * **Include Product Weights:** Ad `weight` schema to product page structured data.
-* **Product Brand/Manufacturer field:** Choose which Magento attribute is used for the `brand` schema. If not specified the module will automatically check for `manufacturer` and `brand` attributes.
+* **Product Brand/Manufacturer field:** Choose which Magento attribute is used to populate the structured data values.
+  - **Brand** (Default: `manufacturer` or `brand`)
+  - **MPN** (Default: empty)
+  - **ISBN** (Default: empty)
+  - **Size** (Default: empty)
+  - **GTIN** (Default: empty)
+  - **Color** (Default: `Color` or `Colour`)
+  - **Material** (Default: empty)
+  - **Keywords** (Default: empty)
 
 #### Structured Data (CMS Page)
 
-![structured_data-cms](https://user-images.githubusercontent.com/2035088/152131708-ba038f9f-7f94-4654-9128-6d861fd1b397.png)
+![structured_data-cms](/assets/config-cms.png)
 
 * **Enable:** Enable or disable structured data on CMS pages.
 * **Enable About Page:** Enable or disable `"@type": "AboutPage"`.
@@ -133,7 +141,7 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 
 #### Structured Data (Contact Page)
 
-![structured_data-contact](https://user-images.githubusercontent.com/2035088/152131796-563d33b1-2721-4727-b278-b7490fe6920d.png)
+![structured_data-contact](/assets/config-contact.png)
 
 * **Enable:** Enable or disable structured data on Contact page.
 * **Type:** Select whether business in a Local Business or Organization.
@@ -143,7 +151,7 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 
 Once the module is installed and configured you will find the schema markup in your source code:
 
-![schema_screenshot](https://user-images.githubusercontent.com/2035088/152323033-7e48e3b4-4e72-4d72-9b92-8356ac38fe91.png)
+![schema_screenshot](/assets/screenshot-schema.png)
 
 ## GraphQL
 
