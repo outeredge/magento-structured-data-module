@@ -21,6 +21,6 @@ class FlushStructuredDataCache
                 }
             }
         }
-        return [$tags];
+        return null;
     }
 }
