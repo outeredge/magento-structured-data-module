@@ -7,7 +7,7 @@
         <section id="structureddata" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Structured Data</label>
             <tab>outeredge</tab>
-            <resource>OuterEdge_StructuredData::StructuredDataSettings</resource>
+            <resource>OuterEdge_StructuredData::config</resource>
             <group id="product" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Structured Data (Products)</label>
                 <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
