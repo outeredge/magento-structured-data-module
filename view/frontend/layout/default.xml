@@ -4,10 +4,6 @@
         <referenceBlock name="head.additional">
             <block class="OuterEdge\StructuredData\Block\Jsonld" name="structured.data.jsonld" template="OuterEdge_StructuredData::jsonld.phtml"/>
         </referenceBlock>
-        <referenceBlock name="breadcrumbs">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">OuterEdge_StructuredData::html/breadcrumbs.phtml</argument>
-            </action>
-        </referenceBlock>
+        <referenceBlock name="breadcrumbs" template="OuterEdge_StructuredData::html/breadcrumbs.phtml"/>
     </body>
 </page>
