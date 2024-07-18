@@ -27,10 +27,6 @@
                 <argument name="zone" xsi:type="boolean">false</argument>
             </arguments>
         </referenceBlock>
-        <referenceBlock name="breadcrumbs">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Magento_Catalog::product/breadcrumbs.phtml</argument>
-            </action>
-        </referenceBlock>
+        <referenceBlock name="breadcrumbs" template="Magento_Catalog::product/breadcrumbs.phtml"/>
     </body>
 </page>
