@@ -2,7 +2,7 @@
     "name": "outeredge/magento-structured-data-module",
     "description": "Magento Structured Data Module by outer/edge",
     "type": "magento2-module",
-    "version": "5.0.5",
+    "version": "5.0.6",
     "license": [
         "MIT"
     ],
