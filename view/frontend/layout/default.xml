@@ -4,6 +4,8 @@
         <referenceBlock name="head.additional">
             <block class="OuterEdge\StructuredData\Block\Jsonld" name="structured.data.jsonld" template="OuterEdge_StructuredData::jsonld.phtml"/>
         </referenceBlock>
-        <referenceBlock name="breadcrumbs" template="OuterEdge_StructuredData::html/breadcrumbs.phtml"/>
+        <referenceContainer name="page.top">
+            <block name="breadcrumbs.structured.data.jsonld" after="breadcrumbs" template="OuterEdge_StructuredData::html/breadcrumbs/jsonld.phtml"/>
+        </referenceContainer>
     </body>
 </page>
