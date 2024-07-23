@@ -9,9 +9,9 @@
                     <?= $block->escapeHtml($crumbInfo['label']) ?>
                 </a>
             <?php elseif ($crumbInfo['last']): ?>
-                <strong><?= $block->escapeHtml($crumbInfo['label']) ?></strong>
+                <strong><?= $escaper->escapeHtml($crumbInfo['label']) ?></strong>
             <?php else: ?>
-                <?= $block->escapeHtml($crumbInfo['label']) ?>
+                <?= $escaper->escapeHtml($crumbInfo['label']) ?>
             <?php endif; ?>
             </li>
         <?php endforeach; ?>
@@ -30,10 +30,10 @@
     <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>
     {
             "@type": "ListItem",
-            "position": "<?= (int)$position ?>",
+            "position": "<?= $position++ ?>",
             "item": {
-                "@id": "<?= $block->escapeUrl($crumbInfo['link']) ?>",
-                "name": "<?= $block->escapeHtml($crumbInfo['label']) ?>"
+                "@id": "<?= $escaper->escapeUrl($crumbInfo['link']) ?>",
+                "name": "<?= $escaper->escapeHtml($crumbInfo['label']) ?>"
             }
     }
         <?= $crumbInfo['last'] ? '' : ',' ?>
