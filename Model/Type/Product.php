@@ -24,6 +24,7 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\Framework\App\CacheInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
+use Magento\Framework\View\Element\Template;
 
 class Product
 {
@@ -99,7 +100,8 @@ class Product
         protected TaxHelper $taxHelper,
         protected ProductRepositoryInterface $productRepository,
         protected CacheInterface $cache,
-        protected SerializerInterface $serializer
+        protected SerializerInterface $serializer,
+        protected Template $template
 	) {
 	}
 
@@ -115,7 +117,7 @@ class Product
             "@id" => $this->escapeUrl(strtok($this->_product->getUrlInStore(), '?'))."#Product",
             "name" => $this->escapeQuote((string)strip_tags($this->_product->getName())),
             "sku" => $this->escapeQuote((string)strip_tags($this->_product->getSku())),
-            "description" => $this->escapeHtml((string)strip_tags($this->getDescription())),
+            "description" => $this->escapeHtml((string)$this->template->stripTags($this->getDescription())),
             "image" => $this->escapeUrl(strip_tags($this->getImageUrl($this->_product, 'product_page_image_medium')))
         ];
 
