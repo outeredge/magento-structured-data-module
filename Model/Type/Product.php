@@ -655,7 +655,7 @@ class Product
 
     protected function saveCache($productId, $data)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER . '_' . $productId;
         $this->cache->save(
             $this->serializer->serialize($data),
             $cacheId,
@@ -665,7 +665,7 @@ class Product
 
     protected function getCache($productId)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER .'_'. $productId;
+        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER . '_' . $productId;
 
         if ($result = $this->cache->load($cacheId)) {
             return $this->serializer->unserialize($result);
