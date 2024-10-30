@@ -133,6 +133,10 @@ class Jsonld extends \Magento\Framework\View\Element\Template
     public function isAboutPage()
     {
         $aboutPage = $this->getConfig('structureddata/cms/about_page');
+        if (empty($aboutPage)) {
+            return false;
+        }
+        
         $currentPage = $this->getPage()->getIdentifier();
 
         if ($this->getConfig('structureddata/cms/enable_about') && $currentPage == $aboutPage) {
