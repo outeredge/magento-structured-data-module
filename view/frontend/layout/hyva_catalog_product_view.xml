@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="structured.data.jsonld">
+            <block ifconfig="structureddata/product/enable" class="OuterEdge\StructuredData\Block\Product" name="main.entity" template="OuterEdge_StructuredData::jsonld/schema.phtml" />
+        </referenceBlock>
+
+        <attribute name="itemtype" value=""/>
+        <attribute name="itemscope" value=""/>
+        <referenceBlock name="page.main.title">
+            <arguments>
+                <argument name="add_base_attribute" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceBlock name="product.info.sku">
+            <arguments>
+                <argument name="add_attribute" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceBlock name="product.info.overview">
+            <arguments>
+                <argument name="add_attribute" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceBlock name="product.price.final">
+            <arguments>
+                <argument name="zone" xsi:type="boolean">false</argument>
+            </arguments>
+        </referenceBlock>
+        <referenceBlock name="breadcrumbs" template="Magento_Catalog::product/view/breadcrumbs.phtml"/>
+    </body>
+</page>
