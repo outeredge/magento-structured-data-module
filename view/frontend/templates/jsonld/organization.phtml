@@ -35,4 +35,7 @@
         "longitude": "<?= $block->escapeQuote((string)$block->getConfig('structureddata/contact/longitude')) ?>"
     }
     <?php endif; ?>
+    <?php if ($block->getRelatedPages()): ?>
+    ,"sameAs": <?= $block->getRelatedPages() ?>
+    <?php endif; ?>
 }

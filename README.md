@@ -141,14 +141,14 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 
 #### Organization
 
-![structured_data-contact](/assets/config-contact.png)
+![structured_data-contact](/assets/config-organization.png)
 
 * **Type:** Select whether business in a Local Business or Organization.
 * **Latitude:** Specify latitude for local business.
 * **Longitude:** Specify longitude for local business.
 * **Enable on Home Page:** Enable or disable Organization structured data on Home page.
 * **Enable on Contact Page:** Enable or disable Organization structured data on Contact page.
-
+* **Related Pages** Populates "SameAs" property. Add links to related pages, for example Facebook, Linked In and other social media sites.
 
 Once the module is installed and configured you will find the schema markup in your source code:
 

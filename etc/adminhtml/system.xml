@@ -34,6 +34,12 @@
                     <label>Enable on Contact Page</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="related_pages" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Related Pages</label>
+                    <frontend_model>OuterEdge\StructuredData\Block\Adminhtml\Form\Field\RelatedPage</frontend_model>
+                    <backend_model>OuterEdge\StructuredData\Model\Config\Backend\RelatedPage</backend_model>
+                    <comment>Populates "SameAs" property. Add links to related pages, for example Facebook, Linked In and other social media sites.</comment>
+                </field>
             </group>
             <group id="product" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Products</label>
