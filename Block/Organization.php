@@ -7,7 +7,7 @@ use Magento\Framework\View\Element\Template\Context;
 use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Store\Model\ScopeInterface;
 
-class Contact extends Template
+class Organization extends Template
 {
     /**
      * @var Logo

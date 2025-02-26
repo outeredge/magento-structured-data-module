@@ -2,20 +2,19 @@
 
 namespace OuterEdge\StructuredData\Block;
 
-use Magento\Framework\View\Element\Template;
+use Magento\Framework\UrlInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Cms\Model\Page;
 use Magento\Cms\Model\Template\FilterProvider;
-use Magento\Framework\UrlInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Magento\Theme\Block\Html\Header\Logo;
+use Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver;
+use OuterEdge\StructuredData\Block\Jsonld;
 use DOMDocument;
 
-class Cms extends Template
+class Cms extends Jsonld
 {
-    /**
-     * @var Page
-     */
-    protected $_page;
-
     /**
      * @var FilterProvider
      */
@@ -37,40 +36,40 @@ class Cms extends Template
     protected $_image = null;
 
     /**
-     * @param Context $context
-     * @param Page $page
-     * @param FilterProvider $filterProvider
-     * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Context $context,
+        StoreManagerInterface $storeManager,
+        Http $request,
         Page $page,
+        Logo $logo,
+        LogoPathResolver $logoPathResolver,
         FilterProvider $filterProvider,
         array $data = []
     ) {
-        $this->_page = $page;
         $this->_filterProvider = $filterProvider;
-        parent::__construct($context, $data);
-    }
 
-    public function getPage()
-    {
-        return $this->_page;
-    }
-
-    public function getStore()
-    {
-        return $this->_storeManager->getStore();
+        parent::__construct(
+            $context,
+            $storeManager,
+            $request,
+            $page,
+            $logo,
+            $logoPathResolver,
+            $data
+        );
     }
 
     public function getTitle()
     {
+        $title = $this->getPageType() == Jsonld::PAGE_TYPE_WEBSITE ? $this->getConfig('general/store_information/name') . ' | ' : null;
+
         if ($this->getPage()->getContentHeading()) {
-            return nl2br($this->getPage()->getContentHeading());
+            return $title . nl2br($this->getPage()->getContentHeading());
         }
-        return nl2br((string) $this->getPage()->getTitle());
+        return $title . nl2br((string) $this->getPage()->getTitle());
     }
 
     public function getContent()

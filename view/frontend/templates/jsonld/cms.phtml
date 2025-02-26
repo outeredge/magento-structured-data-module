@@ -1,7 +1,10 @@
 ,"name": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->stripTags($block->getTitle())); ?>",
+<?php /* @escapeNotVerified */  $content = $block->escapeQuote($block->stripTags($block->getContent())); ?>
+<?php if ($content): ?>
 "mainContentOfPage": {
-    "text": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->stripTags($block->getContent())); ?>"
+    "text": "<?= $content; ?>"
 }
+<?php endif; ?>
 <?php if ($block->getMetaDescription()): ?>
     ,"description": "<?= $block->escapeQuote(preg_replace('/\s+/', ' ', trim($block->stripTags($block->getMetaDescription())))); ?>"
 <?php endif; ?>

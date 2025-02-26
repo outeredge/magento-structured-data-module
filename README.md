@@ -113,7 +113,7 @@ composer require outeredge/magento-structured-data-module
 
 Configuration is available in `Stores > Configuration > outer/edge > Structured Data`. The following options are available:
 
-#### Structured Data (Product)
+#### Products
 
 ![structured_data-product](/assets/config-product.png)
 
@@ -131,7 +131,7 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
   - **Material** (Default: empty)
   - **Keywords** (Default: empty)
 
-#### Structured Data (CMS Page)
+#### CMS Pages
 
 ![structured_data-cms](/assets/config-cms.png)
 
@@ -139,14 +139,15 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 * **Enable About Page:** Enable or disable `"@type": "AboutPage"`.
 * **About Page:** Select the CMS page for  `"@type": "AboutPage"`.
 
-#### Structured Data (Contact Page)
+#### Organization
 
 ![structured_data-contact](/assets/config-contact.png)
 
-* **Enable:** Enable or disable structured data on Contact page.
 * **Type:** Select whether business in a Local Business or Organization.
 * **Latitude:** Specify latitude for local business.
 * **Longitude:** Specify longitude for local business.
+* **Enable on Home Page:** Enable or disable Organization structured data on Home page.
+* **Enable on Contact Page:** Enable or disable Organization structured data on Contact page.
 
 
 Once the module is installed and configured you will find the schema markup in your source code:
