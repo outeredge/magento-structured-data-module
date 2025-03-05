@@ -20,7 +20,6 @@ class Organization extends Template
         protected SerializerInterface $serializer,
         array $data = []
     ) {
-        $this->logo = $logo;
         parent::__construct($context, $data);
     }
 
