@@ -2,31 +2,24 @@
 
 namespace OuterEdge\StructuredData\Block;
 
+use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Store\Model\ScopeInterface;
 
-class Contact extends Template
+class Organization extends Template
 {
     /**
-     * @var Logo
-     */
-    protected $_logo;
-
-    /**
-     * @param Context $context
-     * @param Logo $logo
-     * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Context $context,
-        Logo $logo,
+        protected Logo $logo,
+        protected SerializerInterface $serializer,
         array $data = []
     ) {
-        $this->_logo = $logo;
         parent::__construct($context, $data);
     }
 
@@ -42,7 +35,7 @@ class Contact extends Template
 
     public function getStoreLogoUrl()
     {
-        return $this->_logo->getLogoSrc();
+        return $this->logo->getLogoSrc();
     }
 
     public function isLocalBusiness()
@@ -56,5 +49,22 @@ class Contact extends Template
             (string) $this->getConfig('general/store_information/street_line1'),
             (string) $this->getConfig('general/store_information/street_line2')
         ]));
+    }
+
+    public function getRelatedPages()
+    {
+        $relatedPages = $this->getConfig('structureddata/contact/related_pages');
+        $pages        = $relatedPages ? $this->serializer->unserialize($relatedPages) : null;
+        $result       = null;
+
+        if ($pages) {
+            $result = [];
+            foreach ($pages as $page) {
+                $result[] = $this->_escaper->escapeUrl($page['url']);
+            }
+            $result = json_encode($result);
+        }
+
+        return $result;
     }
 }

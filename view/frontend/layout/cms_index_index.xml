@@ -2,7 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="structured.data.jsonld">
-            <block ifconfig="structureddata/contact/enable" class="OuterEdge\StructuredData\Block\Organization" name="main.entity" as="main.entity" template="OuterEdge_StructuredData::jsonld/organization.phtml" />
+            <block ifconfig="structureddata/contact/enable_home" class="OuterEdge\StructuredData\Block\Organization" name="main.entity" as="main.entity" template="OuterEdge_StructuredData::jsonld/organization.phtml" />
         </referenceBlock>
     </body>
 </page>

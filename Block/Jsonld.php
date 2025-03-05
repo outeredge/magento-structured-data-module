@@ -2,6 +2,7 @@
 
 namespace OuterEdge\StructuredData\Block;
 
+use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver;
@@ -10,8 +11,9 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Cms\Model\Page;
 use Magento\Framework\App\Request\Http;
 
-class Jsonld extends \Magento\Framework\View\Element\Template
+class Jsonld extends Template
 {
+    public const PAGE_TYPE_WEBSITE        = "WebSite";
     public const PAGE_TYPE_WEBPAGE        = "WebPage";
     public const PAGE_TYPE_ABOUTPAGE      = "AboutPage";
     public const PAGE_TYPE_SEARCHPAGE     = "SearchResultsPage";
@@ -114,6 +116,13 @@ class Jsonld extends \Magento\Framework\View\Element\Template
                     break;
                 case 'checkout':
                     $this->_pageType = $this::PAGE_TYPE_CHECKOUTPAGE;
+                    break;
+                case 'cms':
+                    if ($controller == 'index') {
+                        $this->_pageType = $this::PAGE_TYPE_WEBSITE;
+                        break;
+                    }
+                    $this->_pageType = $this::PAGE_TYPE_WEBPAGE;
                     break;
                 default:
                     $this->_pageType = $this::PAGE_TYPE_WEBPAGE;

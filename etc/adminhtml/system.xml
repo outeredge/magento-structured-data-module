@@ -8,8 +8,41 @@
             <label>Structured Data</label>
             <tab>outeredge</tab>
             <resource>OuterEdge_StructuredData::config</resource>
-            <group id="product" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Structured Data (Products)</label>
+            <group id="contact" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Organization</label>
+                <field id="type" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Type</label>
+                    <source_model>OuterEdge\StructuredData\Model\Config\Source\ContactType</source_model>
+                </field>
+                <field id="latitude" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Latitude</label>
+                    <depends>
+                        <field id="type">LocalBusiness</field>
+                    </depends>
+                </field>
+                <field id="longitude" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Longitude</label>
+                    <depends>
+                        <field id="type">LocalBusiness</field>
+                    </depends>
+                </field>
+                <field id="enable_home" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable on Home Page</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="enable" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable on Contact Page</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="related_pages" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Related Pages</label>
+                    <frontend_model>OuterEdge\StructuredData\Block\Adminhtml\Form\Field\RelatedPage</frontend_model>
+                    <backend_model>OuterEdge\StructuredData\Model\Config\Backend\RelatedPage</backend_model>
+                    <comment>Populates "SameAs" property. Add links to related pages, for example Facebook, Linked In and other social media sites.</comment>
+                </field>
+            </group>
+            <group id="product" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Products</label>
                 <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable for Product Page</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -74,8 +107,8 @@
                     <label>Keywords attribute code</label>
                 </field>
             </group>
-            <group id="cms" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Structured Data (CMS Page)</label>
+            <group id="cms" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>CMS Pages</label>
                 <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Enable</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -92,29 +125,6 @@
                     <source_model>Magento\Cms\Model\Config\Source\Page</source_model>
                     <depends>
                         <field id="enable_about">1</field>
-                    </depends>
-                </field>
-            </group>
-            <group id="contact" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Structured Data (Contact Page)</label>
-                <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="type" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Type</label>
-                    <source_model>OuterEdge\StructuredData\Model\Config\Source\ContactType</source_model>
-                </field>
-                <field id="latitude" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Latitude</label>
-                    <depends>
-                        <field id="type">LocalBusiness</field>
-                    </depends>
-                </field>
-                <field id="longitude" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Longitude</label>
-                    <depends>
-                        <field id="type">LocalBusiness</field>
                     </depends>
                 </field>
             </group>
