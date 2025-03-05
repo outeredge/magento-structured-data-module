@@ -83,7 +83,7 @@
                     </depends>
                 </field>
                 <field id="include_reviewsio" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Include Review.io Product Reviews</label>
+                    <label>Include Reviews.io Product Reviews</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Requirements: Disable Magento reviews (above). Official Review.io Magento module (don't enable Rich Snippets)</comment>
                     <depends>
