@@ -75,11 +75,20 @@
                     </depends>
                 </field>
                 <field id="include_reviews" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Include Product Reviews</label>
+                    <label>Include Magento Product Reviews</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Check theme and https://validator.schema.org - May conflict with core markup.</comment>
                     <depends>
                         <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="include_reviewsio" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Include Review.io Product Reviews</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Requirements: Disable Magento reviews (above). Official Review.io Magento module (don't enable Rich Snippets)</comment>
+                    <depends>
+                        <field id="enable">1</field>
+                        <field id="include_reviews">0</field>
                     </depends>
                 </field>
                 <field id="product_brand_field" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
