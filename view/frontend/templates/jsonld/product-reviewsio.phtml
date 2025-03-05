@@ -1,0 +1,35 @@
+<?php
+    $product = $block->getProduct();
+    // Check if the product is a configurable product
+    if ($product->getTypeId() == 'configurable') {
+        $associatedProducts = $product->getTypeInstance()->getUsedProducts($product);
+
+        // Collect SKUs of all associated simple products
+        $skus = [];
+        foreach ($associatedProducts as $associatedProduct) {
+            $skus[] = $associatedProduct->getSku();
+        }
+
+        $skuString = implode(';', $skus);
+    } else {
+        $skuString = $product->getSku();
+    }
+?>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var skuString = '<?= $skuString; ?>';
+    var storeCode = '<?= $this->helper('OuterEdge\StructuredData\Helper\Config')->getConfig('reviewscouk_reviews_setup/settings/store_id') ?>'
+    var apiUrl    = "https://api.reviews.co.uk/json-ld/product/richsnippet?store=" + storeCode + "&sku=" + skuString + "&data=true";
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const scriptTag = document.createElement("script");
+            scriptTag.type = "application/ld+json";
+            scriptTag.textContent = JSON.stringify(data, null, 2);
+            scriptTag.id = "structured-data-reviews-io"
+            document.head.appendChild(scriptTag);
+        })
+        .catch(error => console.error("Error fetching reviews JSON-LD:", error));
+});
+</script>

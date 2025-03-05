@@ -130,7 +130,9 @@ class Product
 
         if ($this->_moduleManager->isEnabled('Magento_Review') &&
             $this->getConfig('structureddata/product/include_reviews') &&
-            $this->getReviewsCount()) {
+            !$this->getConfig('structureddata/product/include_reviewsio') &&
+            $this->getReviewsCount()
+        ){
             $data['aggregateRating'] = [
                 "@type" => "AggregateRating",
                 "bestRating" => "100",
