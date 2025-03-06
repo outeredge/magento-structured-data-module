@@ -1,15 +1,12 @@
 <?php
     $product = $block->getProduct();
-    // Check if the product is a configurable product
     if ($product->getTypeId() == 'configurable') {
         $associatedProducts = $product->getTypeInstance()->getUsedProducts($product);
-
-        // Collect SKUs of all associated simple products
         $skus = [];
+        $skus[] = $product->getSku();
         foreach ($associatedProducts as $associatedProduct) {
             $skus[] = $associatedProduct->getSku();
         }
-
         $skuString = implode(';', $skus);
     } else {
         $skuString = $product->getSku();
