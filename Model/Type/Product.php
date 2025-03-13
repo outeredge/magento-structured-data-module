@@ -654,22 +654,24 @@ class Product
     {
         return htmlspecialchars($data, ENT_QUOTES | ENT_SUBSTITUTE, null, false);
     }
+    
+    protected function getCacheId($productId)
+    {
+        return StructuredDataCache::TYPE_IDENTIFIER . '_' . $this->getStore()->getId() . '_' . $productId;
+    }
 
     protected function saveCache($productId, $data)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER . '_' . $productId;
         $this->cache->save(
             $this->serializer->serialize($data),
-            $cacheId,
+            $this->getCacheId($productId),
             [StructuredDataCache::CACHE_TAG]
         );
     }
 
     protected function getCache($productId)
     {
-        $cacheId  = StructuredDataCache::TYPE_IDENTIFIER . '_' . $productId;
-
-        if ($result = $this->cache->load($cacheId)) {
+        if ($result = $this->cache->load($this->getCacheId($productId))) {
             return $this->serializer->unserialize($result);
         }
         return false;
