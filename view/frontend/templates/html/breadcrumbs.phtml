@@ -33,7 +33,7 @@
             "position": "<?= $escaper->escapeHtml($position++) ?>",
             "item": {
                 "@id": "<?= $escaper->escapeUrl($crumbInfo['link']) ?>",
-                "name": "<?= $escaper->escapeHtml($crumbInfo['label']) ?>"
+                "name": "<?= addslashes($escaper->escapeHtml($crumbInfo['label'])) ?>"
             }
     }
         <?= $crumbInfo['last'] ? '' : ',' ?>
