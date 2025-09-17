@@ -36,6 +36,6 @@
     }
     <?php endif; ?>
     <?php if ($block->getRelatedPages()): ?>
-    ,"sameAs": <?= $block->getRelatedPages() ?>
+    ,"sameAs": <?= $block->escapeQuote($block->getRelatedPages()) ?>
     <?php endif; ?>
 }

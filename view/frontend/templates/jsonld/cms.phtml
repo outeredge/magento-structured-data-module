@@ -1,8 +1,8 @@
-,"name": "<?= /* @escapeNotVerified */  $block->escapeQuote($block->stripTags($block->getTitle())); ?>"
-<?php /* @escapeNotVerified */  $content = $block->escapeQuote($block->stripTags($block->getContent())); ?>
+,"name": "<?= $block->escapeQuote($block->stripTags($block->getTitle())); ?>"
+<?php $content = $block->getContent(); ?>
 <?php if ($content): ?>
 ,"mainContentOfPage": {
-    "text": "<?= $content; ?>"
+    "text": "<?= $block->escapeQuote($block->stripTags($content)); ?>"
 }
 <?php endif; ?>
 <?php if ($block->getMetaDescription()): ?>

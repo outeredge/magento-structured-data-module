@@ -14,8 +14,8 @@
 ?>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    var skuString = '<?= $skuString; ?>';
-    var storeCode = '<?= $this->helper('OuterEdge\StructuredData\Helper\Config')->getConfig('reviewscouk_reviews_setup/settings/store_id') ?>'
+    var skuString = '<?= $block->escapeQuote($block->stripTags($skuString)); ?>';
+    var storeCode = '<?= $block->escapeQuote($block->stripTags($this->helper('OuterEdge\StructuredData\Helper\Config')->getConfig('reviewscouk_reviews_setup/settings/store_id'))) ?>'
     var apiUrl    = "https://api.reviews.co.uk/json-ld/product/richsnippet?store=" + storeCode + "&sku=" + skuString + "&data=true";
 
     fetch(apiUrl)

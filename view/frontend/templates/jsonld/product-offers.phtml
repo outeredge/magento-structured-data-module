@@ -26,6 +26,6 @@
         }
     }
 
-    waitForBaseUrl(() => fetchOffersSchema('<?= $product->getEntityId() ?>'));
+    waitForBaseUrl(() => fetchOffersSchema('<?= $block->escapeQuote($product->getEntityId()) ?>'));
 </script>
 <?php endif; ?>
