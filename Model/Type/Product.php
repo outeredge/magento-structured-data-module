@@ -2,6 +2,7 @@
 
 namespace OuterEdge\StructuredData\Model\Type;
 
+use Magento\Bundle\Model\Product\Type;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Helper\Data as TaxHelper;
 use Magento\Catalog\Helper\Image as ImageHelper;
@@ -9,10 +10,12 @@ use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\CatalogInventory\Model\Stock;
 use Magento\CatalogInventory\Api\StockStateInterface;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Escaper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
+use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Review\Model\Review\Summary;
 use Magento\Review\Model\Review\SummaryFactory;
 use Magento\Review\Model\ResourceModel\Rating\Option\Vote\CollectionFactory as RatingOptionVoteFactory;
@@ -205,9 +208,14 @@ class Product
             $data['keywords'] = $this->escapeQuote((string)strip_tags($this->getKeywords()));
         }
 
-        if ($this->_product->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
-            || !$this->getConfig('structureddata/product/include_children')
+        if (
+            in_array($this->_product->getTypeId(), [ProductModel\Type::TYPE_SIMPLE, ProductModel\Type::TYPE_VIRTUAL])
+            || 
+            !$this->getConfig('structureddata/product/include_children')
         ) {
+            ||
+            !$this->getConfig('structureddata/product/include_children')
+		) {
             $this->weight = $this->_product->getWeight();
             $data = $this->includeWeight($data);
             $data['offers'] = $this->getOffer($this->_product);
