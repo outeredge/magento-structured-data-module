@@ -421,9 +421,9 @@ class Product
                 return $this->getAttributeText($field);
             }
         } elseif ($this->_product->getColor()) { // removing these lines will require a major version bump
-            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('color'));
+            return $this->getAttributeText('color');
        	} elseif ($this->_product->getColour()) {
-            $data['color'] = $this->escapeQuote((string)$this->getAttributeText('colour'));
+            return $this->getAttributeText('colour');
         }
 
         return false;
@@ -475,6 +475,10 @@ class Product
     public function getAttributeText($attribute)
     {
         $attributeText = $this->_product->getAttributeText($attribute);
+        if ($attributeText === false) {
+            $attributeText = $this->_product->getData($attribute);
+        }
+
         if (is_array($attributeText)) {
             $attributeText = implode(', ', $attributeText);
         }
