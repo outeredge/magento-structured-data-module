@@ -74,6 +74,14 @@
                         <field id="enable">1</field>
                     </depends>
                 </field>
+                <field id="hide_price" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Hide Product Price/Offer</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Removes the "offer" block with pricing from structured data - Useful for B2B websites.</comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
                 <field id="include_reviews" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Include Magento Product Reviews</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

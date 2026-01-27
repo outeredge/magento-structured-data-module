@@ -3,6 +3,7 @@
     <default>
         <structureddata>
             <product>
+                <hide_price>0</hide_price>
                 <include_reviews>0</include_reviews>
                 <include_reviewsio>0</include_reviewsio>
                 <product_gtin_field>gtin</product_gtin_field>
