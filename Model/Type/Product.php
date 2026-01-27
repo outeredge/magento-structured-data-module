@@ -240,6 +240,10 @@ class Product
 
     public function getChildOffers($product)
     {
+        if ($this->getConfig('structureddata/product/hide_price')) {
+            return null;
+        }
+
         $this->_product = $product;
 
         $children = $this->getChildren();
@@ -298,6 +302,9 @@ class Product
 
     public function getOffer(ProductModel $product)
     {
+        if ($this->getConfig('structureddata/product/hide_price')) {
+            return null;
+        }
         if ($result = $this->getCache($product->getId())) {
             return $result;
         }
@@ -319,26 +326,31 @@ class Product
             }
         }
 
-        $pricewithTax = $this->taxHelper->getTaxPrice($product, $product->getFinalPrice(), $this->checkTaxIncluded());
+        $priceWithTax = $this->taxHelper->getTaxPrice($product, $product->getPrice(), $this->checkTaxIncluded());
+        $finalPriceWithTax = $this->taxHelper->getTaxPrice($product, $product->getFinalPrice(), $this->checkTaxIncluded());
 
         $data = [
             "@type" => "Offer",
             "url" => $this->escapeUrl(strtok($product->getUrlInStore(), '?')),
-            "price" => $this->escapeQuote((string)$this->pricingHelper->currency($pricewithTax, false, false)),
+            "price" => $this->escapeQuote((string)$this->pricingHelper->currency($finalPriceWithTax, false, false)),
             "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
             "availability" => "http://schema.org/$availability",
-            "itemCondition" => "http://schema.org/NewCondition",
-            "priceSpecification" => [
-                "@type" => "UnitPriceSpecification",
-                "price" => $this->escapeQuote((string)$this->pricingHelper->currency($pricewithTax, false, false)),
-                "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
-                "valueAddedTaxIncluded" => $this->escapeQuote($this->checkTaxIncluded() ? 'true' : 'false')
-            ]
+            "itemCondition" => "http://schema.org/NewCondition"
         ];
 
-        if ($product->getFinalPrice() < $product->getPrice() && $product->getSpecialToDate()) {
-            $priceToDate = date_create($product->getSpecialToDate());
-            $data['priceValidUntil'] = $this->escapeQuote($priceToDate->format('Y-m-d'));
+        if ($product->getFinalPrice() < $product->getPrice()) {
+            if ($product->getSpecialToDate()) {
+                $priceToDate = date_create($product->getSpecialToDate());
+                $data['priceValidUntil'] = $this->escapeQuote($priceToDate->format('Y-m-d'));
+            }
+
+            $data['priceSpecification'] = [
+                "@type" => "UnitPriceSpecification",
+                "priceType" => "https://schema.org/StrikethroughPrice",
+                "price" => $this->escapeQuote((string)$this->pricingHelper->currency($priceWithTax, false, false)),
+                "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
+                "valueAddedTaxIncluded" => $this->escapeQuote($this->checkTaxIncluded() ? 'true' : 'false')
+            ];
         }
 
         $this->saveCache($product->getId(), $data);
