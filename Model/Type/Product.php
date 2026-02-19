@@ -352,7 +352,16 @@ class Product
                 "valueAddedTaxIncluded" => $this->escapeQuote($this->checkTaxIncluded() ? 'true' : 'false')
             ];
         }
-
+        // Include shipping weight details for Google Merchant / OfferShippingDetails
+        // Format weight as a string with 6 decimal places and the configured unit (e.g. "0.135000 kg").
+        // Only include when the product has a weight value.
+        if ($product->getWeight() !== null && $product->getWeight() !== '') {
+            $weightString = sprintf('%.6f %s', (float)$product->getWeight(), $this->getConfig('general/locale/weight_unit'));
+            $data['shippingDetails'] = [
+                '@type' => 'OfferShippingDetails',
+                'weight' => $this->escapeQuote($weightString)
+            ];
+        }
         $this->saveCache($product->getId(), $data);
         return $data;
     }
