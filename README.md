@@ -117,13 +117,15 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 
 ![structured_data-product](/assets/config-product.png)
 
-* **Enable:** Enable or disable structured data on product pages.
+* **Enable for Product Page:** Enable or disable structured data on product pages.
+* **Enable for Category Page:** Enable or disable structured data on category pages.
 * **Use Short Description:** Use `short_description` attribute for the `description` markup. By default `description` will be used.
 * **Include ChildProducts:** Choose whether to include individual offer for each child (simple) product for structured data on configurable product pages.
 * **Include Product Weights:** Add `weight` schema to product page structured data.
 * **Hide Product Price/Offer:** Removes the "offer" block with pricing from structured data. This is useful for B2B websites that don't display pricing to the public.
-* **Product Brand/Manufacturer field:** Choose which Magento attribute is used to populate the structured data values.
-  - **Brand** (Default: `manufacturer` or `brand`)
+* **Include Magento Product Reviews:** Includes core Magento product reviews. Check theme and https://validator.schema.org - May conflict with core markup.
+* **Product Attributes:** Choose which Magento attribute is used to populate the structured data values.
+  - **Brand/Manufacturer** (Default: `manufacturer` or `brand`)
   - **MPN** (Default: empty)
   - **ISBN** (Default: empty)
   - **Size** (Default: empty)
