@@ -10,6 +10,8 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Cms\Model\Page;
 use Magento\Framework\App\Request\Http;
+use Magento\Framework\UrlInterface;
+use OuterEdge\StructuredData\Block\Jsonld\FaqCollector;
 
 class Jsonld extends Template
 {
@@ -54,7 +56,7 @@ class Jsonld extends Template
      * @param Page $page
      * @param Logo $logo
      * @param LogoPathResolver $logoPathResolver
-     * @param string $pageType
+     * @param FaqCollector $faqCollector
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -66,6 +68,7 @@ class Jsonld extends Template
         Page $page,
         Logo $logo,
         LogoPathResolver $logoPathResolver,
+        protected FaqCollector $faqCollector,
         array $data = []
     ) {
         $logo->setData('logoPathResolver', $logoPathResolver);
@@ -92,6 +95,11 @@ class Jsonld extends Template
     public function getPage()
     {
         return $this->_page;
+    }
+
+    public function getFaqCollector(): FaqCollector
+    {
+        return $this->faqCollector;
     }
 
     public function getPageType()
@@ -145,7 +153,7 @@ class Jsonld extends Template
         if (empty($aboutPage)) {
             return false;
         }
-        
+
         $currentPage = $this->getPage()->getIdentifier();
 
         if ($this->getConfig('structureddata/cms/enable_about') && $currentPage == $aboutPage) {
@@ -154,4 +162,219 @@ class Jsonld extends Template
 
         return false;
     }
+
+    public function getBaseUrl(): string
+    {
+        return rtrim($this->_storeManager->getStore()->getBaseUrl(), '/');
+    }
+
+    public function getOrganizationId(): string
+    {
+        return $this->getBaseUrl() . '/#org';
+    }
+
+    public function getWebsiteId(): string
+    {
+        return $this->getBaseUrl() . '/#website';
+    }
+
+    public function getCurrentUrl(): string
+    {
+        $url = $this->_request->getUriString();
+        if ($url === '') {
+            $url = $this->_storeManager->getStore()->getCurrentUrl(false);
+        }
+        return $this->stripQueryString((string) $url);
+    }
+
+    public function getBreadcrumbId(): string
+    {
+        return $this->getCurrentUrl() . '#breadcrumb';
+    }
+
+    public function getPageId(): string
+    {
+        return $this->getCurrentUrl() . '#webpage';
+    }
+
+    public function getFaqId(): string
+    {
+        return $this->getCurrentUrl() . '#faq';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getOrganizationSchema(): array
+    {
+        $schema = [
+            '@type' => 'Organization',
+            '@id' => $this->getOrganizationId(),
+            'name' => (string) ($this->getConfig('general/store_information/name') ?? ''),
+            'url' => $this->getBaseUrl() . '/',
+        ];
+
+        $logo = $this->getStoreLogoUrl();
+        if ($logo) {
+            $schema['logo'] = [
+                '@type' => 'ImageObject',
+                'url' => $logo,
+            ];
+        }
+
+        $sameAs = $this->getSameAsUrls();
+        if ($sameAs) {
+            $schema['sameAs'] = $sameAs;
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getWebsiteSchema(): array
+    {
+        return [
+            '@type' => 'WebSite',
+            '@id' => $this->getWebsiteId(),
+            'url' => $this->getBaseUrl() . '/',
+            'name' => (string) ($this->getConfig('general/store_information/name') ?? ''),
+            'publisher' => [
+                '@id' => $this->getOrganizationId(),
+            ],
+        ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getSameAsUrls(): array
+    {
+        $raw = (string) ($this->getConfig('structureddata/organization/sameas') ?? '');
+        if (trim($raw) === '') {
+            return [];
+        }
+
+        $urls = [];
+        foreach (preg_split('/\r\n|\r|\n/', $raw) ?: [] as $line) {
+            $line = trim((string) $line);
+            if ($line !== '') {
+                $urls[] = $line;
+            }
+        }
+
+        return $urls;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getBreadcrumbListSchema(): array
+    {
+        return [
+            '@type' => 'BreadcrumbList',
+            '@id' => $this->getBreadcrumbId(),
+            'itemListElement' => $this->getBreadcrumbItems(),
+        ];
+    }
+
+    /**
+     * Returns the visible breadcrumb items as ListItem entries. Reads the
+     * rendered breadcrumbs block where possible so the schema mirrors what
+     * the user sees.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getBreadcrumbItems(): array
+    {
+        $items = $this->resolveBreadcrumbItems();
+
+        $list = [];
+        $position = 1;
+        foreach ($items as $item) {
+            $list[] = [
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => $item['name'],
+                'item' => $item['url'],
+            ];
+        }
+
+        return $list;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getFaqPageSchema(): array
+    {
+        $items = $this->faqCollector->getItems();
+
+        $mainEntity = [];
+        foreach ($items as $item) {
+            $mainEntity[] = [
+                '@type' => 'Question',
+                'name' => $item['question'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $item['answer'],
+                ],
+            ];
+        }
+
+        return [
+            '@type' => 'FAQPage',
+            '@id' => $this->getFaqId(),
+            'mainEntity' => $mainEntity,
+        ];
+    }
+
+    public function hasFaqSchema(): bool
+    {
+        return $this->faqCollector->hasItems();
+    }
+
+    /**
+     * @return array<int, array{name: string, url: string}>
+     */
+    private function resolveBreadcrumbItems(): array
+    {
+        $items = [];
+
+        $items[] = [
+            'name' => 'Home',
+            'url' => $this->getBaseUrl() . '/',
+        ];
+
+        try {
+            $registry = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(\Magento\Framework\Registry::class);
+            $category = $registry->registry('current_category');
+            if ($category && is_object($category)) {
+                $items[] = [
+                    'name' => (string) $category->getName(),
+                    'url' => (string) $category->getUrl(),
+                ];
+            }
+            $product = $registry->registry('current_product');
+            if ($product && is_object($product)) {
+                $items[] = [
+                    'name' => (string) $product->getName(),
+                    'url' => (string) $product->getProductUrl(),
+                ];
+            }
+        } catch (\Throwable $e) {
+            // Registry not available; return Home only.
+        }
+
+        return $items;
+    }
+
+    private function stripQueryString(string $url): string
+    {
+        $pos = strpos($url, '?');
+        return $pos === false ? $url : substr($url, 0, $pos);
+    }
 }
+

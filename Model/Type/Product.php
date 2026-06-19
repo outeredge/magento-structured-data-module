@@ -13,6 +13,7 @@ use Magento\Framework\Escaper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
+use Magento\Framework\Registry;
 use Magento\Review\Model\Review\Summary;
 use Magento\Review\Model\Review\SummaryFactory;
 use Magento\Review\Model\ResourceModel\Rating\Option\Vote\CollectionFactory as RatingOptionVoteFactory;
@@ -101,7 +102,8 @@ class Product
         protected ProductRepositoryInterface $productRepository,
         protected CacheInterface $cache,
         protected SerializerInterface $serializer,
-        protected Template $template
+        protected Template $template,
+        protected Registry $registry
 	) {
 	}
 
@@ -126,6 +128,7 @@ class Product
                 "@type" => "Brand",
                 "name" => $this->escapeQuote((string)strip_tags($this->getBrand()))
             ];
+            $data['brand']['url'] = $this->getBrandListingUrl((string) $this->getBrand());
         }
 
         if ($this->_moduleManager->isEnabled('Magento_Review') &&
@@ -178,7 +181,7 @@ class Product
         }
 
         if ($this->getGtin()) {
-            $data['gtin'] = $this->escapeQuote((string)strip_tags($this->getGtin()));
+            $data['gtin13'] = $this->escapeQuote((string)strip_tags($this->getGtin()));
         }
 
         if ($this->getMpn()) {
@@ -189,16 +192,34 @@ class Product
             $data['isbn'] = $this->escapeQuote((string)strip_tags($this->getIsbn()));
         }
 
-        if ($this->getSize()) {
-            $data['size'] = $this->escapeQuote((string)strip_tags($this->getSize()));
+        $additionalProperty = [];
+        if ($size = $this->getSize()) {
+            $additionalProperty[] = [
+                '@type' => 'PropertyValue',
+                'name' => 'Size',
+                'value' => $this->escapeQuote((string) strip_tags($size))
+            ];
+        }
+        if ($color = $this->getColor()) {
+            $additionalProperty[] = [
+                '@type' => 'PropertyValue',
+                'name' => 'Color',
+                'value' => $this->escapeQuote((string) strip_tags($color))
+            ];
+        }
+        if ($material = $this->getMaterial()) {
+            $additionalProperty[] = [
+                '@type' => 'PropertyValue',
+                'name' => 'Material',
+                'value' => $this->escapeQuote((string) strip_tags($material))
+            ];
+        }
+        if ($additionalProperty) {
+            $data['additionalProperty'] = $additionalProperty;
         }
 
-        if ($this->getMaterial()) {
-            $data['material'] = $this->escapeQuote((string)strip_tags($this->getMaterial()));
-        }
-
-        if ($this->getColor()) {
-            $data['color'] = $this->escapeQuote((string)strip_tags($this->getColor()));
+        if ($categoryName = $this->getBreadcrumbCategory()) {
+            $data['category'] = $this->escapeQuote($categoryName);
         }
 
         if ($this->getKeywords()) {
@@ -337,6 +358,8 @@ class Product
             "availability" => "http://schema.org/$availability",
             "itemCondition" => "http://schema.org/NewCondition"
         ];
+
+        $data['hasMerchantReturnPolicy'] = $this->getMerchantReturnPolicy();
 
         if ($product->getFinalPrice() < $product->getPrice()) {
             if ($product->getSpecialToDate()) {
@@ -691,5 +714,57 @@ class Product
             return $this->serializer->unserialize($result);
         }
         return false;
+    }
+
+    /**
+     * Returns the MerchantReturnPolicy block emitted on every Offer entity.
+     * Window days come from structureddata/shipping_return/merchant_return_days
+     * (default 18) and align with the current Boardshop return policy.
+     *
+     * @return array<string, mixed>
+     */
+    public function getMerchantReturnPolicy(): array
+    {
+        $days = (int) ($this->getConfig('structureddata/shipping_return/merchant_return_days') ?: 18);
+
+        return [
+            '@type' => 'MerchantReturnPolicy',
+            'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
+            'merchantReturnDays' => $days,
+            'returnMethod' => 'https://schema.org/ReturnByMail',
+            'returnFees' => 'https://schema.org/ReturnShippingFees'
+        ];
+    }
+
+    /**
+     * Returns the URL of the listing page that shows all products of this
+     * brand. Falls back to the catalog search results for the brand name.
+     */
+    public function getBrandListingUrl(string $brandName): string
+    {
+        $base = rtrim($this->_storeManager->getStore()->getBaseUrl(), '/');
+        $query = rawurlencode($brandName);
+        return $this->escapeUrl($base . '/catalogsearch/result/?q=' . $query);
+    }
+
+    /**
+     * Returns the deepest currently-registered category name from the
+     * Magento registry, so the Product entity can advertise a single
+     * breadcrumb category name. Empty string if none is registered.
+     */
+    public function getBreadcrumbCategory(): string
+    {
+        try {
+            $category = $this->registry->registry('current_category');
+        } catch (\Throwable $e) {
+            return '';
+        }
+
+        if (!$category || !is_object($category)) {
+            return '';
+        }
+
+        $name = trim((string) $category->getName());
+        return $this->escapeQuote($name);
     }
 }

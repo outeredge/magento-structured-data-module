@@ -1,42 +1,59 @@
 <!-- Structured Data by outer/edge (https://outeredge.agency) -->
 <?php
 /** @var \OuterEdge\StructuredData\Block\Jsonld $block */
-$mainEntity = $block->getChildHtml('main.entity');
-$additionalSchema = $block->getChildHtml('additional.schema');
-$isWebsite = $block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE;
-$storeName = (string) ($block->getConfig('general/store_information/name') ?? '');
-$baseUrl = $block->getStore()->getBaseUrl();
-$logoUrl = (string) ($block->getStoreLogoUrl() ?? '');
-?>
-<script type="application/ld+json" id="structured-data">
-{
-    "@context": "https://schema.org/",
-    "@type": "<?= $block->escapeQuote($block->getPageType()) ?>"
-    <?php if ($isWebsite): ?>
-    ,"url": <?= /* @noEscape */ json_encode($baseUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
-    ,"name": <?= /* @noEscape */ json_encode($storeName, JSON_UNESCAPED_UNICODE); ?>
-    <?php endif; ?>
-    ,"publisher": {
-        "@type": "Organization",
-        "name": <?= /* @noEscape */ json_encode($storeName, JSON_UNESCAPED_UNICODE); ?>,
-        "url": <?= /* @noEscape */ json_encode($baseUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>,
-        "logo": {
-            "@type": "ImageObject",
-            "url": <?= /* @noEscape */ json_encode($logoUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
+
+$mainEntityJson = $block->getChildHtml('main.entity');
+$additionalSchemaJson = $block->getChildHtml('additional.schema');
+
+$graph = [
+    $block->getOrganizationSchema(),
+    $block->getWebsiteSchema(),
+];
+
+$pageType = $block->getPageType();
+$pageEntity = [
+    '@type' => $pageType,
+    '@id' => $block->getPageId(),
+    'url' => $block->getCurrentUrl(),
+    'name' => (string) ($this->getLayout()->getBlock('head')->getTitle() ?? ''),
+    'isPartOf' => ['@id' => $block->getWebsiteId()],
+    'publisher' => ['@id' => $block->getOrganizationId()],
+    'breadcrumb' => ['@id' => $block->getBreadcrumbId()],
+];
+
+if (trim($mainEntityJson) !== '') {
+    $decoded = json_decode($mainEntityJson, true);
+    if (is_array($decoded)) {
+        $pageEntity['mainEntity'] = $decoded;
+    }
+}
+
+if (trim($additionalSchemaJson) !== '') {
+    $decoded = json_decode($additionalSchemaJson, true);
+    if (is_array($decoded)) {
+        foreach ($decoded as $key => $value) {
+            if ($key === '@type' && is_string($value)) {
+                $pageEntity['@type'] = $value;
+                continue;
+            }
+            $pageEntity[$key] = $value;
         }
     }
-    <?php if ($mainEntity && !$isWebsite): ?>
-    ,
-    "mainEntity": <?= /* @noEscape */ $mainEntity; ?>
-    <?php endif; ?>
-    <?php if ($additionalSchema): ?>
-        <?= /* @noEscape */ $additionalSchema; ?>
-    <?php endif; ?>
 }
+
+$graph[] = $pageEntity;
+$graph[] = $block->getBreadcrumbListSchema();
+
+if ($block->hasFaqSchema()) {
+    $graph[] = $block->getFaqPageSchema();
+}
+
+$payload = [
+    '@context' => 'https://schema.org',
+    '@graph' => $graph,
+];
+?>
+<script type="application/ld+json" id="structured-data">
+<?= /* @noEscape */ json_encode($payload, JSON_UNESCAPED_SLASHES) ?>
 </script>
-<?php if ($isWebsite && $mainEntity): ?>
-<script type="application/ld+json" id="structured-data-organization">
-<?= /* @noEscape */ $mainEntity; ?>
-</script>
-<?php endif; ?>
 <?= $block->getChildHtml('product.offers.schema'); ?>
