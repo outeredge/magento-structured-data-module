@@ -19,26 +19,10 @@
 </div>
 <?php endif; ?>
 
-
-<?php if ($crumbs && is_array($crumbs)): ?>
-<script type="application/ld+json">
-{
-    <?php $position = 1; ?>
-    "@context": "http://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-    <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>
-    {
-            "@type": "ListItem",
-            "position": "<?= $escaper->escapeHtml($position++) ?>",
-            "item": {
-                "@id": "<?= $escaper->escapeUrl($crumbInfo['link']) ?>",
-                "name": "<?= $escaper->escapeHtml($crumbInfo['label']) ?>"
-            }
-    }
-        <?= $crumbInfo['last'] ? '' : ',' ?>
-    <?php endforeach; ?>
-    ]
-}
-</script>
-<?php endif; ?>
+<?php
+// NOTE: BreadcrumbList JSON-LD is now emitted server-side by the outer/edge
+// structured-data module inside the unified @graph block on every page
+// (id="structured-data"). The previous inline <script type="application/ld+json">
+// emission here was removed to prevent duplicate BreadcrumbList nodes per
+// GEO plan (Issue 8).
+?>

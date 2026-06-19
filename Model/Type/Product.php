@@ -719,7 +719,7 @@ class Product
     /**
      * Returns the MerchantReturnPolicy block emitted on every Offer entity.
      * Window days come from structureddata/shipping_return/merchant_return_days
-     * (default 18) and align with the current Boardshop return policy.
+     * (default 18) and align with the current website return policy.
      *
      * @return array<string, mixed>
      */

@@ -20,6 +20,10 @@
             <shipping_return>
                 <merchant_return_days>18</merchant_return_days>
             </shipping_return>
+            <website>
+                <enable_search_action>1</enable_search_action>
+                <haspart_limit>20</haspart_limit>
+            </website>
         </structureddata>
     </default>
 </config>

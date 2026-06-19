@@ -67,7 +67,8 @@ class Category extends \Magento\Framework\View\Element\Template
 
         $collectionPage = [
             "@type" => "CollectionPage",
-            "mainEntity" => $itemList
+            // schema.org: CollectionPage.hasPart → ItemList of items.
+            "hasPart" => $itemList
         ];
 
         if ($description !== '') {

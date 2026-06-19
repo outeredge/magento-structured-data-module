@@ -11,29 +11,53 @@ $graph = [
 ];
 
 $pageType = $block->getPageType();
+
+// Build the page entity. Collection pages use an @type array per GEO plan
+// (Step 5) so existing WebPage graph edges remain valid.
 $pageEntity = [
     '@type' => $pageType,
     '@id' => $block->getPageId(),
     'url' => $block->getCurrentUrl(),
     'name' => $block->getPageTitle(),
+    'inLanguage' => $block->getStoreLocale(),
     'isPartOf' => ['@id' => $block->getWebsiteId()],
     'publisher' => ['@id' => $block->getOrganizationId()],
     'breadcrumb' => ['@id' => $block->getBreadcrumbId()],
 ];
 
-if (trim($mainEntityJson) !== '') {
-    $decoded = json_decode($mainEntityJson, true);
-    if (is_array($decoded)) {
-        $pageEntity['mainEntity'] = $decoded;
-    }
+if ($block->isCollectionPage()) {
+    $pageEntity['@type'] = ['CollectionPage', 'WebPage'];
 }
 
+$description = $block->getPageDescription();
+if ($description !== '') {
+    $pageEntity['description'] = $description;
+}
+
+$dateModified = $block->getPageDateModified();
+if ($dateModified !== '') {
+    $pageEntity['dateModified'] = $dateModified;
+}
+
+$primaryImage = $block->getPagePrimaryImage();
+if (!empty($primaryImage)) {
+    $pageEntity['primaryImageOfPage'] = $primaryImage;
+}
+
+// Category CMS child may override the @type or add fields (mainContentOfPage, etc.).
 if (trim($additionalSchemaJson) !== '') {
     $decoded = json_decode($additionalSchemaJson, true);
     if (is_array($decoded)) {
         foreach ($decoded as $key => $value) {
             if ($key === '@type' && is_string($value)) {
-                $pageEntity['@type'] = $value;
+                // Preserve array form for CollectionPage.
+                if (is_array($pageEntity['@type'])) {
+                    if (!in_array($value, $pageEntity['@type'], true)) {
+                        $pageEntity['@type'][] = $value;
+                    }
+                } else {
+                    $pageEntity['@type'] = $value;
+                }
                 continue;
             }
             $pageEntity[$key] = $value;
@@ -41,8 +65,61 @@ if (trim($additionalSchemaJson) !== '') {
     }
 }
 
+// Category block provides the product ItemList and category-level metadata.
+// Use `hasPart` for the product list and merge any `about` description into
+// the WebPage entity so the page entity carries both.
+if (trim($mainEntityJson) !== '') {
+    $decoded = json_decode($mainEntityJson, true);
+    if (is_array($decoded)) {
+        // If the Category block emitted a `hasPart` ItemList, use it.
+        if (isset($decoded['hasPart']) && is_array($decoded['hasPart'])) {
+            $pageEntity['hasPart'] = $decoded['hasPart'];
+        } elseif (isset($decoded['mainEntity'])) {
+            // Legacy/Compatibility shape — promote mainEntity to hasPart for
+            // CollectionPage so we keep emitting an ItemList of products.
+            if ($block->isCollectionPage()) {
+                $pageEntity['hasPart'] = $decoded['mainEntity'];
+            } else {
+                $pageEntity['mainEntity'] = $decoded['mainEntity'];
+            }
+        } elseif (isset($decoded['itemListElement'])) {
+            // Bare ItemList shape.
+            $pageEntity['hasPart'] = [
+                '@type' => 'ItemList',
+                'itemListElement' => $decoded['itemListElement'],
+            ];
+        }
+
+        // Merge `about` (category description) into the page entity as
+        // description when not already populated.
+        if (isset($decoded['about']) && is_string($decoded['about'])
+            && empty($pageEntity['description'])
+        ) {
+            $pageEntity['description'] = trim((string) preg_replace(
+                '/\s+/',
+                ' ',
+                strip_tags($decoded['about'])
+            ));
+        }
+    }
+}
+
+// If no Category block was rendered (e.g. Hub pages), fall back to building
+// the ItemList directly from the registry.
+if ($block->isCollectionPage() && !isset($pageEntity['hasPart'])) {
+    $hasPart = $block->getHasPartItemList();
+    if (!empty($hasPart)) {
+        $pageEntity['hasPart'] = $hasPart;
+    }
+}
+
 $graph[] = $pageEntity;
-$graph[] = $block->getBreadcrumbListSchema();
+
+// Only emit the BreadcrumbList when there's at least one item.
+$breadcrumbItems = $block->getBreadcrumbItems();
+if (!empty($breadcrumbItems)) {
+    $graph[] = $block->getBreadcrumbListSchema();
+}
 
 if ($block->hasFaqSchema()) {
     $graph[] = $block->getFaqPageSchema();
