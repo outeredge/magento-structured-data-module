@@ -197,6 +197,33 @@ class Jsonld extends Template
         return $this->getCurrentUrl() . '#webpage';
     }
 
+    public function getPageTitle(): string
+    {
+        try {
+            $head = $this->getLayout() ? $this->getLayout()->getBlock('head') : false;
+            if ($head && method_exists($head, 'getTitle')) {
+                $title = (string) $head->getTitle();
+                if ($title !== '') {
+                    return $title;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fall through to other sources.
+        }
+
+        try {
+            $config = $this->_scopeConfig;
+            $title = (string) $config->getValue('design/head/default_title');
+            if ($title !== '') {
+                return $title;
+            }
+        } catch (\Throwable $e) {
+            // Ignore.
+        }
+
+        return '';
+    }
+
     public function getFaqId(): string
     {
         return $this->getCurrentUrl() . '#faq';

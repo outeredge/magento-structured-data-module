@@ -15,7 +15,7 @@ $pageEntity = [
     '@type' => $pageType,
     '@id' => $block->getPageId(),
     'url' => $block->getCurrentUrl(),
-    'name' => (string) ($this->getLayout()->getBlock('head')->getTitle() ?? ''),
+    'name' => $block->getPageTitle(),
     'isPartOf' => ['@id' => $block->getWebsiteId()],
     'publisher' => ['@id' => $block->getOrganizationId()],
     'breadcrumb' => ['@id' => $block->getBreadcrumbId()],
