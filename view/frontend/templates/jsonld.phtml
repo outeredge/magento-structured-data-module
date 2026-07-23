@@ -129,6 +129,7 @@ if (!empty($breadcrumbItems)) {
 }
 
 if ($block->hasFaqSchema()) {
+    $pageEntity['about'] = ['@id' => $block->getFaqId()];
     $graph[] = $block->getFaqPageSchema();
 }
 

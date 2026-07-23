@@ -433,10 +433,24 @@ class Jsonld extends Template
         try {
             $registry = \Magento\Framework\App\ObjectManager::getInstance()
                 ->get(\Magento\Framework\Registry::class);
+
             $category = $registry->registry('current_category');
             if ($category && is_object($category) && method_exists($category, 'getImageUrl')) {
                 $url = (string) $category->getImageUrl();
                 if ($url !== '') {
+                    return [
+                        '@type' => 'ImageObject',
+                        'url' => $url,
+                    ];
+                }
+            }
+
+            // On product pages (no current_category), use the product's
+            // main image so ItemPage.primaryImageOfPage is populated.
+            $product = $registry->registry('current_product');
+            if ($product && is_object($product) && method_exists($product, 'getImage')) {
+                $url = (string) $product->getImage();
+                if ($url !== '' && strncmp($url, 'no-selection', 12) !== 0) {
                     return [
                         '@type' => 'ImageObject',
                         'url' => $url,
@@ -490,11 +504,16 @@ class Jsonld extends Template
     }
 
     /**
-     * Build a brand description for the Organization node so AI search engines
-     * have an explicit grounding for the brand entity. Prefers an admin-set
-     * "general/store_information/description" config; falls back to the head
-     * default description; otherwise synthesises a short statement from the
-     * store name.
+     * Build a brand description for the Organization node so AI search
+     * engines have an explicit grounding for the brand entity. Prefers
+     * an admin-set "general/store_information/description" config; falls
+     * back to the head default description.
+     *
+     * Returns an empty string if no real description is configured. A
+     * synthesised phrase like "{name} — specialist retailer." is
+     * deliberately not used: it would be weighted by AI engines as a
+     * real description but adds no real information, which dilutes
+     * the Organization entity's GEO signal.
      */
     public function getOrganizationDescription(): string
     {
@@ -509,8 +528,7 @@ class Jsonld extends Template
             }
         }
 
-        $name = trim((string) ($this->getConfig('general/store_information/name') ?? ''));
-        return $name !== '' ? sprintf('%s — specialist retailer.', $name) : '';
+        return '';
     }
 
     /**
