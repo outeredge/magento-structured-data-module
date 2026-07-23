@@ -1,6 +1,9 @@
 <?php
     $product = $block->getProduct();
     if ($product && $product->getEntityId()):
+        $productSchema = $block->getSchemaJson();
+        $productData = json_decode((string) $productSchema, true);
+        $productId = is_array($productData) ? (string) ($productData['@id'] ?? '') : '';
 ?>
 <script async>
     function fetchOffersSchema(ID) {
@@ -12,26 +15,34 @@
             const structuredData = document.getElementById('structured-data');
             if (!structuredData) return;
 
-            const structuredDataJson = JSON.parse(structuredData.textContent);
+            let structuredDataJson;
+            try {
+                structuredDataJson = JSON.parse(structuredData.textContent);
+            } catch (e) {
+                return;
+            }
             const offers = data[0].offers;
+            const targetId = '<?= $escaper->escapeJs($productId) ?>';
 
-            // New template (new-geo): Product is a node in @graph.
-            if (Array.isArray(structuredDataJson['@graph'])) {
-                const productNode = structuredDataJson['@graph'].find(
-                    (n) => n && n['@type'] === 'Product'
+            function applyOffers(node) {
+                if (!node) return false;
+                node.offers = offers;
+                return true;
+            }
+
+            // Only update the Product entity requested by this page. A type
+            // fallback can corrupt another extension's Product node.
+            if (targetId && Array.isArray(structuredDataJson['@graph'])) {
+                const target = structuredDataJson['@graph'].find(
+                    (n) => n && n['@id'] === targetId
                 );
-                if (productNode) {
-                    productNode.offers = offers;
+                if (applyOffers(target)) {
                     structuredData.textContent = JSON.stringify(structuredDataJson);
                     return;
                 }
             }
-
-            // Back-compat: master template exposes the Product via mainEntity.
-            if (structuredDataJson.mainEntity) {
-                structuredDataJson.mainEntity.offers = offers;
-                structuredData.textContent = JSON.stringify(structuredDataJson);
-            }
+        }).catch(() => {
+            // intentionally swallow - initial HTML must remain valid
         });
     }
 
@@ -43,6 +54,6 @@
         }
     }
 
-    waitForBaseUrl(() => fetchOffersSchema('<?= $block->escapeQuote($product->getEntityId()) ?>'));
+    waitForBaseUrl(() => fetchOffersSchema('<?= $escaper->escapeJs((string) $product->getEntityId()) ?>'));
 </script>
 <?php endif; ?>

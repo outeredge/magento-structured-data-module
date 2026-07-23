@@ -196,7 +196,93 @@ class Jsonld extends Template
 
     public function getCurrentUrl(): string
     {
+        $canonical = $this->getCanonicalPageUrl();
+        if ($canonical !== '') {
+            return $this->normalizeUrl($canonical);
+        }
         return $this->normalizeUrl((string) $this->_storeManager->getStore()->getCurrentUrl(false));
+    }
+
+    /**
+     * Returns Magento's configured canonical page URL when available.
+     * Falls back to an empty string so callers can keep their default
+     * request-URL behavior.
+     */
+    public function getCanonicalPageUrl(): string
+    {
+        $assetUrl = $this->getCanonicalAssetUrl();
+        if ($assetUrl !== '') {
+            return $assetUrl;
+        }
+
+        try {
+            $product = $this->registry->registry('current_product');
+            if ($product && is_object($product)) {
+                $urlModel = $product->getUrlModel();
+                if ($urlModel && method_exists($urlModel, 'getUrl')) {
+                    $url = (string) $urlModel->getUrl($product, [
+                        '_ignore_category' => true,
+                        '_scope_to_url' => true,
+                    ]);
+                    if ($url !== '') {
+                        return $url;
+                    }
+                }
+            }
+
+            $category = $this->registry->registry('current_category');
+            if ($category && is_object($category) && method_exists($category, 'getUrl')) {
+                $url = (string) $category->getUrl();
+                if ($url !== '') {
+                    return $url;
+                }
+            }
+
+            $cmsPage = $this->registry->registry('cms_page');
+            if ($cmsPage && is_object($cmsPage) && method_exists($cmsPage, 'getIdentifier')) {
+                $identifier = trim((string) $cmsPage->getIdentifier(), '/');
+                if ($identifier !== '' && $identifier !== 'home') {
+                    return $this->getBaseUrl() . '/' . $identifier;
+                }
+                return $this->getBaseUrl() . '/';
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        return '';
+    }
+
+    private function getCanonicalAssetUrl(): string
+    {
+        try {
+            $collection = $this->pageConfig->getAssetCollection();
+            if (!$collection || !method_exists($collection, 'getAll')) {
+                return '';
+            }
+            foreach ((array) $collection->getAll() as $key => $asset) {
+                if (!is_object($asset) || !method_exists($asset, 'getUrl')) {
+                    continue;
+                }
+                $isCanonical = method_exists($asset, 'getContentType')
+                    && strcasecmp((string) $asset->getContentType(), 'canonical') === 0;
+                $isCanonical = $isCanonical || stripos((string) $key, 'canonical') !== false;
+                if (method_exists($asset, 'getProperties')) {
+                    $properties = (array) $asset->getProperties();
+                    $attributes = (array) ($properties['attributes'] ?? []);
+                    $isCanonical = $isCanonical
+                        || strcasecmp((string) ($attributes['rel'] ?? ''), 'canonical') === 0;
+                }
+                if ($isCanonical) {
+                    $url = (string) $asset->getUrl();
+                    if ($url !== '') {
+                        return $url;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Entity-specific canonical URLs are used as the fallback.
+        }
+        return '';
     }
 
     public function getBreadcrumbId(): string
@@ -721,11 +807,13 @@ class Jsonld extends Template
     private function resolveBreadcrumbItems(): array
     {
         try {
-            $breadcrumbs = $this->getLayout() ? $this->getLayout()->getBlock('breadcrumbs') : null;
-            $crumbs = $breadcrumbs ? $breadcrumbs->getData('structured_data_crumbs') : null;
-            if (is_array($crumbs)) {
+            $crumbs = $this->getCapturedCrumbs();
+            if (is_array($crumbs) && $crumbs) {
                 $items = [];
                 foreach ($crumbs as $crumb) {
+                    if (!is_array($crumb)) {
+                        continue;
+                    }
                     $name = trim(strip_tags((string) ($crumb['label'] ?? '')));
                     if ($name === '') {
                         continue;
@@ -756,6 +844,37 @@ class Jsonld extends Template
                 'url' => $this->getBaseUrl() . '/',
             ],
         ];
+    }
+
+    /**
+     * Returns crumbs captured by BreadcrumbsPlugin (preferred) or set via
+     * the module's own template bridge. Plugins run for any theme using
+     * the public Magento\Theme\Block\Html\Breadcrumbs block, so this works
+     * for Luma, Hyvä, and custom themes alike.
+     */
+    private function getCapturedCrumbs(): ?array
+    {
+        try {
+            $own = $this->getData('structured_data_crumbs');
+            if (is_array($own) && $own) {
+                return $own;
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        try {
+            $layout = $this->getLayout();
+            $breadcrumbs = $layout ? $layout->getBlock('breadcrumbs') : null;
+            if ($breadcrumbs) {
+                $crumbs = $breadcrumbs->getData('crumbs');
+                if (is_array($crumbs) && $crumbs) {
+                    return $crumbs;
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        return null;
     }
 
     /**

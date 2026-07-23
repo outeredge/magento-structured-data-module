@@ -21,9 +21,6 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Catalog\Model\Product\Visibility;
-use Magento\Framework\App\CacheInterface;
-use Magento\Framework\Serialize\SerializerInterface;
-use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\Registry;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
@@ -101,8 +98,6 @@ class Product
         protected PricingHelper $pricingHelper,
         protected TaxHelper $taxHelper,
         protected ProductRepositoryInterface $productRepository,
-        protected CacheInterface $cache,
-        protected SerializerInterface $serializer,
         protected Template $template,
         protected Registry $registry,
         protected CategoryRepositoryInterface $categoryRepository
@@ -111,9 +106,8 @@ class Product
 
     public function getSchemaData(ProductModel $product)
     {
-        if (!$this->_product) {
-            $this->_product = $product;
-        }
+        $this->resetProductState();
+        $this->_product = $product;
 
         $data = [
             "@context" => "https://schema.org/",
@@ -263,6 +257,7 @@ class Product
             return null;
         }
 
+        $this->resetProductState();
         $this->_product = $product;
 
         $children = $this->getChildren();
@@ -284,7 +279,7 @@ class Product
                 $offers[$key]['sku'] = $_childProduct->getSku();
 
                 if ($_childProduct->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
-                    $offers[$key]['url'] = $this->_product->getProductUrl();
+                    $offers[$key]['url'] = $this->getCanonicalProductUrl($this->_product);
                 }
                 $key == $lastKey ? '' : ',';
             }
@@ -323,15 +318,6 @@ class Product
     {
         if ($this->getConfig('structureddata/product/hide_price')) {
             return null;
-        }
-        if ($result = $this->getCache($product->getId())) {
-            $returnPolicy = $this->getMerchantReturnPolicy();
-            if ($returnPolicy === []) {
-                unset($result['hasMerchantReturnPolicy']);
-            } else {
-                $result['hasMerchantReturnPolicy'] = $returnPolicy;
-            }
-            return $result;
         }
 
         $availability      = 'OutOfStock';
@@ -383,7 +369,6 @@ class Product
             ];
         }
 
-        $this->saveCache($product->getId(), $data);
         return $data;
     }
 
@@ -701,28 +686,6 @@ class Product
         return (string) $data;
     }
     
-    protected function getCacheId($productId)
-    {
-        return StructuredDataCache::TYPE_IDENTIFIER . '_' . $this->getStore()->getId() . '_' . $productId;
-    }
-
-    protected function saveCache($productId, $data)
-    {
-        $this->cache->save(
-            $this->serializer->serialize($data),
-            $this->getCacheId($productId),
-            [StructuredDataCache::CACHE_TAG]
-        );
-    }
-
-    protected function getCache($productId)
-    {
-        if ($result = $this->cache->load($this->getCacheId($productId))) {
-            return $this->serializer->unserialize($result);
-        }
-        return false;
-    }
-
     /**
      * Returns the configured MerchantReturnPolicy, or an empty array when no
      * return window has been configured. The module must not invent a policy.
@@ -802,9 +765,40 @@ class Product
 
     private function getCanonicalProductUrl(ProductModel $product): string
     {
-        $url = (string) $product->getUrlInStore();
+        $url = $this->resolveCategoryIndependentProductUrl($product);
         $url = preg_replace('/[?#].*$/', '', $url) ?: $url;
         return $this->escapeUrl(strip_tags($url));
+    }
+
+    private function resolveCategoryIndependentProductUrl(ProductModel $product): string
+    {
+        try {
+            $urlModel = $product->getUrlModel();
+            if ($urlModel && method_exists($urlModel, 'getUrl')) {
+                $url = (string) $urlModel->getUrl($product, [
+                    '_ignore_category' => true,
+                    '_scope_to_url' => true,
+                ]);
+                if ($url !== '') {
+                    return $url;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fall back to the product URL API below.
+        }
+        return (string) $product->getProductUrl(false);
+    }
+
+    private function resetProductState(): void
+    {
+        $this->brand = null;
+        $this->weight = null;
+        $this->minWeight = null;
+        $this->maxWeight = null;
+        $this->minPrice = null;
+        $this->maxPrice = null;
+        $this->reviewsCount = null;
+        $this->_reviewData = null;
     }
 
 }
