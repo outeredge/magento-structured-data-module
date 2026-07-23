@@ -1,4 +1,5 @@
 <?php if ($crumbs && is_array($crumbs)): ?>
+    <?php $block->setData('structured_data_crumbs', $crumbs); ?>
 <div class="breadcrumbs">
     <ul class="items">
         <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>

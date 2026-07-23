@@ -14,6 +14,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Helper\Image as ImageHelper;
+use Magento\Framework\View\Page\Config as PageConfig;
 
 class Jsonld extends Template
 {
@@ -73,6 +74,7 @@ class Jsonld extends Template
         protected SerializerInterface $serializer,
         protected CategoryRepositoryInterface $categoryRepository,
         protected ImageHelper $imageHelper,
+        protected PageConfig $pageConfig,
         array $data = []
     ) {
         $logo->setData('logoPathResolver', $logoPathResolver);
@@ -194,11 +196,7 @@ class Jsonld extends Template
 
     public function getCurrentUrl(): string
     {
-        $url = $this->_request->getUriString();
-        if ($url === '') {
-            $url = $this->_storeManager->getStore()->getCurrentUrl(false);
-        }
-        return $this->stripQueryString((string) $url);
+        return $this->normalizeUrl((string) $this->_storeManager->getStore()->getCurrentUrl(false));
     }
 
     public function getBreadcrumbId(): string
@@ -214,12 +212,9 @@ class Jsonld extends Template
     public function getPageTitle(): string
     {
         try {
-            $head = $this->getLayout() ? $this->getLayout()->getBlock('head') : false;
-            if ($head && method_exists($head, 'getTitle')) {
-                $title = (string) $head->getTitle();
-                if ($title !== '') {
-                    return $title;
-                }
+            $title = trim((string) $this->pageConfig->getTitle()->get());
+            if ($title !== '') {
+                return $title;
             }
         } catch (\Throwable $e) {
             // Fall through to other sources.
@@ -627,7 +622,7 @@ class Jsonld extends Template
 
         $list = $this->augmentBreadcrumbForCurrentPage($list);
 
-        return $list;
+        return count($list) > 1 ? $list : [];
     }
 
     /**
@@ -714,64 +709,10 @@ class Jsonld extends Template
      */
     public function getCollectionItemList(): array
     {
-        if (!$this->isCollectionPage()
-            || !(int) $this->getConfig('structureddata/product/enable_category')
-        ) {
-            return [];
-        }
-
-        $items = [];
-        try {
-            $category = $this->registry->registry('current_category');
-            if ($category && is_object($category)) {
-                $items = $this->buildHasPartFromCategory($category);
-            }
-        } catch (\Throwable $e) {
-            // ignore
-        }
-
-        if (empty($items)) {
-            return [];
-        }
-
-        return [
-            '@type' => 'ItemList',
-            'itemListElement' => $items,
-        ];
-    }
-
-    /**
-     * @param \Magento\Catalog\Model\Category $category
-     * @return array<int, array<string, mixed>>
-     */
-    private function buildHasPartFromCategory($category): array
-    {
-        try {
-            $limit = (int) $this->getConfig('structureddata/website/haspart_limit');
-            if ($limit <= 0) {
-                $limit = 20;
-            }
-
-            $productCollection = $category->getProductCollection();
-            $productCollection->addAttributeToSelect(['name', 'url_key', 'url_path']);
-            $productCollection->setPageSize($limit);
-            $productCollection->setCurPage(1);
-            $productCollection->addUrlRewrite();
-
-            $position = 1;
-            $items = [];
-            foreach ($productCollection as $product) {
-                $items[] = [
-                    '@type' => 'ListItem',
-                    'position' => $position++,
-                    'url' => (string) $product->getProductUrl(),
-                    'name' => (string) $product->getName(),
-                ];
-            }
-            return $items;
-        } catch (\Throwable $e) {
-            return [];
-        }
+        // The category child block uses Magento's fully prepared ListProduct
+        // collection. An independent fallback cannot safely reproduce layers,
+        // permissions, sorting, stock filters, and pagination.
+        return [];
     }
 
     /**
@@ -779,8 +720,30 @@ class Jsonld extends Template
      */
     private function resolveBreadcrumbItems(): array
     {
-        // Build from public registry/repository APIs rather than reflecting
-        // into Magento's private breadcrumbs state.
+        try {
+            $breadcrumbs = $this->getLayout() ? $this->getLayout()->getBlock('breadcrumbs') : null;
+            $crumbs = $breadcrumbs ? $breadcrumbs->getData('structured_data_crumbs') : null;
+            if (is_array($crumbs)) {
+                $items = [];
+                foreach ($crumbs as $crumb) {
+                    $name = trim(strip_tags((string) ($crumb['label'] ?? '')));
+                    if ($name === '') {
+                        continue;
+                    }
+                    $url = (string) ($crumb['link'] ?? '');
+                    if ($url === '') {
+                        $url = $this->getCurrentUrl();
+                    }
+                    $items[] = ['name' => $name, 'url' => $this->normalizeUrl($url)];
+                }
+                if ($items) {
+                    return $items;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fall back to registry-derived breadcrumbs.
+        }
+
         $items = $this->resolveFromRegistry();
         if (!empty($items)) {
             return $items;
@@ -854,7 +817,7 @@ class Jsonld extends Template
                         }
                         $items[] = [
                             'name' => (string) $cat->getName(),
-                            'url' => (string) $cat->getUrl(),
+                            'url' => $this->normalizeUrl((string) $cat->getUrl()),
                         ];
                     } catch (\Throwable $e) {
                         // skip missing ancestor
@@ -866,7 +829,7 @@ class Jsonld extends Template
             // No path attribute — emit Home + current category.
             $items[] = [
                 'name' => (string) $category->getName(),
-                'url' => (string) $category->getUrl(),
+                'url' => $this->normalizeUrl((string) $category->getUrl()),
             ];
         } catch (\Throwable $e) {
             // ignore
@@ -894,7 +857,7 @@ class Jsonld extends Template
                 $items = $this->buildCategoryBreadcrumbItems($currentCategory);
                 $items[] = [
                     'name' => (string) $product->getName(),
-                    'url' => (string) $product->getProductUrl(),
+                    'url' => $this->normalizeUrl((string) $product->getProductUrl()),
                 ];
                 return $items;
             }
@@ -941,7 +904,7 @@ class Jsonld extends Template
                                     }
                                     $items[] = [
                                         'name' => (string) $c->getName(),
-                                        'url' => (string) $c->getUrl(),
+                                        'url' => $this->normalizeUrl((string) $c->getUrl()),
                                     ];
                                 } catch (\Throwable $e) {
                                     // skip
@@ -959,15 +922,36 @@ class Jsonld extends Template
 
         $items[] = [
             'name' => (string) $product->getName(),
-            'url' => (string) $product->getProductUrl(),
+            'url' => $this->normalizeUrl((string) $product->getProductUrl()),
         ];
 
         return $items;
     }
 
-    private function stripQueryString(string $url): string
+    public function normalizeUrl(string $url): string
     {
-        $pos = strpos($url, '?');
-        return $pos === false ? $url : substr($url, 0, $pos);
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+        if (str_starts_with($url, '/')) {
+            $url = $this->getBaseUrl() . '/' . ltrim($url, '/');
+        }
+        return preg_replace('/[?#].*$/', '', $url) ?: $url;
+    }
+
+    public function encodeJson(array $payload): string
+    {
+        $json = json_encode(
+            $payload,
+            JSON_UNESCAPED_SLASHES
+            | JSON_UNESCAPED_UNICODE
+            | JSON_HEX_TAG
+            | JSON_HEX_AMP
+            | JSON_HEX_APOS
+            | JSON_HEX_QUOT
+            | JSON_INVALID_UTF8_SUBSTITUTE
+        );
+        return is_string($json) ? $json : '';
     }
 }

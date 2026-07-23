@@ -118,8 +118,8 @@ class Product
         $data = [
             "@context" => "https://schema.org/",
             "@type" => "Product",
-            "@id" => $this->escapeUrl(strtok($this->_product->getUrlInStore(), '?'))."#Product",
-            "url" => $this->escapeUrl(strip_tags($this->_product->getProductUrl())),
+            "@id" => $this->getCanonicalProductUrl($this->_product)."#Product",
+            "url" => $this->getCanonicalProductUrl($this->_product),
             "name" => $this->escapeQuote((string)strip_tags($this->_product->getName())),
             "sku" => $this->escapeQuote((string)strip_tags($this->_product->getSku())),
             "description" => $this->escapeHtml((string)$this->template->stripTags($this->getDescription())),
@@ -182,8 +182,9 @@ class Product
             }
         }
 
-        if ($gtin = (string) strip_tags((string) $this->getGtin())) {
-            $len = strlen(preg_replace('/\D/', '', $gtin));
+        if ($gtin = trim((string) strip_tags((string) $this->getGtin()))) {
+            $normalizedGtin = preg_replace('/\D/', '', $gtin) ?: '';
+            $len = strlen($normalizedGtin);
             $key = match (true) {
                 $len === 8 => 'gtin8',
                 $len === 12 => 'gtin12',
@@ -192,8 +193,8 @@ class Product
                 default => 'gtin',
             };
             $data['gtin'] = $this->escapeQuote($gtin);
-            if ($key !== 'gtin') {
-                $data[$key] = $data['gtin'];
+            if ($key !== 'gtin' && preg_match('/^[\d\s-]+$/', $gtin)) {
+                $data[$key] = $normalizedGtin;
             }
         }
 
@@ -355,7 +356,7 @@ class Product
 
         $data = [
             "@type" => "Offer",
-            "url" => $this->escapeUrl(strtok($product->getUrlInStore(), '?')),
+            "url" => $this->getCanonicalProductUrl($product),
             "price" => $this->escapeQuote((string)$this->pricingHelper->currency($finalPriceWithTax, false, false)),
             "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
             "availability" => "http://schema.org/$availability",
@@ -692,12 +693,12 @@ class Product
      */
     public function escapeHtml($data, $allowedTags = null)
     {
-        return $this->_escaper->escapeHtml($data, $allowedTags);
+        return trim(strip_tags((string) $data));
     }
 
     public function escapeQuote($data)
     {
-        return htmlspecialchars($data, ENT_QUOTES | ENT_SUBSTITUTE, null, false);
+        return (string) $data;
     }
     
     protected function getCacheId($productId)
@@ -797,6 +798,13 @@ class Product
         } catch (\Throwable $e) {
             return '';
         }
+    }
+
+    private function getCanonicalProductUrl(ProductModel $product): string
+    {
+        $url = (string) $product->getUrlInStore();
+        $url = preg_replace('/[?#].*$/', '', $url) ?: $url;
+        return $this->escapeUrl(strip_tags($url));
     }
 
 }

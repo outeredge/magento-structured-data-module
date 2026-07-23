@@ -16,6 +16,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Helper\Image as ImageHelper;
+use Magento\Framework\View\Page\Config as PageConfig;
 
 class Cms extends Jsonld
 {
@@ -55,6 +56,7 @@ class Cms extends Jsonld
         SerializerInterface $serializer,
         CategoryRepositoryInterface $categoryRepository,
         ImageHelper $imageHelper,
+        PageConfig $pageConfig,
         array $data = []
     ) {
         $this->_filterProvider = $filterProvider;
@@ -70,6 +72,7 @@ class Cms extends Jsonld
             $serializer,
             $categoryRepository,
             $imageHelper,
+            $pageConfig,
             $data
         );
     }

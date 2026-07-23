@@ -18,7 +18,14 @@ if (trim($mainEntityJson) !== '' && in_array($pageType, [
     $decodedOrganization = json_decode($mainEntityJson, true);
     if (is_array($decodedOrganization)) {
         unset($decodedOrganization['@context']);
+        $sameAs = array_values(array_unique(array_merge(
+            (array) ($organization['sameAs'] ?? []),
+            (array) ($decodedOrganization['sameAs'] ?? [])
+        )));
         $organization = array_replace($organization, $decodedOrganization);
+        if ($sameAs) {
+            $organization['sameAs'] = $sameAs;
+        }
         $organization['@id'] = $block->getOrganizationId();
     }
 }
@@ -86,6 +93,8 @@ if (trim($mainEntityJson) !== '' && !in_array($pageType, [
         unset($decoded['@context']);
         if (isset($decoded['mainEntity'])) {
             $pageEntity['mainEntity'] = $decoded['mainEntity'];
+        } elseif (($decoded['@type'] ?? null) === 'ItemList') {
+            $pageEntity['mainEntity'] = $decoded;
         } elseif (isset($decoded['itemListElement'])) {
             // Bare ItemList shape.
             $pageEntity['mainEntity'] = [
@@ -99,8 +108,6 @@ if (trim($mainEntityJson) !== '' && !in_array($pageType, [
             // merger (which targets mainEntity.offers) keeps working.
             $pageEntity['mainEntity'] = ['@id' => $decoded['@id'] ?? ''];
             $graph[] = $decoded;
-        } elseif (($decoded['@type'] ?? null) === 'ItemList') {
-            $pageEntity['mainEntity'] = $decoded;
         }
     }
 }
@@ -116,14 +123,16 @@ if ($pageType === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE)
     $pageEntity['mainEntity'] = ['@id' => $block->getOrganizationId()];
 }
 
-if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
-    $graph[] = $pageEntity;
-}
-
 // Only emit the BreadcrumbList when there's at least one item.
 $breadcrumbItems = $block->getBreadcrumbItems();
-if (!empty($breadcrumbItems)) {
+if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE && !empty($breadcrumbItems)) {
     $graph[] = $block->getBreadcrumbListSchema();
+} else {
+    unset($pageEntity['breadcrumb']);
+}
+
+if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+    $graph[] = $pageEntity;
 }
 
 $payload = [
@@ -131,7 +140,8 @@ $payload = [
     '@graph' => $graph,
 ];
 ?>
-<script type="application/ld+json" id="structured-data">
-<?= /* @noEscape */ json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
-</script>
+<?php $encodedPayload = $block->encodeJson($payload); ?>
+<?php if ($encodedPayload !== ''): ?>
+<script type="application/ld+json" id="structured-data"><?= /* @noEscape */ $encodedPayload ?></script>
+<?php endif; ?>
 <?= $block->getChildHtml('product.offers.schema'); ?>

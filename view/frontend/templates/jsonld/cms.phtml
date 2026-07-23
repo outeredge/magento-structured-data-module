@@ -25,4 +25,4 @@ if ($block->getImage()) {
         'url' => $block->getImage(),
     ];
 }
-echo json_encode($payload, JSON_UNESCAPED_SLASHES);
+echo $block->encodeJson($payload);

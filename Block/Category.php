@@ -47,7 +47,7 @@ class Category extends \Magento\Framework\View\Element\Template
             $listData[] = [
                 "@type" => "ListItem",
                 "position" => $i++,
-                "url" => $product->getProductUrl(),
+                "url" => preg_replace('/[?#].*$/', '', (string) $product->getProductUrl()),
                 "name" => (string) $product->getName()
             ];
         }
