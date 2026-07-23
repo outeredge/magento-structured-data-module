@@ -185,26 +185,7 @@ class Jsonld extends Template
 
     public function isCollectionPage(): bool
     {
-        $type = $this->getPageType();
-        if ($type === self::PAGE_TYPE_COLLECTIONPAGE) {
-            return true;
-        }
-
-        // Hub pages: CMS pages whose identifier starts with "hub/" (per
-        // GEO plan: confirmed CollectionPage recommendation for /hub/*).
-        try {
-            $page = $this->getPage();
-            if ($page && method_exists($page, 'getIdentifier')) {
-                $identifier = (string) $page->getIdentifier();
-                if ($identifier !== '' && strncmp($identifier, 'hub/', 4) === 0) {
-                    return true;
-                }
-            }
-        } catch (\Throwable $e) {
-            // ignore
-        }
-
-        return false;
+        return $this->getPageType() === self::PAGE_TYPE_COLLECTIONPAGE;
     }
 
     public function getWebsiteId(): string
@@ -687,30 +668,20 @@ class Jsonld extends Template
     }
 
     /**
-     * Augment when on a Collection page (per the existing hub detection) or
-     * on any request whose path starts with "hub/" — the latter covers
-     * Storyblok-routed hub CMS pages which aren't picked up as CMS pages.
+     * Augment the breadcrumb chain when on a Collection page (i.e. a
+     * catalog category page) so the JSON-LD always includes the current
+     * page as the final ListItem. Storyblok and other CMS pages are
+     * handled by their own visible breadcrumbs block.
      */
     private function shouldAugmentBreadcrumb(): bool
     {
-        if ($this->isCollectionPage()) {
-            return true;
-        }
-
-        try {
-            $path = (string) $this->getRequest()->getPathInfo();
-        } catch (\Throwable $e) {
-            return false;
-        }
-
-        return strncmp(ltrim($path, '/'), 'hub/', 4) === 0;
+        return $this->isCollectionPage();
     }
 
     /**
      * Resolve the human-readable name for the current breadcrumb tail.
      * Prefers an explicit "page_title" data attr on this block, then the
-     * head/title (skipping the generic "Boardshop" default), then a slug-
-     * derived humanised label for hub/* paths.
+     * head/title (skipping the generic "Boardshop" default).
      */
     private function resolveCurrentBreadcrumbName(): string
     {
@@ -723,27 +694,7 @@ class Jsonld extends Template
             // ignore
         }
 
-        $title = trim((string) $this->getPageTitle());
-        if ($title !== '' && strcasecmp($title, 'Boardshop') !== 0) {
-            return $title;
-        }
-
-        try {
-            $path = trim((string) $this->getRequest()->getPathInfo(), '/');
-        } catch (\Throwable $e) {
-            return $title;
-        }
-
-        if ($path === '' || strncmp($path, 'hub/', 4) !== 0) {
-            return $title;
-        }
-
-        $slug = substr($path, 4);
-        $leaf = strrchr($slug, '/');
-        $slug = $leaf !== false ? substr($leaf, 1) : $slug;
-        $slug = str_replace(['-', '_'], ' ', $slug);
-
-        return $slug !== '' ? ucwords($slug) : $title;
+        return trim((string) $this->getPageTitle());
     }
 
     /**
