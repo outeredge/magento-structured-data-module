@@ -1,16 +1,23 @@
-,"name": <?= /* @escapeNotVerified */ json_encode((string) $block->stripTags($block->getTitle()), JSON_UNESCAPED_UNICODE); ?>
+<?php
+/** @var \OuterEdge\StructuredData\Block\Cms $block */
+// Homepage is typed as WebSite; CMS-page properties belong on WebPage only.
+if ($block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+    return;
+}
+?>
+,"name": <?= /* @noEscape */ json_encode((string) $block->stripTags($block->getTitle()), JSON_UNESCAPED_UNICODE); ?>
 <?php $content = trim((string) $block->stripTags($block->getContent())); ?>
-<?php if ($content && $block->getPageType() !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE): ?>
+<?php if ($content): ?>
 ,"mainContentOfPage": {
-    "text": <?= /* @escapeNotVerified */ json_encode($content, JSON_UNESCAPED_UNICODE); ?>
+    "text": <?= /* @noEscape */ json_encode($content, JSON_UNESCAPED_UNICODE); ?>
 }
 <?php endif; ?>
 <?php if ($block->getMetaDescription()): ?>
-    ,"description": <?= /* @escapeNotVerified */ json_encode(preg_replace('/\s+/', ' ', trim($block->stripTags($block->getMetaDescription()))), JSON_UNESCAPED_UNICODE); ?>
+    ,"description": <?= /* @noEscape */ json_encode(preg_replace('/\s+/', ' ', trim($block->stripTags($block->getMetaDescription()))), JSON_UNESCAPED_UNICODE); ?>
 <?php endif; ?>
-<?php if ($block->getImage() && $block->getPageType() !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE): ?>
+<?php if ($block->getImage()): ?>
     ,"primaryImageOfPage": {
         "@type": "ImageObject",
-        "url": <?= /* @escapeNotVerified */ json_encode((string) $block->getImage(), JSON_UNESCAPED_UNICODE); ?>
+        "url": <?= /* @noEscape */ json_encode((string) $block->getImage(), JSON_UNESCAPED_UNICODE); ?>
     }
 <?php endif; ?>
