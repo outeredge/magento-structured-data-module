@@ -1,16 +1,23 @@
-,"name": "<?= $block->escapeQuote($block->stripTags($block->getTitle())); ?>"
-<?php $content = $block->getContent(); ?>
+<?php
+/** @var \OuterEdge\StructuredData\Block\Cms $block */
+// Homepage is typed as WebSite; CMS-page properties belong on WebPage only.
+if ($block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+    return;
+}
+?>
+,"name": <?= /* @noEscape */ json_encode((string) $block->stripTags($block->getTitle()), JSON_UNESCAPED_UNICODE); ?>
+<?php $content = trim((string) $block->stripTags($block->getContent())); ?>
 <?php if ($content): ?>
 ,"mainContentOfPage": {
-    "text": "<?= $block->escapeQuote($block->stripTags($content)); ?>"
+    "text": <?= /* @noEscape */ json_encode($content, JSON_UNESCAPED_UNICODE); ?>
 }
 <?php endif; ?>
 <?php if ($block->getMetaDescription()): ?>
-    ,"description": "<?= $block->escapeQuote(preg_replace('/\s+/', ' ', trim($block->stripTags($block->getMetaDescription())))); ?>"
+    ,"description": <?= /* @noEscape */ json_encode(preg_replace('/\s+/', ' ', trim($block->stripTags($block->getMetaDescription()))), JSON_UNESCAPED_UNICODE); ?>
 <?php endif; ?>
 <?php if ($block->getImage()): ?>
     ,"primaryImageOfPage": {
         "@type": "ImageObject",
-        "url": "<?= $block->escapeQuote($block->getImage()); ?>"
+        "url": <?= /* @noEscape */ json_encode((string) $block->getImage(), JSON_UNESCAPED_UNICODE); ?>
     }
 <?php endif; ?>

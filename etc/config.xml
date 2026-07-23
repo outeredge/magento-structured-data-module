@@ -12,6 +12,7 @@
             </product>
             <contact>
                 <type>Organization</type>
+                <enable_home>1</enable_home>
             </contact>
         </structureddata>
     </default>

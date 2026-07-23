@@ -1,20 +1,31 @@
 <!-- Structured Data by outer/edge (https://outeredge.agency) -->
-<?php $mainEntity = $block->getChildHtml('main.entity'); ?>
-<?php $additionalSchema = $block->getChildHtml('additional.schema'); ?>
+<?php
+/** @var \OuterEdge\StructuredData\Block\Jsonld $block */
+$mainEntity = $block->getChildHtml('main.entity');
+$additionalSchema = $block->getChildHtml('additional.schema');
+$isWebsite = $block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE;
+$storeName = (string) ($block->getConfig('general/store_information/name') ?? '');
+$baseUrl = $block->getStore()->getBaseUrl();
+$logoUrl = (string) ($block->getStoreLogoUrl() ?? '');
+?>
 <script type="application/ld+json" id="structured-data">
 {
     "@context": "https://schema.org/",
-    "@type": "<?= $block->escapeQuote($block->getPageType()) ?>",
-    "publisher": {
+    "@type": "<?= $block->escapeQuote($block->getPageType()) ?>"
+    <?php if ($isWebsite): ?>
+    ,"url": <?= /* @noEscape */ json_encode($baseUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
+    ,"name": <?= /* @noEscape */ json_encode($storeName, JSON_UNESCAPED_UNICODE); ?>
+    <?php endif; ?>
+    ,"publisher": {
         "@type": "Organization",
-        "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name') ?? ''); ?>",
-        "url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
+        "name": <?= /* @noEscape */ json_encode($storeName, JSON_UNESCAPED_UNICODE); ?>,
+        "url": <?= /* @noEscape */ json_encode($baseUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>,
         "logo": {
             "@type": "ImageObject",
-            "url": "<?= $block->escapeUrl($block->escapeQuote($block->getStoreLogoUrl()) ?? ''); ?>"
+            "url": <?= /* @noEscape */ json_encode($logoUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
         }
     }
-    <?php if ($mainEntity): ?>
+    <?php if ($mainEntity && !$isWebsite): ?>
     ,
     "mainEntity": <?= /* @noEscape */ $mainEntity; ?>
     <?php endif; ?>
@@ -23,4 +34,9 @@
     <?php endif; ?>
 }
 </script>
+<?php if ($isWebsite && $mainEntity): ?>
+<script type="application/ld+json" id="structured-data-organization">
+<?= /* @noEscape */ $mainEntity; ?>
+</script>
+<?php endif; ?>
 <?= $block->getChildHtml('product.offers.schema'); ?>
