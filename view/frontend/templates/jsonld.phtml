@@ -7,6 +7,14 @@
     "@type": "<?= $block->escapeQuote($block->getPageType()) ?>"
     <?php if ($block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE): ?>
     ,"url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>"
+    ,"potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>catalogsearch/result/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+    }
     <?php endif; ?>
     ,"publisher": {
         "@type": "Organization",
