@@ -25,6 +25,8 @@ use Magento\Framework\App\CacheInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 use Magento\Framework\View\Element\Template;
+use Magento\Framework\Registry;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
 
 class Product
 {
@@ -101,7 +103,9 @@ class Product
         protected ProductRepositoryInterface $productRepository,
         protected CacheInterface $cache,
         protected SerializerInterface $serializer,
-        protected Template $template
+        protected Template $template,
+        protected Registry $registry,
+        protected CategoryRepositoryInterface $categoryRepository
 	) {
 	}
 
@@ -179,9 +183,6 @@ class Product
         }
 
         if ($gtin = (string) strip_tags((string) $this->getGtin())) {
-            // Emit a specific GTIN property only when the value has a
-            // recognised length. Preserve the generic property for other
-            // valid identifiers rather than labelling them as GTIN-13.
             $len = strlen(preg_replace('/\D/', '', $gtin));
             $key = match (true) {
                 $len === 8 => 'gtin8',
@@ -190,7 +191,10 @@ class Product
                 $len === 14 => 'gtin14',
                 default => 'gtin',
             };
-            $data[$key] = $this->escapeQuote($gtin);
+            $data['gtin'] = $this->escapeQuote($gtin);
+            if ($key !== 'gtin') {
+                $data[$key] = $data['gtin'];
+            }
         }
 
         if ($this->getMpn()) {
@@ -211,8 +215,8 @@ class Product
             $data['material'] = $this->escapeQuote((string) strip_tags($material));
         }
 
-        if ($categoryEntity = $this->getBreadcrumbCategory()) {
-            $data['category'] = $categoryEntity;
+        if ($category = $this->getProductCategory()) {
+            $data['category'] = $category;
         }
 
         if ($this->getKeywords()) {
@@ -731,12 +735,18 @@ class Product
             return [];
         }
 
-        return [
+        $policy = [
             '@type' => 'MerchantReturnPolicy',
             'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
             'merchantReturnDays' => $days,
-            'returnMethod' => 'https://schema.org/ReturnByMail',
         ];
+
+        $method = trim((string) $this->getConfig('structureddata/shipping_return/return_method'));
+        if (in_array($method, ['ReturnByMail', 'ReturnInStore', 'ReturnAtKiosk'], true)) {
+            $policy['returnMethod'] = 'https://schema.org/' . $method;
+        }
+
+        return $policy;
     }
 
     /**
@@ -750,28 +760,25 @@ class Product
      *
      * @return array<string, mixed>
      */
-    public function getBreadcrumbCategory(): array
+    public function getProductCategory(): string
     {
-        try {
-            $ids = (array) $this->_product->getCategoryIds();
-        } catch (\Throwable $e) {
-            return [];
+        $currentCategory = $this->registry->registry('current_category');
+        $assignedIds = array_map('intval', (array) $this->_product->getCategoryIds());
+        if ($currentCategory && in_array((int) $currentCategory->getId(), $assignedIds, true)) {
+            return $this->escapeQuote((string) $currentCategory->getName());
         }
 
-        $ids = array_values(array_filter(array_map('intval', $ids), fn ($id) => $id > 2));
+        $ids = array_values(array_filter($assignedIds, fn ($id) => $id > 2));
         if (empty($ids)) {
-            return [];
+            return '';
         }
 
         try {
-            $categoryRepository = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Catalog\Api\CategoryRepositoryInterface::class);
-
-            $bestId = 0;
+            $bestCategory = null;
             $bestDepth = -1;
             foreach ($ids as $id) {
                 try {
-                    $cat = $categoryRepository->get($id);
+                    $cat = $this->categoryRepository->get($id, $this->getStore()->getId());
                 } catch (\Throwable $e) {
                     continue;
                 }
@@ -783,39 +790,13 @@ class Product
                 $depth = substr_count((string) $cat->getPath(), '/');
                 if ($depth > $bestDepth) {
                     $bestDepth = $depth;
-                    $bestId = (int) $cat->getId();
+                    $bestCategory = $cat;
                 }
             }
-
-            if ($bestId <= 0) {
-                return [];
-            }
-
-            return $this->buildCategoryEntity($categoryRepository->get($bestId));
+            return $bestCategory ? $this->escapeQuote((string) $bestCategory->getName()) : '';
         } catch (\Throwable $e) {
-            return [];
+            return '';
         }
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function buildCategoryEntity($category): array
-    {
-        $name = trim((string) $category->getName());
-        $url = trim((string) $category->getUrl());
-        if ($name === '' && $url === '') {
-            return [];
-        }
-        $entity = ['@type' => 'Thing'];
-        if ($name !== '') {
-            $entity['name'] = $this->escapeQuote($name);
-        }
-        if ($url !== '') {
-            $entity['url'] = $this->escapeUrl($url);
-            $entity['@id'] = $this->escapeUrl(rtrim($url, '/')) . '#category';
-        }
-        return $entity;
     }
 
 }

@@ -10,7 +10,10 @@ use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Cms\Model\Page;
 use Magento\Framework\App\Request\Http;
-use Magento\Framework\UrlInterface;
+use Magento\Framework\Registry;
+use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Magento\Catalog\Helper\Image as ImageHelper;
 
 class Jsonld extends Template
 {
@@ -66,6 +69,10 @@ class Jsonld extends Template
         Page $page,
         Logo $logo,
         LogoPathResolver $logoPathResolver,
+        protected Registry $registry,
+        protected SerializerInterface $serializer,
+        protected CategoryRepositoryInterface $categoryRepository,
+        protected ImageHelper $imageHelper,
         array $data = []
     ) {
         $logo->setData('logoPathResolver', $logoPathResolver);
@@ -219,9 +226,7 @@ class Jsonld extends Template
         }
 
         try {
-            $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Registry::class);
-            $product = $registry->registry('current_product');
+            $product = $this->registry->registry('current_product');
             if ($product && is_object($product) && method_exists($product, 'getName')) {
                 $name = trim((string) $product->getName());
                 if ($name !== '') {
@@ -279,10 +284,7 @@ class Jsonld extends Template
         }
 
         try {
-            $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Registry::class);
-
-            $cmsPage = $registry->registry('cms_page');
+            $cmsPage = $this->registry->registry('cms_page');
             if ($cmsPage && is_object($cmsPage) && method_exists($cmsPage, 'getMetaDescription')) {
                 $candidates[] = (string) $cmsPage->getMetaDescription();
             }
@@ -292,12 +294,12 @@ class Jsonld extends Template
                 $candidates[] = (string) $head->getMetaDescription();
             }
 
-            $category = $registry->registry('current_category');
+            $category = $this->registry->registry('current_category');
             if ($category && is_object($category)) {
                 $candidates[] = (string) $category->getDescription();
             }
 
-            $product = $registry->registry('current_product');
+            $product = $this->registry->registry('current_product');
             if ($product && is_object($product)) {
                 if (method_exists($product, 'getMetaDescription')) {
                     $candidates[] = (string) $product->getMetaDescription();
@@ -322,9 +324,7 @@ class Jsonld extends Template
 
         // Final fallback: long product description, truncated.
         try {
-            $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Registry::class);
-            $product = $registry->registry('current_product');
+            $product = $this->registry->registry('current_product');
             if ($product && is_object($product)) {
                 $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $product->getDescription())));
                 if ($clean !== '') {
@@ -361,11 +361,8 @@ class Jsonld extends Template
 
         if ($raw === '') {
             try {
-                $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                    ->get(\Magento\Framework\Registry::class);
-
                 // Fall back to the cms_page registry entry.
-                $cmsPage = $registry->registry('cms_page');
+                $cmsPage = $this->registry->registry('cms_page');
                 if ($cmsPage && is_object($cmsPage)) {
                     $raw = (string) (method_exists($cmsPage, 'getUpdateTime')
                         ? ($cmsPage->getUpdateTime() ?: '')
@@ -376,13 +373,13 @@ class Jsonld extends Template
                 }
 
                 if ($raw === '') {
-                    $category = $registry->registry('current_category');
+                    $category = $this->registry->registry('current_category');
                     if ($category && is_object($category)) {
                         $raw = (string) ($category->getUpdatedAt() ?: '');
                     }
                 }
                 if ($raw === '') {
-                    $product = $registry->registry('current_product');
+                    $product = $this->registry->registry('current_product');
                     if ($product && is_object($product)) {
                         $raw = (string) ($product->getUpdatedAt() ?: '');
                     }
@@ -423,10 +420,7 @@ class Jsonld extends Template
         }
 
         try {
-            $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Registry::class);
-
-            $category = $registry->registry('current_category');
+            $category = $this->registry->registry('current_category');
             if ($category && is_object($category) && method_exists($category, 'getImageUrl')) {
                 $url = (string) $category->getImageUrl();
                 if ($url !== '') {
@@ -439,10 +433,13 @@ class Jsonld extends Template
 
             // On product pages (no current_category), use the product's
             // main image so ItemPage.primaryImageOfPage is populated.
-            $product = $registry->registry('current_product');
-            if ($product && is_object($product) && method_exists($product, 'getImage')) {
-                $url = (string) $product->getImage();
-                if ($url !== '' && strncmp($url, 'no-selection', 12) !== 0) {
+            $product = $this->registry->registry('current_product');
+            if ($product && is_object($product)) {
+                $image = (string) $product->getImage();
+                if ($image !== '' && $image !== 'no_selection') {
+                    $url = (string) $this->imageHelper
+                        ->init($product, 'product_page_image_medium')
+                        ->getUrl();
                     return [
                         '@type' => 'ImageObject',
                         'url' => $url,
@@ -550,7 +547,15 @@ class Jsonld extends Template
      */
     public function getSearchActionSchema(): array
     {
-        return [];
+        $target = $this->getBaseUrl() . '/catalogsearch/result/?q={search_term_string}';
+        return [
+            '@type' => 'SearchAction',
+            'target' => [
+                '@type' => 'EntryPoint',
+                'urlTemplate' => $target,
+            ],
+            'query-input' => 'required name=search_term_string',
+        ];
     }
 
     /**
@@ -572,9 +577,7 @@ class Jsonld extends Template
         try {
             $relatedPages = $this->getConfig('structureddata/contact/related_pages');
             if ($relatedPages) {
-                $serializer = \Magento\Framework\App\ObjectManager::getInstance()
-                    ->get(\Magento\Framework\Serialize\SerializerInterface::class);
-                foreach ((array) $serializer->unserialize($relatedPages) as $page) {
+                foreach ((array) $this->serializer->unserialize($relatedPages) as $page) {
                     $url = is_array($page) ? trim((string) ($page['url'] ?? '')) : '';
                     if ($url !== '' && filter_var($url, FILTER_VALIDATE_URL)) {
                         $urls[] = $url;
@@ -703,13 +706,13 @@ class Jsonld extends Template
     }
 
     /**
-     * Build a `hasPart` ItemList for CollectionPage. Returns [] when the page
+     * Build a fallback main-entity ItemList for CollectionPage. Returns [] when the page
      * is not a collection page or there are no items to list. Caller is
      * responsible for omitting the field when this returns [].
      *
      * @return array<int, array<string, mixed>>|array<string, mixed>
      */
-    public function getHasPartItemList(): array
+    public function getCollectionItemList(): array
     {
         if (!$this->isCollectionPage()
             || !(int) $this->getConfig('structureddata/product/enable_category')
@@ -717,27 +720,9 @@ class Jsonld extends Template
             return [];
         }
 
-        // 1. If a Category block child has already been rendered, prefer its
-        //    ItemList payload so we don't double-load the product collection.
-        $additionalJson = '';
-        try {
-            $additionalJson = (string) $this->getChildHtml('main.entity');
-        } catch (\Throwable $e) {
-            $additionalJson = '';
-        }
-        if (trim($additionalJson) !== '') {
-            $decoded = json_decode($additionalJson, true);
-            if (is_array($decoded) && isset($decoded['hasPart']) && is_array($decoded['hasPart'])) {
-                return $decoded['hasPart'];
-            }
-        }
-
-        // 2. Walk current_category's product collection directly.
         $items = [];
         try {
-            $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Registry::class);
-            $category = $registry->registry('current_category');
+            $category = $this->registry->registry('current_category');
             if ($category && is_object($category)) {
                 $items = $this->buildHasPartFromCategory($category);
             }
@@ -768,6 +753,7 @@ class Jsonld extends Template
             }
 
             $productCollection = $category->getProductCollection();
+            $productCollection->addAttributeToSelect(['name', 'url_key', 'url_path']);
             $productCollection->setPageSize($limit);
             $productCollection->setCurPage(1);
             $productCollection->addUrlRewrite();
@@ -793,25 +779,8 @@ class Jsonld extends Template
      */
     private function resolveBreadcrumbItems(): array
     {
-        // On product pages, the rendered Magento Breadcrumbs block in
-        // Hyvä is populated by the layout with whatever category the
-        // registry's current_category happens to be set to (often a
-        // brand category used for /brands/ filter pages). Prefer the
-        // registry-based chain built from the product's own category
-        // assignments so the JSON-LD always reflects user-facing
-        // catalog taxonomy.
-        if ($this->isProductPage()) {
-            return $this->resolveFromRegistry();
-        }
-
-        // 1. Use the rendered Magento Breadcrumbs block when available.
-        //    This is the most reliable source for CMS pages (Hub pages).
-        $items = $this->resolveFromBreadcrumbsBlock();
-        if (!empty($items)) {
-            return $items;
-        }
-
-        // 2. Walk the registry's category/product (the canonical chain).
+        // Build from public registry/repository APIs rather than reflecting
+        // into Magento's private breadcrumbs state.
         $items = $this->resolveFromRegistry();
         if (!empty($items)) {
             return $items;
@@ -824,71 +793,6 @@ class Jsonld extends Template
                 'url' => $this->getBaseUrl() . '/',
             ],
         ];
-    }
-
-    private function isProductPage(): bool
-    {
-        try {
-            $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Registry::class);
-            return (bool) $registry->registry('current_product');
-        } catch (\Throwable $e) {
-            return false;
-        }
-    }
-
-    /**
-     * Read the rendered Magento\Theme\Block\Html\Breadcrumbs block's _crumbs
-     * array via reflection. Returns an empty array when the block hasn't been
-     * populated yet (e.g. on pages with no breadcrumbs).
-     *
-     * @return array<int, array{name: string, url: string}>
-     */
-    private function resolveFromBreadcrumbsBlock(): array
-    {
-        try {
-            $layout = $this->getLayout();
-            if (!$layout) {
-                return [];
-            }
-            $block = $layout->getBlock('breadcrumbs');
-            if (!$block) {
-                return [];
-            }
-            $reflection = new \ReflectionClass($block);
-            if (!$reflection->hasProperty('_crumbs')) {
-                return [];
-            }
-            $prop = $reflection->getProperty('_crumbs');
-            $prop->setAccessible(true);
-            $crumbs = $prop->getValue($block);
-            if (!is_array($crumbs) || empty($crumbs)) {
-                return [];
-            }
-
-            $items = [];
-            foreach ($crumbs as $crumb) {
-                if (!is_array($crumb)) {
-                    continue;
-                }
-                $label = isset($crumb['label']) ? strip_tags((string) $crumb['label']) : '';
-                if ($label === '') {
-                    continue;
-                }
-                $link = isset($crumb['link']) ? (string) $crumb['link'] : '';
-                if ($link === '') {
-                    // Last crumb has no link — use current URL.
-                    $link = $this->getCurrentUrl();
-                }
-                $items[] = [
-                    'name' => $label,
-                    'url' => $link,
-                ];
-            }
-            return $items;
-        } catch (\Throwable $e) {
-            return [];
-        }
     }
 
     /**
@@ -906,15 +810,12 @@ class Jsonld extends Template
         $items = [];
 
         try {
-            $registry = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Framework\Registry::class);
-
-            $product = $registry->registry('current_product');
+            $product = $this->registry->registry('current_product');
             if ($product && is_object($product)) {
                 return $this->buildProductBreadcrumbItems($product);
             }
 
-            $category = $registry->registry('current_category');
+            $category = $this->registry->registry('current_category');
             if ($category && is_object($category)) {
                 return $this->buildCategoryBreadcrumbItems($category);
             }
@@ -939,9 +840,6 @@ class Jsonld extends Template
         ];
 
         try {
-            $categoryRepository = \Magento\Framework\App\ObjectManager::getInstance()
-                ->get(\Magento\Catalog\Api\CategoryRepositoryInterface::class);
-
             $path = (string) $category->getPath();
             if ($path !== '') {
                 $ids = array_filter(array_map('intval', explode('/', $path)));
@@ -950,7 +848,7 @@ class Jsonld extends Template
                         continue; // skip Roots
                     }
                     try {
-                        $cat = $categoryRepository->get($id);
+                        $cat = $this->categoryRepository->get($id, $this->getStore()->getId());
                         if (!$cat->getId()) {
                             continue;
                         }
@@ -991,21 +889,28 @@ class Jsonld extends Template
         ];
 
         try {
+            $currentCategory = $this->registry->registry('current_category');
+            if ($currentCategory && in_array((int) $currentCategory->getId(), array_map('intval', $product->getCategoryIds()), true)) {
+                $items = $this->buildCategoryBreadcrumbItems($currentCategory);
+                $items[] = [
+                    'name' => (string) $product->getName(),
+                    'url' => (string) $product->getProductUrl(),
+                ];
+                return $items;
+            }
+
             $categoryIds = (array) $product->getCategoryIds();
             $categoryIds = array_values(array_filter(
                 array_map('intval', $categoryIds),
                 fn ($id) => $id > 2
             ));
             if (!empty($categoryIds)) {
-                $categoryRepository = \Magento\Framework\App\ObjectManager::getInstance()
-                    ->get(\Magento\Catalog\Api\CategoryRepositoryInterface::class);
-
                 // Pick the deepest active assigned category.
                 $bestId = 0;
                 $bestDepth = -1;
                 foreach ($categoryIds as $id) {
                     try {
-                        $cat = $categoryRepository->get($id);
+                        $cat = $this->categoryRepository->get($id, $this->getStore()->getId());
                     } catch (\Throwable $e) {
                         continue;
                     }
@@ -1021,7 +926,7 @@ class Jsonld extends Template
 
                 if ($bestId > 0) {
                     try {
-                        $cat = $categoryRepository->get($bestId);
+                        $cat = $this->categoryRepository->get($bestId, $this->getStore()->getId());
                         $path = (string) $cat->getPath();
                         if ($path !== '') {
                             $ids = array_filter(array_map('intval', explode('/', $path)));
@@ -1030,7 +935,7 @@ class Jsonld extends Template
                                     continue;
                                 }
                                 try {
-                                    $c = $categoryRepository->get($id);
+                                    $c = $this->categoryRepository->get($id, $this->getStore()->getId());
                                     if (!$c->getId() || (method_exists($c, 'getIsActive') && !$c->getIsActive())) {
                                         continue;
                                     }

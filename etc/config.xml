@@ -19,6 +19,7 @@
             </organization>
             <shipping_return>
                 <merchant_return_days>0</merchant_return_days>
+                <return_method></return_method>
             </shipping_return>
             <website>
                 <haspart_limit>20</haspart_limit>

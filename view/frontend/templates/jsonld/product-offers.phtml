@@ -7,7 +7,7 @@
         fetch(window.BASE_URL + 'rest/V1/structure_data/offers/' + ID)
         .then(response => response.json())
         .then((data) => {
-            if (!data.length && !data[0].offers) return;
+            if (!Array.isArray(data) || !data.length || !data[0] || !data[0].offers) return;
 
             const structuredData = document.getElementById('structured-data');
             if (!structuredData) return;

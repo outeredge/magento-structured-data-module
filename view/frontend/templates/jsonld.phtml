@@ -4,14 +4,30 @@
 
 $mainEntityJson = $block->getChildHtml('main.entity');
 $additionalSchemaJson = $block->getChildHtml('additional.schema');
-$organizationJson = '';
-
-$graph = [$block->getOrganizationSchema(), $block->getWebsiteSchema()];
+$organization = $block->getOrganizationSchema();
+$website = $block->getWebsiteSchema();
+$graph = [];
 
 $pageType = $block->getPageType();
 
-// Build the page entity. Collection pages use an @type array per GEO plan
-// (Step 5) so existing WebPage graph edges remain valid.
+// Merge the richer home/contact organization payload into the canonical node.
+if (trim($mainEntityJson) !== '' && in_array($pageType, [
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE,
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE,
+], true)) {
+    $decodedOrganization = json_decode($mainEntityJson, true);
+    if (is_array($decodedOrganization)) {
+        unset($decodedOrganization['@context']);
+        $organization = array_replace($organization, $decodedOrganization);
+        $organization['@id'] = $block->getOrganizationId();
+    }
+}
+
+$graph[] = $organization;
+$graph[] = $website;
+
+// The homepage is represented by the canonical WebSite node above. Other
+// routes get a separate page entity.
 $pageEntity = [
     '@type' => $pageType,
     '@id' => $block->getPageId(),
@@ -22,10 +38,6 @@ $pageEntity = [
     'publisher' => ['@id' => $block->getOrganizationId()],
     'breadcrumb' => ['@id' => $block->getBreadcrumbId()],
 ];
-
-if ($block->isCollectionPage()) {
-    $pageEntity['@type'] = ['CollectionPage', 'WebPage'];
-}
 
 $description = $block->getPageDescription();
 if ($description !== '') {
@@ -64,27 +76,19 @@ if (trim($additionalSchemaJson) !== '') {
     }
 }
 
-// Category block provides the product ItemList and category-level metadata.
-// Use `hasPart` for the product list and merge any `about` description into
-// the WebPage entity so the page entity carries both.
-if (trim($mainEntityJson) !== '') {
+// Product and category children provide the page's main entity.
+if (trim($mainEntityJson) !== '' && !in_array($pageType, [
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE,
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE,
+], true)) {
     $decoded = json_decode($mainEntityJson, true);
     if (is_array($decoded)) {
         unset($decoded['@context']);
-        // If the Category block emitted a `hasPart` ItemList, use it.
-        if (isset($decoded['hasPart']) && is_array($decoded['hasPart'])) {
-            $pageEntity['hasPart'] = $decoded['hasPart'];
-        } elseif (isset($decoded['mainEntity'])) {
-            // Legacy/Compatibility shape — promote mainEntity to hasPart for
-            // CollectionPage so we keep emitting an ItemList of products.
-            if ($block->isCollectionPage()) {
-                $pageEntity['hasPart'] = $decoded['mainEntity'];
-            } else {
-                $pageEntity['mainEntity'] = $decoded['mainEntity'];
-            }
+        if (isset($decoded['mainEntity'])) {
+            $pageEntity['mainEntity'] = $decoded['mainEntity'];
         } elseif (isset($decoded['itemListElement'])) {
             // Bare ItemList shape.
-            $pageEntity['hasPart'] = [
+            $pageEntity['mainEntity'] = [
                 '@type' => 'ItemList',
                 'itemListElement' => $decoded['itemListElement'],
             ];
@@ -95,51 +99,31 @@ if (trim($mainEntityJson) !== '') {
             // merger (which targets mainEntity.offers) keeps working.
             $pageEntity['mainEntity'] = ['@id' => $decoded['@id'] ?? ''];
             $graph[] = $decoded;
-        }
-
-        // Merge `about` (category description) into the page entity as
-        // description when not already populated.
-        if (isset($decoded['about']) && is_string($decoded['about'])
-            && empty($pageEntity['description'])
-        ) {
-            $pageEntity['description'] = trim((string) preg_replace(
-                '/\s+/',
-                ' ',
-                strip_tags($decoded['about'])
-            ));
+        } elseif (($decoded['@type'] ?? null) === 'ItemList') {
+            $pageEntity['mainEntity'] = $decoded;
         }
     }
 }
 
-// If no Category block was rendered (e.g. Hub pages), fall back to building
-// the ItemList directly from the registry.
-if ($block->isCollectionPage() && !isset($pageEntity['hasPart'])) {
-    $hasPart = $block->getHasPartItemList();
-    if (!empty($hasPart)) {
-        $pageEntity['hasPart'] = $hasPart;
+if ($block->isCollectionPage() && !isset($pageEntity['mainEntity'])) {
+    $itemList = $block->getCollectionItemList();
+    if (!empty($itemList)) {
+        $pageEntity['mainEntity'] = $itemList;
     }
 }
 
-$graph[] = $pageEntity;
+if ($pageType === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE) {
+    $pageEntity['mainEntity'] = ['@id' => $block->getOrganizationId()];
+}
+
+if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+    $graph[] = $pageEntity;
+}
 
 // Only emit the BreadcrumbList when there's at least one item.
 $breadcrumbItems = $block->getBreadcrumbItems();
 if (!empty($breadcrumbItems)) {
     $graph[] = $block->getBreadcrumbListSchema();
-}
-
-// Organization is also emitted as a separate rich-result node on enabled
-// home/contact pages, matching the module's existing rich-result behavior.
-if (trim($mainEntityJson) !== '' && in_array($pageType, [
-    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE,
-    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE,
-], true)) {
-    $decoded = json_decode($mainEntityJson, true);
-    if (is_array($decoded)) {
-        unset($decoded['@context']);
-        $decoded['@id'] = $block->getOrganizationId();
-        $organizationJson = json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    }
 }
 
 $payload = [
@@ -148,11 +132,6 @@ $payload = [
 ];
 ?>
 <script type="application/ld+json" id="structured-data">
-<?= /* @noEscape */ json_encode($payload, JSON_UNESCAPED_SLASHES) ?>
+<?= /* @noEscape */ json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
 </script>
-<?php if ($organizationJson !== ''): ?>
-<script type="application/ld+json" id="structured-data-organization">
-<?= /* @noEscape */ $organizationJson ?>
-</script>
-<?php endif; ?>
 <?= $block->getChildHtml('product.offers.schema'); ?>

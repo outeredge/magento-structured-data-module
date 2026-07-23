@@ -5,7 +5,6 @@ namespace OuterEdge\StructuredData\Block;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Catalog\Block\Product\ListProduct;
 use Magento\Eav\Model\Entity\Collection\AbstractCollection;
-use Magento\Framework\Registry;
 
 class Category extends \Magento\Framework\View\Element\Template
 {
@@ -22,7 +21,6 @@ class Category extends \Magento\Framework\View\Element\Template
     public function __construct(
         ListProduct $listProductBlock,
         Context $context,
-        protected Registry $registry,
         array $data = [])
     {
         $this->listProductBlock = $listProductBlock;
@@ -54,34 +52,9 @@ class Category extends \Magento\Framework\View\Element\Template
             ];
         }
 
-        $itemList = [
+        return [
             "@type" => "ItemList",
             "itemListElement" => $listData
         ];
-
-        // Wrap the ItemList in a richer CollectionPage that GEO can cite.
-        $category = $this->registry->registry('current_category');
-        $description = ($category && is_object($category))
-            ? trim((string) $category->getDescription())
-            : '';
-
-        $collectionPage = [
-            "@type" => "CollectionPage",
-            // schema.org: CollectionPage.hasPart → ItemList of items.
-            "hasPart" => $itemList
-        ];
-
-        if ($description !== '') {
-            $collectionPage["about"] = $description;
-        }
-
-        $collectionPage["isPartOf"] = [
-            "@id" => rtrim($this->_storeManager->getStore()->getBaseUrl(), '/') . '/#website'
-        ];
-        $collectionPage["publisher"] = [
-            "@id" => rtrim($this->_storeManager->getStore()->getBaseUrl(), '/') . '/#org'
-        ];
-
-        return $collectionPage;
     }
 }

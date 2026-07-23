@@ -137,12 +137,17 @@
                     <label>Default return window (days)</label>
                     <comment>Used to emit MerchantReturnPolicy on Product Offer entities. Set to 0 to omit return-policy markup.</comment>
                 </field>
+                <field id="return_method" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Return method</label>
+                    <source_model>OuterEdge\StructuredData\Model\Config\Source\ReturnMethod</source_model>
+                    <comment>Leave unspecified unless this method applies to the configured return policy.</comment>
+                </field>
             </group>
             <group id="website" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>WebSite (GEO)</label>
                 <field id="haspart_limit" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Collection hasPart limit</label>
-                    <comment>Max number of products listed under CollectionPage.hasPart. Default 20.</comment>
+                    <label>Collection ItemList limit</label>
+                    <comment>Maximum products in a fallback CollectionPage ItemList. Default 20.</comment>
                 </field>
             </group>
             <group id="cms" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
