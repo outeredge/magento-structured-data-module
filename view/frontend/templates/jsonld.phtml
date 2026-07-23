@@ -88,6 +88,13 @@ if (trim($mainEntityJson) !== '') {
                 '@type' => 'ItemList',
                 'itemListElement' => $decoded['itemListElement'],
             ];
+        } elseif (isset($decoded['@type']) && $decoded['@type'] === 'Product') {
+            // Product block emits a flat Product entity (name, sku, image,
+            // brand, offers, etc.) without a wrapper. Append it to the graph
+            // and link the page entity via mainEntity so the existing offers
+            // merger (which targets mainEntity.offers) keeps working.
+            $pageEntity['mainEntity'] = ['@id' => $decoded['@id'] ?? ''];
+            $graph[] = $decoded;
         }
 
         // Merge `about` (category description) into the page entity as

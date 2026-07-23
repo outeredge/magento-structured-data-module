@@ -246,9 +246,23 @@ class Jsonld extends Template
         }
 
         try {
+            $registry = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(\Magento\Framework\Registry::class);
+            $product = $registry->registry('current_product');
+            if ($product && is_object($product) && method_exists($product, 'getName')) {
+                $name = trim((string) $product->getName());
+                if ($name !== '') {
+                    return $name;
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignore.
+        }
+
+        try {
             $config = $this->_scopeConfig;
             $title = (string) $config->getValue('design/head/default_title');
-            if ($title !== '') {
+            if ($title !== '' && strcasecmp($title, 'Boardshop') !== 0) {
                 return $title;
             }
         } catch (\Throwable $e) {
@@ -276,50 +290,75 @@ class Jsonld extends Template
 
     /**
      * Page description for the WebPage entity. Pulls from CMS meta, category
-     * description, or product description depending on page type.
+     * description, or product description depending on page type. Long values
+     * are truncated to 300 chars to keep the WebPage.description field a true
+     * page summary (the Product node carries the full description).
      */
     public function getPageDescription(): string
     {
+        $candidates = [];
+
         // CMS pages use the dedicated block's meta description.
         if ($this instanceof \OuterEdge\StructuredData\Block\Cms
             && method_exists($this, 'getMetaDescription')
         ) {
-            $meta = (string) $this->getMetaDescription();
-            if (trim($meta) !== '') {
-                return trim((string) preg_replace('/\s+/', ' ', strip_tags($meta)));
-            }
+            $candidates[] = (string) $this->getMetaDescription();
         }
 
         try {
             $registry = \Magento\Framework\App\ObjectManager::getInstance()
                 ->get(\Magento\Framework\Registry::class);
 
-            // Fall back to the cms_page registry entry for CMS pages whose
-            // dedicated Cms subclass isn't being used as the main block.
             $cmsPage = $registry->registry('cms_page');
             if ($cmsPage && is_object($cmsPage) && method_exists($cmsPage, 'getMetaDescription')) {
-                $meta = (string) $cmsPage->getMetaDescription();
-                if (trim($meta) !== '') {
-                    return trim((string) preg_replace('/\s+/', ' ', strip_tags($meta)));
-                }
+                $candidates[] = (string) $cmsPage->getMetaDescription();
+            }
+
+            $head = $this->getLayout() ? $this->getLayout()->getBlock('head') : false;
+            if ($head && method_exists($head, 'getMetaDescription')) {
+                $candidates[] = (string) $head->getMetaDescription();
             }
 
             $category = $registry->registry('current_category');
             if ($category && is_object($category)) {
-                $desc = (string) $category->getDescription();
-                if (trim($desc) !== '') {
-                    return trim((string) preg_replace('/\s+/', ' ', strip_tags($desc)));
-                }
+                $candidates[] = (string) $category->getDescription();
             }
 
             $product = $registry->registry('current_product');
             if ($product && is_object($product)) {
-                $desc = (string) $product->getShortDescription();
-                if (trim($desc) === '') {
-                    $desc = (string) $product->getDescription();
+                if (method_exists($product, 'getMetaDescription')) {
+                    $candidates[] = (string) $product->getMetaDescription();
                 }
-                if (trim($desc) !== '') {
-                    return trim((string) preg_replace('/\s+/', ' ', strip_tags($desc)));
+                $candidates[] = (string) $product->getShortDescription();
+                // Long description is only used if no shorter candidate exists.
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        foreach ($candidates as $raw) {
+            $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $raw)));
+            if ($clean === '') {
+                continue;
+            }
+            if (mb_strlen($clean) > 300) {
+                $clean = rtrim(mb_substr($clean, 0, 300)) . '…';
+            }
+            return $clean;
+        }
+
+        // Final fallback: long product description, truncated.
+        try {
+            $registry = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(\Magento\Framework\Registry::class);
+            $product = $registry->registry('current_product');
+            if ($product && is_object($product)) {
+                $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $product->getDescription())));
+                if ($clean !== '') {
+                    if (mb_strlen($clean) > 300) {
+                        $clean = rtrim(mb_substr($clean, 0, 300)) . '…';
+                    }
+                    return $clean;
                 }
             }
         } catch (\Throwable $e) {
@@ -827,6 +866,17 @@ class Jsonld extends Template
      */
     private function resolveBreadcrumbItems(): array
     {
+        // On product pages, the rendered Magento Breadcrumbs block in
+        // Hyvä is populated by the layout with whatever category the
+        // registry's current_category happens to be set to (often a
+        // brand category used for /brands/ filter pages). Prefer the
+        // registry-based chain built from the product's own category
+        // assignments so the JSON-LD always reflects user-facing
+        // catalog taxonomy.
+        if ($this->isProductPage()) {
+            return $this->resolveFromRegistry();
+        }
+
         // 1. Use the rendered Magento Breadcrumbs block when available.
         //    This is the most reliable source for CMS pages (Hub pages).
         $items = $this->resolveFromBreadcrumbsBlock();
@@ -847,6 +897,17 @@ class Jsonld extends Template
                 'url' => $this->getBaseUrl() . '/',
             ],
         ];
+    }
+
+    private function isProductPage(): bool
+    {
+        try {
+            $registry = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(\Magento\Framework\Registry::class);
+            return (bool) $registry->registry('current_product');
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -907,6 +968,10 @@ class Jsonld extends Template
      * Walk current_category / current_product in the registry to build a
      * breadcrumb chain (Home + ancestors + current entity).
      *
+     * On product pages, current_category is unreliable (it may be set to
+     * a brand-filter category from prior navigation), so we always use
+     * the product's own category assignments instead.
+     *
      * @return array<int, array{name: string, url: string}>
      */
     private function resolveFromRegistry(): array
@@ -917,14 +982,14 @@ class Jsonld extends Template
             $registry = \Magento\Framework\App\ObjectManager::getInstance()
                 ->get(\Magento\Framework\Registry::class);
 
-            $category = $registry->registry('current_category');
-            if ($category && is_object($category)) {
-                return $this->buildCategoryBreadcrumbItems($category);
-            }
-
             $product = $registry->registry('current_product');
             if ($product && is_object($product)) {
                 return $this->buildProductBreadcrumbItems($product);
+            }
+
+            $category = $registry->registry('current_category');
+            if ($category && is_object($category)) {
+                return $this->buildCategoryBreadcrumbItems($category);
             }
         } catch (\Throwable $e) {
             // ignore
@@ -1000,16 +1065,39 @@ class Jsonld extends Template
 
         try {
             $categoryIds = (array) $product->getCategoryIds();
+            $categoryIds = array_values(array_filter(
+                array_map('intval', $categoryIds),
+                fn ($id) => $id > 2
+            ));
             if (!empty($categoryIds)) {
                 $categoryRepository = \Magento\Framework\App\ObjectManager::getInstance()
                     ->get(\Magento\Catalog\Api\CategoryRepositoryInterface::class);
 
-                // Pick the deepest assigned category (max id) to mirror the
-                // typical breadcrumb path.
-                $deepestId = max(array_map('intval', $categoryIds));
-                if ($deepestId > 0) {
+                // Pick the deepest user-facing category (by path depth) so
+                // the breadcrumb mirrors the visible UI. Internal/SEO
+                // and brand-named categories are excluded so the chain
+                // stays meaningful for GEO consumers.
+                $bestId = 0;
+                $bestDepth = -1;
+                foreach ($categoryIds as $id) {
                     try {
-                        $cat = $categoryRepository->get($deepestId);
+                        $cat = $categoryRepository->get($id);
+                    } catch (\Throwable $e) {
+                        continue;
+                    }
+                    if (!$cat->getId() || $this->isInternalCategory($cat, $product)) {
+                        continue;
+                    }
+                    $depth = substr_count((string) $cat->getPath(), '/');
+                    if ($depth > $bestDepth) {
+                        $bestDepth = $depth;
+                        $bestId = (int) $cat->getId();
+                    }
+                }
+
+                if ($bestId > 0) {
+                    try {
+                        $cat = $categoryRepository->get($bestId);
                         $path = (string) $cat->getPath();
                         if ($path !== '') {
                             $ids = array_filter(array_map('intval', explode('/', $path)));
@@ -1019,7 +1107,7 @@ class Jsonld extends Template
                                 }
                                 try {
                                     $c = $categoryRepository->get($id);
-                                    if (!$c->getId()) {
+                                    if (!$c->getId() || $this->isInternalCategory($c, $product)) {
                                         continue;
                                     }
                                     $items[] = [
@@ -1046,6 +1134,45 @@ class Jsonld extends Template
         ];
 
         return $items;
+    }
+
+    /**
+     * Heuristic: a category is "internal" if its name matches common
+     * admin/SEO patterns (e.g. "Reactor SEO"), if it is inactive, or if
+     * it is a brand-named category used for the /brands/ filter route
+     * rather than catalog taxonomy. Internal categories are excluded
+     * from breadcrumb chains so AI search engines see only user-facing
+     * product taxonomy.
+     */
+    private function isInternalCategory($category, $product = null): bool
+    {
+        $name = trim((string) $category->getName());
+        if ($name !== '' && preg_match('/\b(seo|internal|admin|test)\b/i', $name)) {
+            return true;
+        }
+        if (method_exists($category, 'getIsActive') && !$category->getIsActive()) {
+            return true;
+        }
+        if ($product && $name !== '') {
+            try {
+                $brand = '';
+                if (method_exists($product, 'getBrand')) {
+                    $brand = trim((string) $product->getBrand());
+                }
+                if ($brand === '' && method_exists($product, 'getAttributeText')) {
+                    $brand = trim((string) $product->getAttributeText('brand'));
+                }
+                if ($brand === '' && method_exists($product, 'getAttributeText')) {
+                    $brand = trim((string) $product->getAttributeText('manufacturer'));
+                }
+            } catch (\Throwable $e) {
+                $brand = '';
+            }
+            if ($brand !== '' && stripos($name, $brand) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function stripQueryString(string $url): string

@@ -13,8 +13,25 @@
             if (!structuredData) return;
 
             const structuredDataJson = JSON.parse(structuredData.textContent);
-            structuredDataJson.mainEntity.offers = data[0].offers;
-            structuredData.textContent = JSON.stringify(structuredDataJson);
+            const offers = data[0].offers;
+
+            // New template (new-geo): Product is a node in @graph.
+            if (Array.isArray(structuredDataJson['@graph'])) {
+                const productNode = structuredDataJson['@graph'].find(
+                    (n) => n && n['@type'] === 'Product'
+                );
+                if (productNode) {
+                    productNode.offers = offers;
+                    structuredData.textContent = JSON.stringify(structuredDataJson);
+                    return;
+                }
+            }
+
+            // Back-compat: master template exposes the Product via mainEntity.
+            if (structuredDataJson.mainEntity) {
+                structuredDataJson.mainEntity.offers = offers;
+                structuredData.textContent = JSON.stringify(structuredDataJson);
+            }
         });
     }
 

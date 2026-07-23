@@ -117,6 +117,7 @@ class Product
             "@context" => "https://schema.org/",
             "@type" => "Product",
             "@id" => $this->escapeUrl(strtok($this->_product->getUrlInStore(), '?'))."#Product",
+            "url" => $this->escapeUrl(strip_tags($this->_product->getProductUrl())),
             "name" => $this->escapeQuote((string)strip_tags($this->_product->getName())),
             "sku" => $this->escapeQuote((string)strip_tags($this->_product->getSku())),
             "description" => $this->escapeHtml((string)$this->template->stripTags($this->getDescription())),
@@ -218,8 +219,8 @@ class Product
             $data['additionalProperty'] = $additionalProperty;
         }
 
-        if ($categoryName = $this->getBreadcrumbCategory()) {
-            $data['category'] = $this->escapeQuote($categoryName);
+        if ($categoryEntity = $this->getBreadcrumbCategory()) {
+            $data['category'] = $categoryEntity;
         }
 
         if ($this->getKeywords()) {
@@ -738,33 +739,152 @@ class Product
 
     /**
      * Returns the URL of the listing page that shows all products of this
-     * brand. Falls back to the catalog search results for the brand name.
+     * brand. The site exposes a dedicated /brands/{slug} page per brand
+     * (e.g. /brands/oneill-wetsuits), which gives GEO engines a real
+     * entity target to link the brand to. Falls back to a slugified
+     * search URL only if the brand name cannot be slugified.
      */
     public function getBrandListingUrl(string $brandName): string
     {
         $base = rtrim($this->_storeManager->getStore()->getBaseUrl(), '/');
+        $slug = $this->slugifyBrand($brandName);
+        if ($slug !== '') {
+            return $this->escapeUrl($base . '/brands/' . $slug);
+        }
         $query = rawurlencode($brandName);
         return $this->escapeUrl($base . '/catalogsearch/result/?q=' . $query);
     }
 
     /**
-     * Returns the deepest currently-registered category name from the
-     * Magento registry, so the Product entity can advertise a single
-     * breadcrumb category name. Empty string if none is registered.
+     * Convert a brand name into the URL slug used by the /brands/ route.
+     * Lowercase, strip punctuation, replace whitespace with hyphens.
      */
-    public function getBreadcrumbCategory(): string
+    private function slugifyBrand(string $brandName): string
+    {
+        $slug = strtolower(trim($brandName));
+        $slug = preg_replace('/[^\p{L}\p{N}]+/u', '-', $slug) ?? '';
+        return trim($slug, '-');
+    }
+
+    /**
+     * Returns the deepest user-facing category assigned to the product as
+     * a schema.org Thing entity (with @id, @type, name, and url) so AI
+     * search engines can both label and link to the category page.
+     *
+     * Skips internal/SEO/admin-only categories whose name matches common
+     * admin patterns (e.g. "Reactor SEO") or that are inactive.
+     *
+     * Prefers the registry's current_category when set (so category-page
+     * loads reflect the user-visible category), otherwise falls back to
+     * walking the product's own category_ids.
+     *
+     * @return array<string, mixed>
+     */
+    public function getBreadcrumbCategory(): array
     {
         try {
             $category = $this->registry->registry('current_category');
         } catch (\Throwable $e) {
-            return '';
+            $category = null;
         }
 
-        if (!$category || !is_object($category)) {
-            return '';
+        if ($category && is_object($category) && !$this->isInternalCategory($category)) {
+            $entity = $this->buildCategoryEntity($category);
+            if (!empty($entity)) {
+                return $entity;
+            }
         }
 
+        try {
+            $ids = (array) $this->_product->getCategoryIds();
+        } catch (\Throwable $e) {
+            return [];
+        }
+
+        $ids = array_values(array_filter(array_map('intval', $ids), fn ($id) => $id > 2));
+        if (empty($ids)) {
+            return [];
+        }
+
+        try {
+            $categoryRepository = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(\Magento\Catalog\Api\CategoryRepositoryInterface::class);
+
+            $bestId = 0;
+            $bestDepth = -1;
+            foreach ($ids as $id) {
+                try {
+                    $cat = $categoryRepository->get($id);
+                } catch (\Throwable $e) {
+                    continue;
+                }
+                if (!$cat->getId() || $this->isInternalCategory($cat)) {
+                    continue;
+                }
+                $depth = substr_count((string) $cat->getPath(), '/');
+                if ($depth > $bestDepth) {
+                    $bestDepth = $depth;
+                    $bestId = (int) $cat->getId();
+                }
+            }
+
+            if ($bestId <= 0) {
+                return [];
+            }
+
+            return $this->buildCategoryEntity($categoryRepository->get($bestId));
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildCategoryEntity($category): array
+    {
         $name = trim((string) $category->getName());
-        return $this->escapeQuote($name);
+        $url = trim((string) $category->getUrl());
+        if ($name === '' && $url === '') {
+            return [];
+        }
+        $entity = ['@type' => 'URL'];
+        if ($name !== '') {
+            $entity['name'] = $this->escapeQuote($name);
+        }
+        if ($url !== '') {
+            $entity['url'] = $this->escapeUrl($url);
+            $entity['@id'] = $this->escapeUrl(rtrim($url, '/')) . '#category';
+        }
+        return $entity;
+    }
+
+    /**
+     * Heuristic: a category is "internal" if its name matches common
+     * admin/SEO patterns, if it is inactive, or if it is a brand-named
+     * category used for the /brands/ filter route rather than catalog
+     * taxonomy. Internal categories are excluded from structured-data
+     * output so AI search engines see only user-facing product taxonomy.
+     */
+    private function isInternalCategory($category): bool
+    {
+        $name = trim((string) $category->getName());
+        if ($name !== '' && preg_match('/\b(seo|internal|admin|test)\b/i', $name)) {
+            return true;
+        }
+        if (method_exists($category, 'getIsActive') && !$category->getIsActive()) {
+            return true;
+        }
+        if ($this->_product && $name !== '') {
+            try {
+                $brand = trim((string) $this->getBrand());
+            } catch (\Throwable $e) {
+                $brand = '';
+            }
+            if ($brand !== '' && stripos($name, $brand) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 }
