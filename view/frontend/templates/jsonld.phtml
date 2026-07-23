@@ -4,8 +4,11 @@
 <script type="application/ld+json" id="structured-data">
 {
     "@context": "https://schema.org/",
-    "@type": "<?= $block->escapeQuote($block->getPageType()) ?>",
-    "publisher": {
+    "@type": "<?= $block->escapeQuote($block->getPageType()) ?>"
+    <?php if ($block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE): ?>
+    ,"url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>"
+    <?php endif; ?>
+    ,"publisher": {
         "@type": "Organization",
         "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name') ?? ''); ?>",
         "url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
