@@ -1154,25 +1154,45 @@ class Jsonld extends Template
             return true;
         }
         if ($product && $name !== '') {
-            try {
-                $brand = '';
-                if (method_exists($product, 'getBrand')) {
-                    $brand = trim((string) $product->getBrand());
-                }
-                if ($brand === '' && method_exists($product, 'getAttributeText')) {
-                    $brand = trim((string) $product->getAttributeText('brand'));
-                }
-                if ($brand === '' && method_exists($product, 'getAttributeText')) {
-                    $brand = trim((string) $product->getAttributeText('manufacturer'));
-                }
-            } catch (\Throwable $e) {
-                $brand = '';
-            }
+            $brand = $this->resolveProductBrand($product);
             if ($brand !== '' && stripos($name, $brand) !== false) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Resolve a product's brand name from the configured brand attribute
+     * (or fallback to brand/manufacturer). Returns empty string if none
+     * of those resolve. Wrapped in try/catch because some sites have
+     * brand attributes without a proper source model.
+     */
+    private function resolveProductBrand($product): string
+    {
+        try {
+            $candidates = [];
+            $configured = (string) ($this->getConfig('structureddata/product/product_brand_field') ?? '');
+            if ($configured !== '') {
+                $candidates[] = $configured;
+            }
+            $candidates[] = 'brand_id';
+            $candidates[] = 'brand';
+            $candidates[] = 'manufacturer';
+
+            foreach ($candidates as $field) {
+                if (!method_exists($product, 'getAttributeText')) {
+                    continue;
+                }
+                $value = trim((string) $product->getAttributeText($field));
+                if ($value !== '') {
+                    return $value;
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+        return '';
     }
 
     private function stripQueryString(string $url): string

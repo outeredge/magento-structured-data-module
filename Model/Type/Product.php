@@ -881,6 +881,19 @@ class Product
             } catch (\Throwable $e) {
                 $brand = '';
             }
+            if ($brand === '' || stripos($brand, 'Call to') !== false) {
+                // The model's getBrand() may have fallen back to a
+                // missing attribute; try the brand_id attribute the
+                // block also uses.
+                try {
+                    $alt = trim((string) $this->_product->getAttributeText('brand_id'));
+                    if ($alt !== '') {
+                        $brand = $alt;
+                    }
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+            }
             if ($brand !== '' && stripos($name, $brand) !== false) {
                 return true;
             }
