@@ -181,8 +181,18 @@ class Product
             }
         }
 
-        if ($this->getGtin()) {
-            $data['gtin13'] = $this->escapeQuote((string)strip_tags($this->getGtin()));
+        if ($gtin = (string) strip_tags((string) $this->getGtin())) {
+            // Emit the most specific schema.org GTIN property based on
+            // length: gtin8 / gtin12 / gtin13 / gtin14. Google uses the
+            // specific variant for product rich result matching.
+            $len = strlen(preg_replace('/\D/', '', $gtin));
+            $key = match (true) {
+                $len === 8 => 'gtin8',
+                $len === 12 => 'gtin12',
+                $len === 14 => 'gtin14',
+                default => 'gtin13',
+            };
+            $data[$key] = $this->escapeQuote($gtin);
         }
 
         if ($this->getMpn()) {
