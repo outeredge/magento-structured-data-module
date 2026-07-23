@@ -135,16 +135,11 @@
                 <label>Shipping &amp; Returns (GEO)</label>
                 <field id="merchant_return_days" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Default return window (days)</label>
-                    <comment>Used to emit MerchantReturnPolicy on Product Offer entities. Default 18.</comment>
+                    <comment>Used to emit MerchantReturnPolicy on Product Offer entities. Set to 0 to omit return-policy markup.</comment>
                 </field>
             </group>
             <group id="website" translate="label" type="text" sortOrder="26" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>WebSite (GEO)</label>
-                <field id="enable_search_action" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Enable SearchAction</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Emit WebSite.potentialAction (sitelinks searchbox). Set to No if the search route changes.</comment>
-                </field>
                 <field id="haspart_limit" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Collection hasPart limit</label>
                     <comment>Max number of products listed under CollectionPage.hasPart. Default 20.</comment>

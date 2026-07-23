@@ -1,24 +1,28 @@
 <?php
 /** @var \OuterEdge\StructuredData\Block\Cms $block */
+if ($block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+    return;
+}
+
 $payload = [
     '@type' => $block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_ABOUTPAGE
         ? 'AboutPage'
         : 'WebPage',
-    'name' => $block->escapeQuote(strip_tags($block->getTitle())),
+    'name' => strip_tags($block->getTitle()),
 ];
 $content = $block->getContent();
 if ($content) {
     $payload['mainContentOfPage'] = [
-        'text' => $block->escapeQuote(strip_tags($content)),
+        'text' => strip_tags($content),
     ];
 }
 if ($block->getMetaDescription()) {
-    $payload['description'] = $block->escapeQuote(preg_replace('/\s+/', ' ', trim(strip_tags($block->getMetaDescription()))));
+    $payload['description'] = preg_replace('/\s+/', ' ', trim(strip_tags($block->getMetaDescription())));
 }
 if ($block->getImage()) {
     $payload['primaryImageOfPage'] = [
         '@type' => 'ImageObject',
-        'url' => $block->escapeQuote($block->getImage()),
+        'url' => $block->getImage(),
     ];
 }
 echo json_encode($payload, JSON_UNESCAPED_SLASHES);

@@ -11,7 +11,6 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Cms\Model\Page;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\UrlInterface;
-use OuterEdge\StructuredData\Block\Jsonld\FaqCollector;
 
 class Jsonld extends Template
 {
@@ -56,7 +55,6 @@ class Jsonld extends Template
      * @param Page $page
      * @param Logo $logo
      * @param LogoPathResolver $logoPathResolver
-     * @param FaqCollector $faqCollector
      * @param array $data
      * @codingStandardsIgnoreStart
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
@@ -68,7 +66,6 @@ class Jsonld extends Template
         Page $page,
         Logo $logo,
         LogoPathResolver $logoPathResolver,
-        protected FaqCollector $faqCollector,
         array $data = []
     ) {
         $logo->setData('logoPathResolver', $logoPathResolver);
@@ -95,11 +92,6 @@ class Jsonld extends Template
     public function getPage()
     {
         return $this->_page;
-    }
-
-    public function getFaqCollector(): FaqCollector
-    {
-        return $this->faqCollector;
     }
 
     public function getPageType()
@@ -243,7 +235,7 @@ class Jsonld extends Template
         try {
             $config = $this->_scopeConfig;
             $title = (string) $config->getValue('design/head/default_title');
-            if ($title !== '' && strcasecmp($title, 'Boardshop') !== 0) {
+            if ($title !== '') {
                 return $title;
             }
         } catch (\Throwable $e) {
@@ -464,11 +456,6 @@ class Jsonld extends Template
         return [];
     }
 
-    public function getFaqId(): string
-    {
-        return $this->getCurrentUrl() . '#faq';
-    }
-
     /**
      * @return array<string, mixed>
      */
@@ -563,19 +550,7 @@ class Jsonld extends Template
      */
     public function getSearchActionSchema(): array
     {
-        $enabled = (int) $this->getConfig('structureddata/website/enable_search_action');
-        if ($enabled === 0) {
-            return [];
-        }
-
-        return [
-            '@type' => 'SearchAction',
-            'target' => [
-                '@type' => 'EntryPoint',
-                'urlTemplate' => $this->getBaseUrl() . '/catalogsearch/result/?q={search_term_string}',
-            ],
-            'query-input' => 'required name=search_term_string',
-        ];
+        return [];
     }
 
     /**
@@ -583,20 +558,34 @@ class Jsonld extends Template
      */
     public function getSameAsUrls(): array
     {
-        $raw = (string) ($this->getConfig('structureddata/organization/sameas') ?? '');
-        if (trim($raw) === '') {
-            return [];
-        }
-
         $urls = [];
+        $raw = (string) ($this->getConfig('structureddata/organization/sameas') ?? '');
         foreach (preg_split('/\r\n|\r|\n/', $raw) ?: [] as $line) {
             $line = trim((string) $line);
-            if ($line !== '') {
+            if ($line !== '' && filter_var($line, FILTER_VALIDATE_URL)) {
                 $urls[] = $line;
             }
         }
 
-        return $urls;
+        // Preserve the module's existing Related Pages setting while also
+        // supporting the newer one-URL-per-line setting.
+        try {
+            $relatedPages = $this->getConfig('structureddata/contact/related_pages');
+            if ($relatedPages) {
+                $serializer = \Magento\Framework\App\ObjectManager::getInstance()
+                    ->get(\Magento\Framework\Serialize\SerializerInterface::class);
+                foreach ((array) $serializer->unserialize($relatedPages) as $page) {
+                    $url = is_array($page) ? trim((string) ($page['url'] ?? '')) : '';
+                    if ($url !== '' && filter_var($url, FILTER_VALIDATE_URL)) {
+                        $urls[] = $url;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignore malformed legacy configuration.
+        }
+
+        return array_values(array_unique($urls));
     }
 
     /**
@@ -686,10 +675,8 @@ class Jsonld extends Template
     }
 
     /**
-     * Augment the breadcrumb chain when on a Collection page (i.e. a
-     * catalog category page) so the JSON-LD always includes the current
-     * page as the final ListItem. Storyblok and other CMS pages are
-     * handled by their own visible breadcrumbs block.
+     * Augment the breadcrumb chain when on a Collection page so the JSON-LD
+     * always includes the current page as the final ListItem.
      */
     private function shouldAugmentBreadcrumb(): bool
     {
@@ -699,7 +686,7 @@ class Jsonld extends Template
     /**
      * Resolve the human-readable name for the current breadcrumb tail.
      * Prefers an explicit "page_title" data attr on this block, then the
-     * head/title (skipping the generic "Boardshop" default).
+     * head/title.
      */
     private function resolveCurrentBreadcrumbName(): string
     {
@@ -716,37 +703,6 @@ class Jsonld extends Template
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    public function getFaqPageSchema(): array
-    {
-        $items = $this->faqCollector->getItems();
-
-        $mainEntity = [];
-        foreach ($items as $item) {
-            $mainEntity[] = [
-                '@type' => 'Question',
-                'name' => $item['question'],
-                'acceptedAnswer' => [
-                    '@type' => 'Answer',
-                    'text' => $item['answer'],
-                ],
-            ];
-        }
-
-        return [
-            '@type' => 'FAQPage',
-            '@id' => $this->getFaqId(),
-            'mainEntity' => $mainEntity,
-        ];
-    }
-
-    public function hasFaqSchema(): bool
-    {
-        return $this->faqCollector->hasItems();
-    }
-
-    /**
      * Build a `hasPart` ItemList for CollectionPage. Returns [] when the page
      * is not a collection page or there are no items to list. Caller is
      * responsible for omitting the field when this returns [].
@@ -755,7 +711,9 @@ class Jsonld extends Template
      */
     public function getHasPartItemList(): array
     {
-        if (!$this->isCollectionPage()) {
+        if (!$this->isCollectionPage()
+            || !(int) $this->getConfig('structureddata/product/enable_category')
+        ) {
             return [];
         }
 
@@ -1042,10 +1000,7 @@ class Jsonld extends Template
                 $categoryRepository = \Magento\Framework\App\ObjectManager::getInstance()
                     ->get(\Magento\Catalog\Api\CategoryRepositoryInterface::class);
 
-                // Pick the deepest user-facing category (by path depth) so
-                // the breadcrumb mirrors the visible UI. Internal/SEO
-                // and brand-named categories are excluded so the chain
-                // stays meaningful for GEO consumers.
+                // Pick the deepest active assigned category.
                 $bestId = 0;
                 $bestDepth = -1;
                 foreach ($categoryIds as $id) {
@@ -1054,7 +1009,7 @@ class Jsonld extends Template
                     } catch (\Throwable $e) {
                         continue;
                     }
-                    if (!$cat->getId() || $this->isInternalCategory($cat, $product)) {
+                    if (!$cat->getId() || (method_exists($cat, 'getIsActive') && !$cat->getIsActive())) {
                         continue;
                     }
                     $depth = substr_count((string) $cat->getPath(), '/');
@@ -1076,7 +1031,7 @@ class Jsonld extends Template
                                 }
                                 try {
                                     $c = $categoryRepository->get($id);
-                                    if (!$c->getId() || $this->isInternalCategory($c, $product)) {
+                                    if (!$c->getId() || (method_exists($c, 'getIsActive') && !$c->getIsActive())) {
                                         continue;
                                     }
                                     $items[] = [
@@ -1105,69 +1060,9 @@ class Jsonld extends Template
         return $items;
     }
 
-    /**
-     * Heuristic: a category is "internal" if its name matches common
-     * admin/SEO patterns (e.g. "Reactor SEO"), if it is inactive, or if
-     * it is a brand-named category used for the /brands/ filter route
-     * rather than catalog taxonomy. Internal categories are excluded
-     * from breadcrumb chains so AI search engines see only user-facing
-     * product taxonomy.
-     */
-    private function isInternalCategory($category, $product = null): bool
-    {
-        $name = trim((string) $category->getName());
-        if ($name !== '' && preg_match('/\b(seo|internal|admin|test)\b/i', $name)) {
-            return true;
-        }
-        if (method_exists($category, 'getIsActive') && !$category->getIsActive()) {
-            return true;
-        }
-        if ($product && $name !== '') {
-            $brand = $this->resolveProductBrand($product);
-            if ($brand !== '' && stripos($name, $brand) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Resolve a product's brand name from the configured brand attribute
-     * (or fallback to brand/manufacturer). Returns empty string if none
-     * of those resolve. Wrapped in try/catch because some sites have
-     * brand attributes without a proper source model.
-     */
-    private function resolveProductBrand($product): string
-    {
-        try {
-            $candidates = [];
-            $configured = (string) ($this->getConfig('structureddata/product/product_brand_field') ?? '');
-            if ($configured !== '') {
-                $candidates[] = $configured;
-            }
-            $candidates[] = 'brand_id';
-            $candidates[] = 'brand';
-            $candidates[] = 'manufacturer';
-
-            foreach ($candidates as $field) {
-                if (!method_exists($product, 'getAttributeText')) {
-                    continue;
-                }
-                $value = trim((string) $product->getAttributeText($field));
-                if ($value !== '') {
-                    return $value;
-                }
-            }
-        } catch (\Throwable $e) {
-            // ignore
-        }
-        return '';
-    }
-
     private function stripQueryString(string $url): string
     {
         $pos = strpos($url, '?');
         return $pos === false ? $url : substr($url, 0, $pos);
     }
 }
-

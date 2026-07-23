@@ -13,7 +13,6 @@ use Magento\Framework\Escaper;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
-use Magento\Framework\Registry;
 use Magento\Review\Model\Review\Summary;
 use Magento\Review\Model\Review\SummaryFactory;
 use Magento\Review\Model\ResourceModel\Rating\Option\Vote\CollectionFactory as RatingOptionVoteFactory;
@@ -102,8 +101,7 @@ class Product
         protected ProductRepositoryInterface $productRepository,
         protected CacheInterface $cache,
         protected SerializerInterface $serializer,
-        protected Template $template,
-        protected Registry $registry
+        protected Template $template
 	) {
 	}
 
@@ -129,7 +127,6 @@ class Product
                 "@type" => "Brand",
                 "name" => $this->escapeQuote((string)strip_tags($this->getBrand()))
             ];
-            $data['brand']['url'] = $this->getBrandListingUrl((string) $this->getBrand());
         }
 
         if ($this->_moduleManager->isEnabled('Magento_Review') &&
@@ -182,15 +179,16 @@ class Product
         }
 
         if ($gtin = (string) strip_tags((string) $this->getGtin())) {
-            // Emit the most specific schema.org GTIN property based on
-            // length: gtin8 / gtin12 / gtin13 / gtin14. Google uses the
-            // specific variant for product rich result matching.
+            // Emit a specific GTIN property only when the value has a
+            // recognised length. Preserve the generic property for other
+            // valid identifiers rather than labelling them as GTIN-13.
             $len = strlen(preg_replace('/\D/', '', $gtin));
             $key = match (true) {
                 $len === 8 => 'gtin8',
                 $len === 12 => 'gtin12',
+                $len === 13 => 'gtin13',
                 $len === 14 => 'gtin14',
-                default => 'gtin13',
+                default => 'gtin',
             };
             $data[$key] = $this->escapeQuote($gtin);
         }
@@ -203,30 +201,14 @@ class Product
             $data['isbn'] = $this->escapeQuote((string)strip_tags($this->getIsbn()));
         }
 
-        $additionalProperty = [];
         if ($size = $this->getSize()) {
-            $additionalProperty[] = [
-                '@type' => 'PropertyValue',
-                'name' => 'Size',
-                'value' => $this->escapeQuote((string) strip_tags($size))
-            ];
+            $data['size'] = $this->escapeQuote((string) strip_tags($size));
         }
         if ($color = $this->getColor()) {
-            $additionalProperty[] = [
-                '@type' => 'PropertyValue',
-                'name' => 'Color',
-                'value' => $this->escapeQuote((string) strip_tags($color))
-            ];
+            $data['color'] = $this->escapeQuote((string) strip_tags($color));
         }
         if ($material = $this->getMaterial()) {
-            $additionalProperty[] = [
-                '@type' => 'PropertyValue',
-                'name' => 'Material',
-                'value' => $this->escapeQuote((string) strip_tags($material))
-            ];
-        }
-        if ($additionalProperty) {
-            $data['additionalProperty'] = $additionalProperty;
+            $data['material'] = $this->escapeQuote((string) strip_tags($material));
         }
 
         if ($categoryEntity = $this->getBreadcrumbCategory()) {
@@ -338,6 +320,12 @@ class Product
             return null;
         }
         if ($result = $this->getCache($product->getId())) {
+            $returnPolicy = $this->getMerchantReturnPolicy();
+            if ($returnPolicy === []) {
+                unset($result['hasMerchantReturnPolicy']);
+            } else {
+                $result['hasMerchantReturnPolicy'] = $returnPolicy;
+            }
             return $result;
         }
 
@@ -370,7 +358,10 @@ class Product
             "itemCondition" => "http://schema.org/NewCondition"
         ];
 
-        $data['hasMerchantReturnPolicy'] = $this->getMerchantReturnPolicy();
+        $returnPolicy = $this->getMerchantReturnPolicy();
+        if ($returnPolicy !== []) {
+            $data['hasMerchantReturnPolicy'] = $returnPolicy;
+        }
 
         if ($product->getFinalPrice() < $product->getPrice()) {
             if ($product->getSpecialToDate()) {
@@ -728,52 +719,24 @@ class Product
     }
 
     /**
-     * Returns the MerchantReturnPolicy block emitted on every Offer entity.
-     * Window days come from structureddata/shipping_return/merchant_return_days
-     * (default 18) and align with the current website return policy.
+     * Returns the configured MerchantReturnPolicy, or an empty array when no
+     * return window has been configured. The module must not invent a policy.
      *
      * @return array<string, mixed>
      */
     public function getMerchantReturnPolicy(): array
     {
-        $days = (int) ($this->getConfig('structureddata/shipping_return/merchant_return_days') ?: 18);
+        $days = (int) $this->getConfig('structureddata/shipping_return/merchant_return_days');
+        if ($days <= 0) {
+            return [];
+        }
 
         return [
             '@type' => 'MerchantReturnPolicy',
             'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
             'merchantReturnDays' => $days,
             'returnMethod' => 'https://schema.org/ReturnByMail',
-            'returnFees' => 'https://schema.org/ReturnShippingFees'
         ];
-    }
-
-    /**
-     * Returns the URL of the listing page that shows all products of this
-     * brand. The site exposes a dedicated /brands/{slug} page per brand
-     * (e.g. /brands/oneill-wetsuits), which gives GEO engines a real
-     * entity target to link the brand to. Falls back to a slugified
-     * search URL only if the brand name cannot be slugified.
-     */
-    public function getBrandListingUrl(string $brandName): string
-    {
-        $base = rtrim($this->_storeManager->getStore()->getBaseUrl(), '/');
-        $slug = $this->slugifyBrand($brandName);
-        if ($slug !== '') {
-            return $this->escapeUrl($base . '/brands/' . $slug);
-        }
-        $query = rawurlencode($brandName);
-        return $this->escapeUrl($base . '/catalogsearch/result/?q=' . $query);
-    }
-
-    /**
-     * Convert a brand name into the URL slug used by the /brands/ route.
-     * Lowercase, strip punctuation, replace whitespace with hyphens.
-     */
-    private function slugifyBrand(string $brandName): string
-    {
-        $slug = strtolower(trim($brandName));
-        $slug = preg_replace('/[^\p{L}\p{N}]+/u', '-', $slug) ?? '';
-        return trim($slug, '-');
     }
 
     /**
@@ -781,30 +744,14 @@ class Product
      * a schema.org Thing entity (with @id, @type, name, and url) so AI
      * search engines can both label and link to the category page.
      *
-     * Skips internal/SEO/admin-only categories whose name matches common
-     * admin patterns (e.g. "Reactor SEO") or that are inactive.
-     *
-     * Prefers the registry's current_category when set (so category-page
-     * loads reflect the user-visible category), otherwise falls back to
-     * walking the product's own category_ids.
+     * Uses the product's own category assignments and skips inactive
+     * categories. The current category is deliberately not preferred because
+     * it can represent a navigation/filter context rather than taxonomy.
      *
      * @return array<string, mixed>
      */
     public function getBreadcrumbCategory(): array
     {
-        try {
-            $category = $this->registry->registry('current_category');
-        } catch (\Throwable $e) {
-            $category = null;
-        }
-
-        if ($category && is_object($category) && !$this->isInternalCategory($category)) {
-            $entity = $this->buildCategoryEntity($category);
-            if (!empty($entity)) {
-                return $entity;
-            }
-        }
-
         try {
             $ids = (array) $this->_product->getCategoryIds();
         } catch (\Throwable $e) {
@@ -828,7 +775,9 @@ class Product
                 } catch (\Throwable $e) {
                     continue;
                 }
-                if (!$cat->getId() || $this->isInternalCategory($cat)) {
+                if (!$cat->getId()
+                    || (method_exists($cat, 'getIsActive') && !$cat->getIsActive())
+                ) {
                     continue;
                 }
                 $depth = substr_count((string) $cat->getPath(), '/');
@@ -858,7 +807,7 @@ class Product
         if ($name === '' && $url === '') {
             return [];
         }
-        $entity = ['@type' => 'URL'];
+        $entity = ['@type' => 'Thing'];
         if ($name !== '') {
             $entity['name'] = $this->escapeQuote($name);
         }
@@ -869,45 +818,4 @@ class Product
         return $entity;
     }
 
-    /**
-     * Heuristic: a category is "internal" if its name matches common
-     * admin/SEO patterns, if it is inactive, or if it is a brand-named
-     * category used for the /brands/ filter route rather than catalog
-     * taxonomy. Internal categories are excluded from structured-data
-     * output so AI search engines see only user-facing product taxonomy.
-     */
-    private function isInternalCategory($category): bool
-    {
-        $name = trim((string) $category->getName());
-        if ($name !== '' && preg_match('/\b(seo|internal|admin|test)\b/i', $name)) {
-            return true;
-        }
-        if (method_exists($category, 'getIsActive') && !$category->getIsActive()) {
-            return true;
-        }
-        if ($this->_product && $name !== '') {
-            try {
-                $brand = trim((string) $this->getBrand());
-            } catch (\Throwable $e) {
-                $brand = '';
-            }
-            if ($brand === '' || stripos($brand, 'Call to') !== false) {
-                // The model's getBrand() may have fallen back to a
-                // missing attribute; try the brand_id attribute the
-                // block also uses.
-                try {
-                    $alt = trim((string) $this->_product->getAttributeText('brand_id'));
-                    if ($alt !== '') {
-                        $brand = $alt;
-                    }
-                } catch (\Throwable $e) {
-                    // ignore
-                }
-            }
-            if ($brand !== '' && stripos($name, $brand) !== false) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

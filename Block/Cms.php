@@ -47,7 +47,6 @@ class Cms extends Jsonld
         Logo $logo,
         LogoPathResolver $logoPathResolver,
         FilterProvider $filterProvider,
-        \OuterEdge\StructuredData\Block\Jsonld\FaqCollector $faqCollector,
         array $data = []
     ) {
         $this->_filterProvider = $filterProvider;
@@ -59,7 +58,6 @@ class Cms extends Jsonld
             $page,
             $logo,
             $logoPathResolver,
-            $faqCollector,
             $data
         );
     }
