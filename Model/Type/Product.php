@@ -496,7 +496,87 @@ class Product
      */
     public function getImageUrl($product, $imageId)
     {
-        return $this->imageHelper->init($product, $imageId)->getUrl();
+        $url = (string) $this->imageHelper->init($product, $imageId)->getUrl();
+        if ($url !== '' && !$this->isPlaceholderUrl($url)) {
+            return $url;
+        }
+
+        // Fallback: the product has no role-attribute image set; the
+        // catalog helper therefore returns the placeholder. Try the
+        // other common image roles, then the media gallery.
+        foreach (['product_page_image_large', 'product_page_image_medium', 'product_base_image', 'image'] as $candidate) {
+            if ($candidate === $imageId) {
+                continue;
+            }
+            try {
+                $candidateUrl = (string) $this->imageHelper->init($product, $candidate)->getUrl();
+            } catch (\Throwable $e) {
+                continue;
+            }
+            if ($candidateUrl !== '' && !$this->isPlaceholderUrl($candidateUrl)) {
+                return $candidateUrl;
+            }
+        }
+
+        $galleryUrl = $this->resolveFirstGalleryImageUrl($product);
+        if ($galleryUrl !== '') {
+            return $galleryUrl;
+        }
+
+        return $url;
+    }
+
+    /**
+     * Use the first media-gallery entry when the product's role
+     * attributes (image / small_image / thumbnail) are unset. Many
+     * products only carry media-gallery attachments, so without this
+     * fallback the structured-data `image` would be the catalog
+     * placeholder, which AI search engines and Google Shopping ignore.
+     */
+    private function resolveFirstGalleryImageUrl(\Magento\Catalog\Model\Product $product): string
+    {
+        try {
+            $images = $product->getMediaGalleryImages();
+        } catch (\Throwable $e) {
+            return '';
+        }
+        if (!$images) {
+            return '';
+        }
+        try {
+            $mediaConfig = ObjectManager::getInstance()
+                ->get(\Magento\Catalog\Model\Product\Media\Config::class);
+        } catch (\Throwable $e) {
+            return '';
+        }
+        foreach ($images as $image) {
+            if (!is_object($image)) {
+                continue;
+            }
+            // `getMediaGalleryImages()` returns a collection of
+            // `Magento\Framework\DataObject` items. Some Magento
+            // distributions wrap those in `Image` instances, so accept
+            // either and read the underlying `file` data value.
+            $file = (string) ($image->getData('file') ?? '');
+            if ($file === '' && method_exists($image, 'getFile')) {
+                $file = (string) $image->getFile();
+            }
+            if ($file === '' || $this->isPlaceholderUrl($file)) {
+                continue;
+            }
+            try {
+                return (string) $mediaConfig->getMediaUrl($file);
+            } catch (\Throwable $e) {
+                return '';
+            }
+        }
+        return '';
+    }
+
+    private function isPlaceholderUrl(string $url): bool
+    {
+        return stripos($url, '/placeholder/') !== false
+            || stripos($url, 'placeholder-image') !== false;
     }
 
     public function getAttributeText($attribute)

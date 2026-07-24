@@ -524,9 +524,18 @@ class Jsonld extends Template
                     $url = (string) $this->imageHelper
                         ->init($product, 'product_page_image_medium')
                         ->getUrl();
+                    if ($url !== '' && !$this->isPlaceholderUrl($url)) {
+                        return [
+                            '@type' => 'ImageObject',
+                            'url' => $url,
+                        ];
+                    }
+                }
+                $galleryUrl = $this->resolveFirstGalleryImageUrl($product);
+                if ($galleryUrl !== '') {
                     return [
                         '@type' => 'ImageObject',
-                        'url' => $url,
+                        'url' => $galleryUrl,
                     ];
                 }
             }
@@ -1060,6 +1069,48 @@ class Jsonld extends Template
             $url = $this->getBaseUrl() . '/' . ltrim($url, '/');
         }
         return preg_replace('/[?#].*$/', '', $url) ?: $url;
+    }
+
+    private function isPlaceholderUrl(string $url): bool
+    {
+        return stripos($url, '/placeholder/') !== false
+            || stripos($url, 'placeholder-image') !== false;
+    }
+
+    private function resolveFirstGalleryImageUrl(\Magento\Catalog\Model\Product $product): string
+    {
+        try {
+            $images = $product->getMediaGalleryImages();
+        } catch (\Throwable $e) {
+            return '';
+        }
+        if (!$images) {
+            return '';
+        }
+        try {
+            $mediaConfig = \Magento\Framework\App\ObjectManager::getInstance()
+                ->get(\Magento\Catalog\Model\Product\Media\Config::class);
+        } catch (\Throwable $e) {
+            return '';
+        }
+        foreach ($images as $image) {
+            if (!is_object($image)) {
+                continue;
+            }
+            $file = (string) ($image->getData('file') ?? '');
+            if ($file === '' && method_exists($image, 'getFile')) {
+                $file = (string) $image->getFile();
+            }
+            if ($file === '' || $this->isPlaceholderUrl($file)) {
+                continue;
+            }
+            try {
+                return (string) $mediaConfig->getMediaUrl($file);
+            } catch (\Throwable $e) {
+                return '';
+            }
+        }
+        return '';
     }
 
     public function encodeJson(array $payload): string
