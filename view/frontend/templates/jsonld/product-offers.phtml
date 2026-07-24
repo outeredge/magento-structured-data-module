@@ -1,20 +1,48 @@
 <?php
     $product = $block->getProduct();
     if ($product && $product->getEntityId()):
+        $productSchema = $block->getSchemaJson();
+        $productData = json_decode((string) $productSchema, true);
+        $productId = is_array($productData) ? (string) ($productData['@id'] ?? '') : '';
 ?>
 <script async>
     function fetchOffersSchema(ID) {
         fetch(window.BASE_URL + 'rest/V1/structure_data/offers/' + ID)
         .then(response => response.json())
         .then((data) => {
-            if (!data.length && !data[0].offers) return;
+            if (!Array.isArray(data) || !data.length || !data[0] || !data[0].offers) return;
 
             const structuredData = document.getElementById('structured-data');
             if (!structuredData) return;
 
-            const structuredDataJson = JSON.parse(structuredData.textContent);
-            structuredDataJson.mainEntity.offers = data[0].offers;
-            structuredData.textContent = JSON.stringify(structuredDataJson);
+            let structuredDataJson;
+            try {
+                structuredDataJson = JSON.parse(structuredData.textContent);
+            } catch (e) {
+                return;
+            }
+            const offers = data[0].offers;
+            const targetId = '<?= $escaper->escapeJs($productId) ?>';
+
+            function applyOffers(node) {
+                if (!node) return false;
+                node.offers = offers;
+                return true;
+            }
+
+            // Only update the Product entity requested by this page. A type
+            // fallback can corrupt another extension's Product node.
+            if (targetId && Array.isArray(structuredDataJson['@graph'])) {
+                const target = structuredDataJson['@graph'].find(
+                    (n) => n && n['@id'] === targetId
+                );
+                if (applyOffers(target)) {
+                    structuredData.textContent = JSON.stringify(structuredDataJson);
+                    return;
+                }
+            }
+        }).catch(() => {
+            // intentionally swallow - initial HTML must remain valid
         });
     }
 
@@ -26,6 +54,6 @@
         }
     }
 
-    waitForBaseUrl(() => fetchOffersSchema('<?= $block->escapeQuote($product->getEntityId()) ?>'));
+    waitForBaseUrl(() => fetchOffersSchema('<?= $escaper->escapeJs((string) $product->getEntityId()) ?>'));
 </script>
 <?php endif; ?>

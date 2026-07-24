@@ -30,6 +30,10 @@
                 <argument name="zone" xsi:type="boolean">false</argument>
             </arguments>
         </referenceBlock>
-        <referenceBlock name="breadcrumbs" template="Magento_Catalog::product/breadcrumbs.phtml"/>
+        <referenceBlock name="breadcrumbs" template="Magento_Catalog::product/breadcrumbs.phtml">
+            <arguments>
+                <argument name="skip_ld_json_schema" xsi:type="boolean">true</argument>
+            </arguments>
+        </referenceBlock>
     </body>
 </page>

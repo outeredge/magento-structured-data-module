@@ -1,42 +1,147 @@
 <!-- Structured Data by outer/edge (https://outeredge.agency) -->
 <?php
 /** @var \OuterEdge\StructuredData\Block\Jsonld $block */
-$mainEntity = $block->getChildHtml('main.entity');
-$additionalSchema = $block->getChildHtml('additional.schema');
-$isWebsite = $block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE;
-$storeName = (string) ($block->getConfig('general/store_information/name') ?? '');
-$baseUrl = $block->getStore()->getBaseUrl();
-$logoUrl = (string) ($block->getStoreLogoUrl() ?? '');
-?>
-<script type="application/ld+json" id="structured-data">
-{
-    "@context": "https://schema.org/",
-    "@type": "<?= $block->escapeQuote($block->getPageType()) ?>"
-    <?php if ($isWebsite): ?>
-    ,"url": <?= /* @noEscape */ json_encode($baseUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
-    ,"name": <?= /* @noEscape */ json_encode($storeName, JSON_UNESCAPED_UNICODE); ?>
-    <?php endif; ?>
-    ,"publisher": {
-        "@type": "Organization",
-        "name": <?= /* @noEscape */ json_encode($storeName, JSON_UNESCAPED_UNICODE); ?>,
-        "url": <?= /* @noEscape */ json_encode($baseUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>,
-        "logo": {
-            "@type": "ImageObject",
-            "url": <?= /* @noEscape */ json_encode($logoUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); ?>
+
+$mainEntityJson = $block->getChildHtml('main.entity');
+$additionalSchemaJson = $block->getChildHtml('additional.schema');
+$organization = $block->getOrganizationSchema();
+$website = $block->getWebsiteSchema();
+$graph = [];
+
+$pageType = $block->getPageType();
+
+// Merge the richer home/contact organization payload into the canonical node.
+if (trim($mainEntityJson) !== '' && in_array($pageType, [
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE,
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE,
+], true)) {
+    $decodedOrganization = json_decode($mainEntityJson, true);
+    if (is_array($decodedOrganization)) {
+        unset($decodedOrganization['@context']);
+        $sameAs = array_values(array_unique(array_merge(
+            (array) ($organization['sameAs'] ?? []),
+            (array) ($decodedOrganization['sameAs'] ?? [])
+        )));
+        $organization = array_replace($organization, $decodedOrganization);
+        if ($sameAs) {
+            $organization['sameAs'] = $sameAs;
+        }
+        $organization['@id'] = $block->getOrganizationId();
+    }
+}
+
+$graph[] = $organization;
+$graph[] = $website;
+
+// The homepage is represented by the canonical WebSite node above. Other
+// routes get a separate page entity.
+$pageEntity = [
+    '@type' => $pageType,
+    '@id' => $block->getPageId(),
+    'url' => $block->getCurrentUrl(),
+    'name' => $block->getPageTitle(),
+    'inLanguage' => $block->getStoreLocale(),
+    'isPartOf' => ['@id' => $block->getWebsiteId()],
+    'publisher' => ['@id' => $block->getOrganizationId()],
+    'breadcrumb' => ['@id' => $block->getBreadcrumbId()],
+];
+
+$description = $block->getPageDescription();
+if ($description !== '') {
+    $pageEntity['description'] = $description;
+}
+
+$dateModified = $block->getPageDateModified();
+if ($dateModified !== '') {
+    $pageEntity['dateModified'] = $dateModified;
+}
+
+$primaryImage = $block->getPagePrimaryImage();
+if (!empty($primaryImage)) {
+    $pageEntity['primaryImageOfPage'] = $primaryImage;
+}
+
+// CMS metadata is not merged into the homepage WebSite entity. Master keeps
+// the homepage WebSite valid and renders Organization separately.
+if (trim($additionalSchemaJson) !== '') {
+    $decoded = json_decode($additionalSchemaJson, true);
+    if (is_array($decoded) && $pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+        foreach ($decoded as $key => $value) {
+            if ($key === '@type' && is_string($value)) {
+                // Preserve array form for CollectionPage.
+                if (is_array($pageEntity['@type'])) {
+                    if (!in_array($value, $pageEntity['@type'], true)) {
+                        $pageEntity['@type'][] = $value;
+                    }
+                } else {
+                    $pageEntity['@type'] = $value;
+                }
+                continue;
+            }
+            $pageEntity[$key] = $value;
         }
     }
-    <?php if ($mainEntity && !$isWebsite): ?>
-    ,
-    "mainEntity": <?= /* @noEscape */ $mainEntity; ?>
-    <?php endif; ?>
-    <?php if ($additionalSchema): ?>
-        <?= /* @noEscape */ $additionalSchema; ?>
-    <?php endif; ?>
 }
-</script>
-<?php if ($isWebsite && $mainEntity): ?>
-<script type="application/ld+json" id="structured-data-organization">
-<?= /* @noEscape */ $mainEntity; ?>
-</script>
+
+// Product and category children provide the page's main entity.
+if (trim($mainEntityJson) !== '' && !in_array($pageType, [
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE,
+    \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE,
+], true)) {
+    $decoded = json_decode($mainEntityJson, true);
+    if (is_array($decoded)) {
+        unset($decoded['@context']);
+        if (isset($decoded['mainEntity'])) {
+            $pageEntity['mainEntity'] = $decoded['mainEntity'];
+        } elseif (($decoded['@type'] ?? null) === 'ItemList') {
+            $pageEntity['mainEntity'] = $decoded;
+        } elseif (isset($decoded['itemListElement'])) {
+            // Bare ItemList shape.
+            $pageEntity['mainEntity'] = [
+                '@type' => 'ItemList',
+                'itemListElement' => $decoded['itemListElement'],
+            ];
+        } elseif (isset($decoded['@type']) && $decoded['@type'] === 'Product') {
+            // Product block emits a flat Product entity (name, sku, image,
+            // brand, offers, etc.) without a wrapper. Append it to the graph
+            // and link the page entity via mainEntity so the existing offers
+            // merger (which targets mainEntity.offers) keeps working.
+            $pageEntity['mainEntity'] = ['@id' => $decoded['@id'] ?? ''];
+            $graph[] = $decoded;
+        }
+    }
+}
+
+if ($block->isCollectionPage() && !isset($pageEntity['mainEntity'])) {
+    $itemList = $block->getCollectionItemList();
+    if (!empty($itemList)) {
+        $pageEntity['mainEntity'] = $itemList;
+    }
+}
+
+if ($pageType === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE) {
+    $pageEntity['mainEntity'] = ['@id' => $block->getOrganizationId()];
+}
+
+// Only emit the BreadcrumbList when there's at least one item.
+$breadcrumbItems = $block->getBreadcrumbItems();
+if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE && !empty($breadcrumbItems)) {
+    $graph[] = $block->getBreadcrumbListSchema();
+} else {
+    unset($pageEntity['breadcrumb']);
+}
+
+if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+    $graph[] = $pageEntity;
+}
+
+$payload = [
+    '@context' => 'https://schema.org/',
+    '@graph' => $graph,
+];
+?>
+<?php $encodedPayload = $block->encodeJson($payload); ?>
+<?php if ($encodedPayload !== ''): ?>
+<script type="application/ld+json" id="structured-data"><?= /* @noEscape */ $encodedPayload ?></script>
 <?php endif; ?>
 <?= $block->getChildHtml('product.offers.schema'); ?>
