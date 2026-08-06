@@ -14,6 +14,13 @@
                 <type>Organization</type>
                 <enable_home>1</enable_home>
             </contact>
+            <organization>
+                <sameas></sameas>
+            </organization>
+            <shipping_return>
+                <merchant_return_days>0</merchant_return_days>
+                <return_method></return_method>
+            </shipping_return>
         </structureddata>
     </default>
 </config>
