@@ -71,8 +71,6 @@ class Product extends View
 
     public function getSchemaJson()
     {
-        $schema = $this->_productData->getSchemaData($this->getProduct());
-        $encoded = json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
-        return is_string($encoded) ? $encoded : '';
+        return json_encode($this->_productData->getSchemaData($this->getProduct()), JSON_UNESCAPED_SLASHES);
     }
 }

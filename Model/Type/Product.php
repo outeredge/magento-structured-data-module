@@ -21,9 +21,10 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\Framework\App\CacheInterface;
+use Magento\Framework\Serialize\SerializerInterface;
+use OuterEdge\StructuredData\Model\Cache\Type\StructuredDataCache;
 use Magento\Framework\View\Element\Template;
-use Magento\Framework\Registry;
-use Magento\Catalog\Api\CategoryRepositoryInterface;
 
 class Product
 {
@@ -98,22 +99,22 @@ class Product
         protected PricingHelper $pricingHelper,
         protected TaxHelper $taxHelper,
         protected ProductRepositoryInterface $productRepository,
-        protected Template $template,
-        protected Registry $registry,
-        protected CategoryRepositoryInterface $categoryRepository
+        protected CacheInterface $cache,
+        protected SerializerInterface $serializer,
+        protected Template $template
 	) {
 	}
 
     public function getSchemaData(ProductModel $product)
     {
-        $this->resetProductState();
-        $this->_product = $product;
+        if (!$this->_product) {
+            $this->_product = $product;
+        }
 
         $data = [
             "@context" => "https://schema.org/",
             "@type" => "Product",
-            "@id" => $this->getCanonicalProductUrl($this->_product)."#Product",
-            "url" => $this->getCanonicalProductUrl($this->_product),
+            "@id" => $this->escapeUrl(strtok($this->_product->getUrlInStore(), '?'))."#Product",
             "name" => $this->escapeQuote((string)strip_tags($this->_product->getName())),
             "sku" => $this->escapeQuote((string)strip_tags($this->_product->getSku())),
             "description" => $this->escapeHtml((string)$this->template->stripTags($this->getDescription())),
@@ -176,20 +177,8 @@ class Product
             }
         }
 
-        if ($gtin = trim((string) strip_tags((string) $this->getGtin()))) {
-            $normalizedGtin = preg_replace('/\D/', '', $gtin) ?: '';
-            $len = strlen($normalizedGtin);
-            $key = match (true) {
-                $len === 8 => 'gtin8',
-                $len === 12 => 'gtin12',
-                $len === 13 => 'gtin13',
-                $len === 14 => 'gtin14',
-                default => 'gtin',
-            };
-            $data['gtin'] = $this->escapeQuote($gtin);
-            if ($key !== 'gtin' && preg_match('/^[\d\s-]+$/', $gtin)) {
-                $data[$key] = $normalizedGtin;
-            }
+        if ($this->getGtin()) {
+            $data['gtin'] = $this->escapeQuote((string)strip_tags($this->getGtin()));
         }
 
         if ($this->getMpn()) {
@@ -200,18 +189,16 @@ class Product
             $data['isbn'] = $this->escapeQuote((string)strip_tags($this->getIsbn()));
         }
 
-        if ($size = $this->getSize()) {
-            $data['size'] = $this->escapeQuote((string) strip_tags($size));
-        }
-        if ($color = $this->getColor()) {
-            $data['color'] = $this->escapeQuote((string) strip_tags($color));
-        }
-        if ($material = $this->getMaterial()) {
-            $data['material'] = $this->escapeQuote((string) strip_tags($material));
+        if ($this->getSize()) {
+            $data['size'] = $this->escapeQuote((string)strip_tags($this->getSize()));
         }
 
-        if ($category = $this->getProductCategory()) {
-            $data['category'] = $category;
+        if ($this->getMaterial()) {
+            $data['material'] = $this->escapeQuote((string)strip_tags($this->getMaterial()));
+        }
+
+        if ($this->getColor()) {
+            $data['color'] = $this->escapeQuote((string)strip_tags($this->getColor()));
         }
 
         if ($this->getKeywords()) {
@@ -257,7 +244,6 @@ class Product
             return null;
         }
 
-        $this->resetProductState();
         $this->_product = $product;
 
         $children = $this->getChildren();
@@ -279,7 +265,7 @@ class Product
                 $offers[$key]['sku'] = $_childProduct->getSku();
 
                 if ($_childProduct->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
-                    $offers[$key]['url'] = $this->getCanonicalProductUrl($this->_product);
+                    $offers[$key]['url'] = $this->_product->getProductUrl();
                 }
                 $key == $lastKey ? '' : ',';
             }
@@ -319,6 +305,9 @@ class Product
         if ($this->getConfig('structureddata/product/hide_price')) {
             return null;
         }
+        if ($result = $this->getCache($product->getId())) {
+            return $result;
+        }
 
         $availability      = 'OutOfStock';
         $product           = $this->productRepository->getById($product->getId());
@@ -342,17 +331,12 @@ class Product
 
         $data = [
             "@type" => "Offer",
-            "url" => $this->getCanonicalProductUrl($product),
+            "url" => $this->escapeUrl(strtok($product->getUrlInStore(), '?')),
             "price" => $this->escapeQuote((string)$this->pricingHelper->currency($finalPriceWithTax, false, false)),
             "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
             "availability" => "http://schema.org/$availability",
             "itemCondition" => "http://schema.org/NewCondition"
         ];
-
-        $returnPolicy = $this->getMerchantReturnPolicy();
-        if ($returnPolicy !== []) {
-            $data['hasMerchantReturnPolicy'] = $returnPolicy;
-        }
 
         if ($product->getFinalPrice() < $product->getPrice()) {
             if ($product->getSpecialToDate()) {
@@ -369,6 +353,7 @@ class Product
             ];
         }
 
+        $this->saveCache($product->getId(), $data);
         return $data;
     }
 
@@ -496,87 +481,7 @@ class Product
      */
     public function getImageUrl($product, $imageId)
     {
-        $url = (string) $this->imageHelper->init($product, $imageId)->getUrl();
-        if ($url !== '' && !$this->isPlaceholderUrl($url)) {
-            return $url;
-        }
-
-        // Fallback: the product has no role-attribute image set; the
-        // catalog helper therefore returns the placeholder. Try the
-        // other common image roles, then the media gallery.
-        foreach (['product_page_image_large', 'product_page_image_medium', 'product_base_image', 'image'] as $candidate) {
-            if ($candidate === $imageId) {
-                continue;
-            }
-            try {
-                $candidateUrl = (string) $this->imageHelper->init($product, $candidate)->getUrl();
-            } catch (\Throwable $e) {
-                continue;
-            }
-            if ($candidateUrl !== '' && !$this->isPlaceholderUrl($candidateUrl)) {
-                return $candidateUrl;
-            }
-        }
-
-        $galleryUrl = $this->resolveFirstGalleryImageUrl($product);
-        if ($galleryUrl !== '') {
-            return $galleryUrl;
-        }
-
-        return $url;
-    }
-
-    /**
-     * Use the first media-gallery entry when the product's role
-     * attributes (image / small_image / thumbnail) are unset. Many
-     * products only carry media-gallery attachments, so without this
-     * fallback the structured-data `image` would be the catalog
-     * placeholder, which AI search engines and Google Shopping ignore.
-     */
-    private function resolveFirstGalleryImageUrl(\Magento\Catalog\Model\Product $product): string
-    {
-        try {
-            $images = $product->getMediaGalleryImages();
-        } catch (\Throwable $e) {
-            return '';
-        }
-        if (!$images) {
-            return '';
-        }
-        try {
-            $mediaConfig = ObjectManager::getInstance()
-                ->get(\Magento\Catalog\Model\Product\Media\Config::class);
-        } catch (\Throwable $e) {
-            return '';
-        }
-        foreach ($images as $image) {
-            if (!is_object($image)) {
-                continue;
-            }
-            // `getMediaGalleryImages()` returns a collection of
-            // `Magento\Framework\DataObject` items. Some Magento
-            // distributions wrap those in `Image` instances, so accept
-            // either and read the underlying `file` data value.
-            $file = (string) ($image->getData('file') ?? '');
-            if ($file === '' && method_exists($image, 'getFile')) {
-                $file = (string) $image->getFile();
-            }
-            if ($file === '' || $this->isPlaceholderUrl($file)) {
-                continue;
-            }
-            try {
-                return (string) $mediaConfig->getMediaUrl($file);
-            } catch (\Throwable $e) {
-                return '';
-            }
-        }
-        return '';
-    }
-
-    private function isPlaceholderUrl(string $url): bool
-    {
-        return stripos($url, '/placeholder/') !== false
-            || stripos($url, 'placeholder-image') !== false;
+        return $this->imageHelper->init($product, $imageId)->getUrl();
     }
 
     public function getAttributeText($attribute)
@@ -758,127 +663,33 @@ class Product
      */
     public function escapeHtml($data, $allowedTags = null)
     {
-        return trim(strip_tags((string) $data));
+        return $this->_escaper->escapeHtml($data, $allowedTags);
     }
 
     public function escapeQuote($data)
     {
-        return (string) $data;
+        return htmlspecialchars($data, ENT_QUOTES | ENT_SUBSTITUTE, null, false);
     }
     
-    /**
-     * Returns the configured MerchantReturnPolicy, or an empty array when no
-     * return window has been configured. The module must not invent a policy.
-     *
-     * @return array<string, mixed>
-     */
-    public function getMerchantReturnPolicy(): array
+    protected function getCacheId($productId)
     {
-        $days = (int) $this->getConfig('structureddata/shipping_return/merchant_return_days');
-        if ($days <= 0) {
-            return [];
-        }
-
-        $policy = [
-            '@type' => 'MerchantReturnPolicy',
-            'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
-            'merchantReturnDays' => $days,
-        ];
-
-        $method = trim((string) $this->getConfig('structureddata/shipping_return/return_method'));
-        if (in_array($method, ['ReturnByMail', 'ReturnInStore', 'ReturnAtKiosk'], true)) {
-            $policy['returnMethod'] = 'https://schema.org/' . $method;
-        }
-
-        return $policy;
+        return StructuredDataCache::TYPE_IDENTIFIER . '_' . $this->getStore()->getId() . '_' . $productId;
     }
 
-    /**
-     * Returns the deepest user-facing category assigned to the product as
-     * a schema.org Thing entity (with @id, @type, name, and url) so AI
-     * search engines can both label and link to the category page.
-     *
-     * Uses the product's own category assignments and skips inactive
-     * categories. The current category is deliberately not preferred because
-     * it can represent a navigation/filter context rather than taxonomy.
-     *
-     * @return array<string, mixed>
-     */
-    public function getProductCategory(): string
+    protected function saveCache($productId, $data)
     {
-        $currentCategory = $this->registry->registry('current_category');
-        $assignedIds = array_map('intval', (array) $this->_product->getCategoryIds());
-        if ($currentCategory && in_array((int) $currentCategory->getId(), $assignedIds, true)) {
-            return $this->escapeQuote((string) $currentCategory->getName());
-        }
-
-        $ids = array_values(array_filter($assignedIds, fn ($id) => $id > 2));
-        if (empty($ids)) {
-            return '';
-        }
-
-        try {
-            $bestCategory = null;
-            $bestDepth = -1;
-            foreach ($ids as $id) {
-                try {
-                    $cat = $this->categoryRepository->get($id, $this->getStore()->getId());
-                } catch (\Throwable $e) {
-                    continue;
-                }
-                if (!$cat->getId()
-                    || (method_exists($cat, 'getIsActive') && !$cat->getIsActive())
-                ) {
-                    continue;
-                }
-                $depth = substr_count((string) $cat->getPath(), '/');
-                if ($depth > $bestDepth) {
-                    $bestDepth = $depth;
-                    $bestCategory = $cat;
-                }
-            }
-            return $bestCategory ? $this->escapeQuote((string) $bestCategory->getName()) : '';
-        } catch (\Throwable $e) {
-            return '';
-        }
+        $this->cache->save(
+            $this->serializer->serialize($data),
+            $this->getCacheId($productId),
+            [StructuredDataCache::CACHE_TAG]
+        );
     }
 
-    private function getCanonicalProductUrl(ProductModel $product): string
+    protected function getCache($productId)
     {
-        $url = $this->resolveCategoryIndependentProductUrl($product);
-        $url = preg_replace('/[?#].*$/', '', $url) ?: $url;
-        return $this->escapeUrl(strip_tags($url));
-    }
-
-    private function resolveCategoryIndependentProductUrl(ProductModel $product): string
-    {
-        try {
-            $urlModel = $product->getUrlModel();
-            if ($urlModel && method_exists($urlModel, 'getUrl')) {
-                $url = (string) $urlModel->getUrl($product, [
-                    '_ignore_category' => true,
-                    '_scope_to_url' => true,
-                ]);
-                if ($url !== '') {
-                    return $url;
-                }
-            }
-        } catch (\Throwable $e) {
-            // Fall back to the product URL API below.
+        if ($result = $this->cache->load($this->getCacheId($productId))) {
+            return $this->serializer->unserialize($result);
         }
-        return (string) $product->getProductUrl(false);
+        return false;
     }
-
-    private function resetProductState(): void
-    {
-        $this->brand = null;
-        $this->weight = null;
-        $this->minWeight = null;
-        $this->maxWeight = null;
-        $this->minPrice = null;
-        $this->maxPrice = null;
-        $this->reviewsCount = null;
-        $this->_reviewData = null;
-    }
-
 }
