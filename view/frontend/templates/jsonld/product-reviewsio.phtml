@@ -1,4 +1,11 @@
 <?php
+    // Guard: do not inject the reviews.io JSON-LD if the Magento
+    // @graph already contains a Product with reviews. Both sources
+    // would produce a duplicate Product entity for AI engines.
+    if ((int) $this->helper('OuterEdge\StructuredData\Helper\Config')->getConfig('structureddata/product/include_reviews') === 1) {
+        return;
+    }
+
     $product = $block->getProduct();
     if ($product->getTypeId() == 'configurable') {
         $associatedProducts = $product->getTypeInstance()->getUsedProducts($product);
