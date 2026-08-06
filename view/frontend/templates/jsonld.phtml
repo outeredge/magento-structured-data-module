@@ -123,6 +123,10 @@ if ($pageType === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_CONTACTPAGE)
     $pageEntity['mainEntity'] = ['@id' => $block->getOrganizationId()];
 }
 
+// Site modules may augment the page entity (e.g. about → FAQPage) and
+// contribute additional @graph nodes via plugins on these public methods.
+$pageEntity = $block->extendPageEntity($pageEntity);
+
 // Only emit the BreadcrumbList when there's at least one item.
 $breadcrumbItems = $block->getBreadcrumbItems();
 if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE && !empty($breadcrumbItems)) {
@@ -133,6 +137,12 @@ if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE && !
 
 if ($pageType !== \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
     $graph[] = $pageEntity;
+}
+
+foreach ($block->getExtraGraphNodes() as $extraNode) {
+    if (is_array($extraNode) && $extraNode !== []) {
+        $graph[] = $extraNode;
+    }
 }
 
 $payload = [

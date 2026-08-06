@@ -1127,4 +1127,29 @@ class Jsonld extends Template
         );
         return is_string($json) ? $json : '';
     }
+
+    /**
+     * Extra @graph nodes contributed by site modules (plugins).
+     *
+     * Override via afterGetExtraGraphNodes to append entities such as
+     * FAQPage without scraping the rendered JSON-LD HTML.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getExtraGraphNodes(): array
+    {
+        return [];
+    }
+
+    /**
+     * Allow site modules to augment the page entity before it is pushed
+     * into @graph (e.g. link the page to an FAQPage via about: {@id}).
+     *
+     * @param array<string, mixed> $pageEntity
+     * @return array<string, mixed>
+     */
+    public function extendPageEntity(array $pageEntity): array
+    {
+        return $pageEntity;
+    }
 }
