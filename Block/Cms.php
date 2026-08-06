@@ -12,6 +12,11 @@ use Magento\Theme\Block\Html\Header\Logo;
 use Magento\Theme\ViewModel\Block\Html\Header\LogoPathResolver;
 use OuterEdge\StructuredData\Block\Jsonld;
 use DOMDocument;
+use Magento\Framework\Registry;
+use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Catalog\Api\CategoryRepositoryInterface;
+use Magento\Catalog\Helper\Image as ImageHelper;
+use Magento\Framework\View\Page\Config as PageConfig;
 
 class Cms extends Jsonld
 {
@@ -47,6 +52,11 @@ class Cms extends Jsonld
         Logo $logo,
         LogoPathResolver $logoPathResolver,
         FilterProvider $filterProvider,
+        Registry $registry,
+        SerializerInterface $serializer,
+        CategoryRepositoryInterface $categoryRepository,
+        ImageHelper $imageHelper,
+        PageConfig $pageConfig,
         array $data = []
     ) {
         $this->_filterProvider = $filterProvider;
@@ -58,6 +68,11 @@ class Cms extends Jsonld
             $page,
             $logo,
             $logoPathResolver,
+            $registry,
+            $serializer,
+            $categoryRepository,
+            $imageHelper,
+            $pageConfig,
             $data
         );
     }
