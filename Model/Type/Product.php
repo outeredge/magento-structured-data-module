@@ -369,17 +369,15 @@ class Product
             ];
         }
         // Include shipping weight details for Google Merchant / OfferShippingDetails
-        // Format weight as a string with 4 decimal places and the configured unit (e.g. "0.1350 kg").
+        // Format weight as a string with 6 decimal places and the configured unit (e.g. "0.135000 kg").
         // Only include when the product has a weight value.
-        if ($this->getConfig('structureddata/product/include_weight') && $product->getWeight() !== null && $product->getWeight() !== '') {
+        if ($product->getWeight() !== null && $product->getWeight() !== '') {
             $weightString = sprintf('%.4f %s', (float)$product->getWeight(), $this->getConfig('general/locale/weight_unit'));
             $data['shippingDetails'] = [
                 '@type' => 'OfferShippingDetails',
                 'weight' => $this->escapeQuote($weightString)
             ];
         }
-        $this->saveCache($product->getId(), $data);
-
         return $data;
     }
 
