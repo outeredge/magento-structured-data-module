@@ -1,16 +1,28 @@
-,"name": "<?= $block->escapeQuote($block->stripTags($block->getTitle())); ?>"
-<?php $content = $block->getContent(); ?>
-<?php if ($content): ?>
-,"mainContentOfPage": {
-    "text": "<?= $block->escapeQuote($block->stripTags($content)); ?>"
+<?php
+/** @var \OuterEdge\StructuredData\Block\Cms $block */
+if ($block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_WEBSITE) {
+    return;
 }
-<?php endif; ?>
-<?php if ($block->getMetaDescription()): ?>
-    ,"description": "<?= $block->escapeQuote(preg_replace('/\s+/', ' ', trim($block->stripTags($block->getMetaDescription())))); ?>"
-<?php endif; ?>
-<?php if ($block->getImage()): ?>
-    ,"primaryImageOfPage": {
-        "@type": "ImageObject",
-        "url": "<?= $block->escapeQuote($block->getImage()); ?>"
-    }
-<?php endif; ?>
+
+$payload = [
+    '@type' => $block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_ABOUTPAGE
+        ? 'AboutPage'
+        : 'WebPage',
+    'name' => strip_tags($block->getTitle()),
+];
+$content = $block->getContent();
+if ($content) {
+    $payload['mainContentOfPage'] = [
+        'text' => strip_tags($content),
+    ];
+}
+if ($block->getMetaDescription()) {
+    $payload['description'] = preg_replace('/\s+/', ' ', trim(strip_tags($block->getMetaDescription())));
+}
+if ($block->getImage()) {
+    $payload['primaryImageOfPage'] = [
+        '@type' => 'ImageObject',
+        'url' => $block->getImage(),
+    ];
+}
+echo $block->encodeJson($payload);

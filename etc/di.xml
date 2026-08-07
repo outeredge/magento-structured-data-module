@@ -9,6 +9,9 @@
     <type name="Magento\Framework\App\Cache">
         <plugin name="flush_structured_data_cache" type="OuterEdge\StructuredData\Plugin\Cache\FlushStructuredDataCache"/>
     </type>
+    <type name="Magento\Theme\Block\Html\Breadcrumbs">
+        <plugin name="OuterEdge_StructuredData::captureBreadcrumbs" type="OuterEdge\StructuredData\Plugin\Theme\Block\Html\BreadcrumbsPlugin"/>
+    </type>
 
     <!--API-->
     <preference for="OuterEdge\StructuredData\Api\OffersRepositoryInterface" type="OuterEdge\StructuredData\Model\Api\OffersRepository"/>

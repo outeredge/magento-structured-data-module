@@ -124,6 +124,26 @@
                     <label>Keywords attribute code</label>
                 </field>
             </group>
+            <group id="organization" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Organization (GEO)</label>
+                <field id="sameas" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Social / External profile URLs (sameAs)</label>
+                    <comment>One URL per line. Populates the Organization entity's sameAs array for GEO/AI entity grounding (Wikipedia, Wikidata, LinkedIn, Trustpilot, etc.).</comment>
+                </field>
+            </group>
+            <group id="shipping_return" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Shipping &amp; Returns (GEO)</label>
+                <field id="merchant_return_days" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Default return window (days)</label>
+                    <comment>Used to emit MerchantReturnPolicy on Product Offer entities. Set to 0 to omit return-policy markup.</comment>
+                    <validate>validate-digits validate-zero-or-greater</validate>
+                </field>
+                <field id="return_method" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Return method</label>
+                    <source_model>OuterEdge\StructuredData\Model\Config\Source\ReturnMethod</source_model>
+                    <comment>Leave unspecified unless this method applies to the configured return policy.</comment>
+                </field>
+            </group>
             <group id="cms" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>CMS Pages</label>
                 <field id="enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">

@@ -1,41 +1,69 @@
-{
-    "@type": "<?= $block->escapeQuote($block->getConfig('structureddata/contact/type')); ?>",
-    "@id": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>",
-    "name": "<?= $block->escapeQuote($block->getConfig('general/store_information/name') ?? ''); ?>",
-    "image": "<?= $block->escapeUrl($block->getStoreLogoUrl() ?? ''); ?>",
-    <?php if (trim($block->escapeQuote($block->getStreetAddress()), ' ,\t\n\r\0\x0B') !== ''): ?>
-    "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "<?= $block->escapeQuote($block->getStreetAddress()); ?>",
-        <?php if ($block->getConfig('general/store_information/city')):?>
-        "addressLocality": "<?= $block->escapeQuote($block->getConfig('general/store_information/city')); ?>",
-        <?php endif; ?>
-        <?php if ($block->getConfig('general/store_information/region_id')):?>
-        "addressRegion": "<?= $block->escapeQuote($block->getConfig('general/store_information/region_id')); ?>",
-        <?php endif; ?>
-        <?php if ($block->getConfig('general/store_information/postcode')):?>
-        "postalCode": "<?= $block->escapeQuote((string)$block->getConfig('general/store_information/postcode')); ?>",
-        <?php endif; ?>
-        <?php if ($block->getConfig('general/store_information/country_id')):?>
-        "addressCountry": "<?= $block->escapeQuote($block->getConfig('general/store_information/country_id')); ?>"
-        <?php endif; ?>
-    },
-    <?php endif; ?>
-    <?php if ($block->getConfig('general/store_information/phone')):?>
-    "telephone": "<?= $block->escapeQuote((string)$block->getConfig('general/store_information/phone')); ?>",
-    <?php endif; ?>
-    <?php if ($block->getConfig('trans_email/ident_general/email')):?>
-    "email": "<?= $block->escapeQuote($block->getConfig('trans_email/ident_general/email')); ?>",
-    <?php endif; ?>
-    "url": "<?= $block->escapeUrl($block->getStore()->getBaseUrl()); ?>"
-    <?php if ($block->isLocalBusiness() && trim($block->getConfig('structureddata/contact/latitude')) !== ''): ?>
-    ,"geo": {
-        "@type": "GeoCoordinates",
-        "latitude": "<?= $block->escapeQuote((string)$block->getConfig('structureddata/contact/latitude')) ?>",
-        "longitude": "<?= $block->escapeQuote((string)$block->getConfig('structureddata/contact/longitude')) ?>"
-    }
-    <?php endif; ?>
-    <?php if ($block->getRelatedPages()): ?>
-    ,"sameAs": <?= $block->escapeQuote($block->getRelatedPages()) ?>
-    <?php endif; ?>
+<?php
+/** @var \OuterEdge\StructuredData\Block\Organization $block */
+$orgType = (string) $block->getConfig('structureddata/contact/type');
+$baseUrl = $block->getStore()->getBaseUrl();
+$storeName = (string) ($block->getConfig('general/store_information/name') ?? '');
+$logoUrl = (string) ($block->getStoreLogoUrl() ?? '');
+$street = trim($block->getStreetAddress(), " ,\t\n\r\0\x0B");
+$city = (string) ($block->getConfig('general/store_information/city') ?? '');
+$region = (string) ($block->getConfig('general/store_information/region_id') ?? '');
+$postcode = (string) ($block->getConfig('general/store_information/postcode') ?? '');
+$country = (string) ($block->getConfig('general/store_information/country_id') ?? '');
+$phone = (string) ($block->getConfig('general/store_information/phone') ?? '');
+$email = (string) ($block->getConfig('trans_email/ident_general/email') ?? '');
+
+$organization = [
+    '@context' => 'https://schema.org/',
+    '@type' => $orgType ?: 'Organization',
+    '@id' => $baseUrl,
+    'name' => $storeName,
+    'url' => $baseUrl,
+];
+
+if ($logoUrl !== '') {
+    $organization['logo'] = $logoUrl;
+    $organization['image'] = $logoUrl;
 }
+
+if ($street !== '') {
+    $address = ['@type' => 'PostalAddress', 'streetAddress' => $street];
+    if ($city !== '') {
+        $address['addressLocality'] = $city;
+    }
+    if ($region !== '') {
+        $address['addressRegion'] = $region;
+    }
+    if ($postcode !== '') {
+        $address['postalCode'] = $postcode;
+    }
+    if ($country !== '') {
+        $address['addressCountry'] = $country;
+    }
+    $organization['address'] = $address;
+}
+
+if ($phone !== '') {
+    $organization['telephone'] = $phone;
+}
+
+if ($email !== '') {
+    $organization['email'] = $email;
+}
+
+if ($block->isLocalBusiness() && trim((string) $block->getConfig('structureddata/contact/latitude')) !== '') {
+    $organization['geo'] = [
+        '@type' => 'GeoCoordinates',
+        'latitude' => (string) $block->getConfig('structureddata/contact/latitude'),
+        'longitude' => (string) $block->getConfig('structureddata/contact/longitude'),
+    ];
+}
+
+$relatedPages = $block->getRelatedPages();
+if ($relatedPages) {
+    $decoded = json_decode($relatedPages, true);
+    if (is_array($decoded) && $decoded !== []) {
+        $organization['sameAs'] = $decoded;
+    }
+}
+
+echo /* @noEscape */ json_encode($organization, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
