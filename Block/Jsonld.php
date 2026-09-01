@@ -74,10 +74,10 @@ class Jsonld extends Template
         protected SerializerInterface $serializer,
         protected CategoryRepositoryInterface $categoryRepository,
         protected ImageHelper $imageHelper,
-        // Untyped because Magento\Framework\View\Element\Template already
-        // declares a property named $pageConfig (without a type). PHP 8.x
-        // forbids adding a type to an inherited untyped property.
-        protected $pageConfig,
+        // forbids adding a type to an inherited untyped property. A null
+        // default is required so the ObjectManager can resolve this argument;
+        // Template::__construct() overwrites it from the context in any case.
+        protected $pageConfig = null,
         array $data = []
     ) {
         $logo->setData('logoPathResolver', $logoPathResolver);
