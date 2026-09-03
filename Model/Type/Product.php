@@ -224,7 +224,7 @@ class Product
             $this->weight = $this->_product->getWeight();
             $data = $this->includeWeight($data);
             $data['offers'] = $this->getOffer($this->_product);
-        } else {
+        } elseif ($this->_product->getTypeId() != \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE) {
             // Composite products (configurable/bundle/grouped): embed the
             // AggregateOffer server-side so the initial HTML carries offers
             // for non-JS agents. Called last because it resets product state.
