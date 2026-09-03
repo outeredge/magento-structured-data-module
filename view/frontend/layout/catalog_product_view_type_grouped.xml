@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
+<!--
+ Offers for grouped products are embedded server-side in the initial
+ JSON-LD (Model/Type/Product::getSchemaData()); no client-side merger needed.
+-->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <body>
-        <referenceBlock name="structured.data.jsonld">
-            <block ifconfig="structureddata/product/include_children" class="Magento\Catalog\Block\Product\View" name="product.offers.schema" template="OuterEdge_StructuredData::jsonld/product-offers.phtml"/>
-        </referenceBlock>
-    </body>
+    <body/>
 </page>

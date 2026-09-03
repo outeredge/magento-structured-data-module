@@ -224,6 +224,14 @@ class Product
             $this->weight = $this->_product->getWeight();
             $data = $this->includeWeight($data);
             $data['offers'] = $this->getOffer($this->_product);
+        } else {
+            // Composite products (configurable/bundle/grouped): embed the
+            // AggregateOffer server-side so the initial HTML carries offers
+            // for non-JS agents. Called last because it resets product state.
+            $childData = $this->getChildOffers($this->_product);
+            if (is_array($childData)) {
+                $data = array_merge($data, $childData);
+            }
         }
 
         return $data;

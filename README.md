@@ -109,6 +109,15 @@ The module provides the following structured data:
 composer require outeredge/magento-structured-data-module
 ```
 
+#### Server-side offers for configurable, bundle and grouped products
+
+Since 6.1.0, offers for composite products (configurable, bundle and grouped) are embedded
+**server-side** in the initial JSON-LD when "Include ChildProducts" is enabled. The Product node
+in the page source therefore always contains an `AggregateOffer` (with `lowPrice`, `highPrice`
+and a per-child `offers` array) — no JavaScript is required, so AI crawlers and non-JS agents
+see complete pricing. The REST endpoint `GET /rest/V1/structure_data/offers/{id}` is retained
+for backward compatibility with external consumers.
+
 #### Review configuration for Structure Data Module
 
 Configuration is available in `Stores > Configuration > outer/edge > Structured Data`. The following options are available:
