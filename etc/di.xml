@@ -12,7 +12,4 @@
     <type name="Magento\Theme\Block\Html\Breadcrumbs">
         <plugin name="OuterEdge_StructuredData::captureBreadcrumbs" type="OuterEdge\StructuredData\Plugin\Theme\Block\Html\BreadcrumbsPlugin"/>
     </type>
-
-    <!--API-->
-    <preference for="OuterEdge\StructuredData\Api\OffersRepositoryInterface" type="OuterEdge\StructuredData\Model\Api\OffersRepository"/>
 </config>
