@@ -58,12 +58,4 @@ if ($block->isLocalBusiness() && trim((string) $block->getConfig('structureddata
     ];
 }
 
-$relatedPages = $block->getRelatedPages();
-if ($relatedPages) {
-    $decoded = json_decode($relatedPages, true);
-    if (is_array($decoded) && $decoded !== []) {
-        $organization['sameAs'] = $decoded;
-    }
-}
-
 echo /* @noEscape */ json_encode($organization, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

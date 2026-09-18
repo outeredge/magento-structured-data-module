@@ -11,7 +11,6 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Cms\Model\Page;
 use Magento\Framework\App\Request\Http;
 use Magento\Framework\Registry;
-use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Framework\View\Page\Config as PageConfig;
@@ -71,7 +70,6 @@ class Jsonld extends Template
         Logo $logo,
         LogoPathResolver $logoPathResolver,
         protected Registry $registry,
-        protected SerializerInterface $serializer,
         protected CategoryRepositoryInterface $categoryRepository,
         protected ImageHelper $imageHelper,
         // forbids adding a type to an inherited untyped property. A null
@@ -663,22 +661,6 @@ class Jsonld extends Template
             if ($line !== '' && filter_var($line, FILTER_VALIDATE_URL)) {
                 $urls[] = $line;
             }
-        }
-
-        // Preserve the module's existing Related Pages setting while also
-        // supporting the newer one-URL-per-line setting.
-        try {
-            $relatedPages = $this->getConfig('structureddata/contact/related_pages');
-            if ($relatedPages) {
-                foreach ((array) $this->serializer->unserialize($relatedPages) as $page) {
-                    $url = is_array($page) ? trim((string) ($page['url'] ?? '')) : '';
-                    if ($url !== '' && filter_var($url, FILTER_VALIDATE_URL)) {
-                        $urls[] = $url;
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            // Ignore malformed legacy configuration.
         }
 
         return array_values(array_unique($urls));

@@ -2,7 +2,6 @@
 
 namespace OuterEdge\StructuredData\Block;
 
-use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Theme\Block\Html\Header\Logo;
@@ -17,7 +16,6 @@ class Organization extends Template
     public function __construct(
         Context $context,
         protected Logo $logo,
-        protected SerializerInterface $serializer,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -51,20 +49,4 @@ class Organization extends Template
         ]));
     }
 
-    public function getRelatedPages()
-    {
-        $relatedPages = $this->getConfig('structureddata/contact/related_pages');
-        $pages        = $relatedPages ? $this->serializer->unserialize($relatedPages) : null;
-        $result       = null;
-
-        if ($pages) {
-            $result = [];
-            foreach ($pages as $page) {
-                $result[] = $this->_escaper->escapeUrl($page['url']);
-            }
-            $result = json_encode($result);
-        }
-
-        return $result;
-    }
 }
