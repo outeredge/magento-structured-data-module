@@ -133,6 +133,7 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
   - **Color** (Default: `Color` or `Colour`)
   - **Material** (Default: empty)
   - **Keywords** (Default: empty)
+* **Custom Attributes:** Add any Magento product attribute to the product structured data. For each row, select a **Product Attribute** and set the **JSON Property Name** used as the key in the generated JSON (for example `additionalProperty`). When the JSON property name is left empty, the attribute code is used as the key. Attributes with empty values on the product are omitted from the output.
 
 #### CMS Pages
 
