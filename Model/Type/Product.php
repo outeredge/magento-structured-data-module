@@ -218,6 +218,12 @@ class Product
             $data['keywords'] = $this->escapeQuote((string)strip_tags($this->getKeywords()));
         }
 
+        foreach ($this->getCustomAttributes() as $key => $value) {
+            if (!isset($data[$key])) {
+                $data[$key] = $this->escapeQuote((string)strip_tags($value));
+            }
+        }
+
         if ($this->_product->getTypeId() == \Magento\Catalog\Model\Product\Type::TYPE_SIMPLE
             || !$this->getConfig('structureddata/product/include_children')
         ) {
@@ -504,6 +510,85 @@ class Product
             }
         }
         return false;
+    }
+
+    /**
+     * Get values for custom product attributes configured in the admin
+     *
+     * @return array JSON property name => attribute value
+     */
+    public function getCustomAttributes()
+    {
+        $result = [];
+        $config = $this->getConfig('structureddata/product/custom_attributes');
+
+        if (!$config) {
+            return $result;
+        }
+
+        $rows = json_decode($config, true);
+
+        if (!is_array($rows)) {
+            return $result;
+        }
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $attributeCode = trim((string)($row['attribute_code'] ?? ''));
+            $jsonKey = trim((string)($row['json_key'] ?? ''));
+
+            if ($attributeCode === '') {
+                continue;
+            }
+
+            if ($jsonKey === '' || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $jsonKey)) {
+                $jsonKey = $attributeCode;
+            }
+
+            $value = $this->getCustomAttributeValue($attributeCode);
+
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $result[$jsonKey] = $value;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Resolve a product attribute value as text, returns null when missing or empty
+     *
+     * @param string $attributeCode
+     * @return string|null
+     */
+    protected function getCustomAttributeValue($attributeCode)
+    {
+        $value = $this->_product->getData($attributeCode);
+
+        if ($value === null || $value === '' || $value === false || is_object($value)) {
+            return null;
+        }
+
+        try {
+            $text = $this->getAttributeText($attributeCode);
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if ($text === false || $text === null || $text === '') {
+            $text = $value;
+        }
+
+        if (is_array($text)) {
+            $text = implode(', ', $text);
+        }
+
+        return (string)$text;
     }
 
     /**
