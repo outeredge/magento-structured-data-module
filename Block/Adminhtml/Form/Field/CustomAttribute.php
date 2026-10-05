@@ -58,7 +58,11 @@ class CustomAttribute extends AbstractFieldArray
     protected function getAttributeRenderer()
     {
         if ($this->_attributeRenderer === false) {
-            $this->_attributeRenderer = $this->_layout->createBlock(AttributeColumn::class);
+            $this->_attributeRenderer = $this->_layout->createBlock(
+                AttributeColumn::class,
+                '',
+                ['data' => ['is_render_to_js_template' => true]]
+            );
         }
         return $this->_attributeRenderer;
     }
