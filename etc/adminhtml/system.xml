@@ -117,6 +117,15 @@
                 <field id="field_keywords" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Keywords attribute code</label>
                 </field>
+                <field id="custom_attributes" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Custom Attributes</label>
+                    <frontend_model>OuterEdge\StructuredData\Block\Adminhtml\Form\Field\CustomAttribute</frontend_model>
+                    <backend_model>OuterEdge\StructuredData\Model\Config\Backend\CustomAttribute</backend_model>
+                    <comment>Add any product attribute to the structured data. JSON Property Name is used as the key in the generated JSON, for example "additionalProperty". Attributes with empty values are omitted.</comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
             </group>
             <group id="organization" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Organization (GEO)</label>
