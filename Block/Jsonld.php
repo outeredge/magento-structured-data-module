@@ -171,7 +171,7 @@ class Jsonld extends Template
     }
 
     /**
-     * Structured-data base URL helper (per GEO fixes plan, Step 2).
+     * Structured-data base URL helper
      * Same as getBaseUrl() but exposes an explicit, plan-named accessor for
      * any callers that prefer the structured-data-specific name.
      */

@@ -152,6 +152,14 @@ Configuration is available in `Stores > Configuration > outer/edge > Structured 
 * **Enable on Contact Page:** Enable or disable Organization structured data on Contact page.
 * **Social / External profile URLs (sameAs):** Add one URL per line for social profiles and other authoritative pages, such as LinkedIn, Trustpilot, Wikipedia or Wikidata.
 
+#### Shipping & Returns
+
+* **Return policy:** Select the `returnPolicyCategory` applied to product offers: Disabled (no markup), Finite return window, Unlimited return window, or Returns not permitted.
+* **Return window (days):** Number of days the customer has to return the product. Only used with the Finite return window policy.
+* **Return method:** How the customer can return the product: by mail, in store, or at kiosk. Only used with the Finite or Unlimited return window policies.
+
+When enabled, a `hasMerchantReturnPolicy` entity is added to each product offer. The `applicableCountry` is taken from `Stores > Configuration > General > Store Information > Country`, falling back to the `General > Country Options > Default Country` option when Store Information is not set.
+
 Once the module is installed and configured you will find the schema markup in your source code:
 
 ![schema_screenshot](/assets/screenshot-schema.png)

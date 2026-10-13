@@ -73,6 +73,11 @@ class Product
     protected $maxPrice = null;
 
     /**
+     * @var array<string, mixed>|null
+     */
+    protected $merchantReturnPolicy = null;
+
+    /**
      * @param Escaper $escaper,
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
@@ -873,29 +878,82 @@ class Product
     
     /**
      * Returns the configured MerchantReturnPolicy, or an empty array when no
-     * return window has been configured. The module must not invent a policy.
+     * return policy or applicable country has been configured. The module
+     * must not invent a policy.
      *
      * @return array<string, mixed>
      */
     public function getMerchantReturnPolicy(): array
     {
-        $days = (int) $this->getConfig('structureddata/shipping_return/merchant_return_days');
-        if ($days <= 0) {
-            return [];
+        if ($this->merchantReturnPolicy !== null) {
+            return $this->merchantReturnPolicy;
         }
 
-        $policy = [
+        $this->merchantReturnPolicy = [];
+
+        $policy = trim((string) $this->getConfig('structureddata/shipping_return/return_policy'));
+        if (!in_array($policy, ['MerchantReturnFiniteReturnWindow', 'MerchantReturnUnlimitedWindow', 'MerchantReturnNotPermitted'], true)) {
+            return $this->merchantReturnPolicy;
+        }
+
+        $country = $this->getReturnPolicyCountry();
+        if ($country === '') {
+            return $this->merchantReturnPolicy;
+        }
+
+        $data = [
             '@type' => 'MerchantReturnPolicy',
-            'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
-            'merchantReturnDays' => $days,
+            'applicableCountry' => strtoupper($country),
+            'returnPolicyCategory' => 'https://schema.org/' . $policy,
         ];
 
-        $method = trim((string) $this->getConfig('structureddata/shipping_return/return_method'));
-        if (in_array($method, ['ReturnByMail', 'ReturnInStore', 'ReturnAtKiosk'], true)) {
-            $policy['returnMethod'] = 'https://schema.org/' . $method;
+        if ($policy === 'MerchantReturnFiniteReturnWindow') {
+            $days = (int) $this->getConfig('structureddata/shipping_return/merchant_return_days');
+            if ($days <= 0) {
+                return $this->merchantReturnPolicy;
+            }
+
+            $data['merchantReturnDays'] = $days;
         }
 
-        return $policy;
+        if ($policy !== 'MerchantReturnNotPermitted') {
+            $method = trim((string) $this->getConfig('structureddata/shipping_return/return_method'));
+            if (in_array($method, ['ReturnByMail', 'ReturnInStore', 'ReturnAtKiosk'], true)) {
+                $data['returnMethod'] = 'https://schema.org/' . $method;
+            }
+        }
+
+        $this->merchantReturnPolicy = $data;
+
+        return $this->merchantReturnPolicy;
+    }
+
+    /**
+     * Returns the applicable country for the merchant return policy, read at
+     * store scope: Store Information country, falling back to the Default
+     * Country option, or an empty string when neither is set.
+     *
+     * @return string
+     */
+    private function getReturnPolicyCountry(): string
+    {
+        $country = trim(
+            (string) $this->_scopeConfig->getValue(
+                'general/store_information/country_id',
+                ScopeInterface::SCOPE_STORE
+            )
+        );
+
+        if ($country === '') {
+            $country = trim(
+                (string) $this->_scopeConfig->getValue(
+                    'general/country/default',
+                    ScopeInterface::SCOPE_STORE
+                )
+            );
+        }
+
+        return $country;
     }
 
     /**

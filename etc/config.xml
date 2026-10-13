@@ -18,6 +18,7 @@
                 <sameas></sameas>
             </organization>
             <shipping_return>
+                <return_policy></return_policy>
                 <merchant_return_days>0</merchant_return_days>
                 <return_method></return_method>
             </shipping_return>
