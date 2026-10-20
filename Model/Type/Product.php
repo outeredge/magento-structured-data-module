@@ -364,8 +364,8 @@ class Product
             "url" => $this->getCanonicalProductUrl($product),
             "price" => $this->escapeQuote((string)$this->pricingHelper->currency($finalPriceWithTax, false, false)),
             "priceCurrency" => $this->escapeQuote($this->getStore()->getCurrentCurrency()->getCode()),
-            "availability" => "http://schema.org/$availability",
-            "itemCondition" => "http://schema.org/NewCondition"
+            "availability" => "https://schema.org/$availability",
+            "itemCondition" => "https://schema.org/NewCondition"
         ];
 
         $returnPolicy = $this->getMerchantReturnPolicy();
