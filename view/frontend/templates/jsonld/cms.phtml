@@ -8,16 +8,16 @@ $payload = [
     '@type' => $block->getPageType() === \OuterEdge\StructuredData\Block\Jsonld::PAGE_TYPE_ABOUTPAGE
         ? 'AboutPage'
         : 'WebPage',
-    'name' => strip_tags($block->getTitle()),
+    'name' => $block->stripTags($block->getTitle()),
 ];
 $content = $block->getContent();
 if ($content) {
     $payload['mainContentOfPage'] = [
-        'text' => strip_tags($content),
+        'text' => $block->stripTags($content),
     ];
 }
 if ($block->getMetaDescription()) {
-    $payload['description'] = preg_replace('/\s+/', ' ', trim(strip_tags($block->getMetaDescription())));
+    $payload['description'] = preg_replace('/\s+/', ' ', trim((string) $block->stripTags($block->getMetaDescription())));
 }
 if ($block->getImage()) {
     $payload['primaryImageOfPage'] = [
