@@ -394,7 +394,7 @@ class Jsonld extends Template
         }
 
         foreach ($candidates as $raw) {
-            $clean = trim((string) preg_replace('/\s+/', ' ', $this->stripTags((string) $raw)));
+            $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $raw)));
             if ($clean === '') {
                 continue;
             }
@@ -408,7 +408,7 @@ class Jsonld extends Template
         try {
             $product = $this->registry->registry('current_product');
             if ($product && is_object($product)) {
-                $clean = trim((string) preg_replace('/\s+/', ' ', $this->stripTags((string) $product->getDescription())));
+                $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $product->getDescription())));
                 if ($clean !== '') {
                     if (mb_strlen($clean) > 300) {
                         $clean = rtrim(mb_substr($clean, 0, 300)) . '…';
@@ -638,7 +638,10 @@ class Jsonld extends Template
      */
     public function getSearchActionSchema(): array
     {
-        $target = $this->getBaseUrl() . '/catalogsearch/result/?q={search_term_string}';
+        $target = $this->getUrl('catalogsearch/result/', [
+            '_query' => 'q={search_term_string}',
+            '_nosid' => true,
+        ]);
         return [
             '@type' => 'SearchAction',
             'target' => [
@@ -808,7 +811,7 @@ class Jsonld extends Template
                     if (!is_array($crumb)) {
                         continue;
                     }
-                    $name = trim($this->stripTags((string) ($crumb['label'] ?? '')));
+                    $name = trim(strip_tags((string) ($crumb['label'] ?? '')));
                     if ($name === '') {
                         continue;
                     }
