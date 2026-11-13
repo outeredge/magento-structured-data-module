@@ -394,7 +394,7 @@ class Jsonld extends Template
         }
 
         foreach ($candidates as $raw) {
-            $clean = trim((string) preg_replace('/\s+/', ' ', $this->stripTags((string) $raw)));
+            $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $raw)));
             if ($clean === '') {
                 continue;
             }
@@ -408,7 +408,7 @@ class Jsonld extends Template
         try {
             $product = $this->registry->registry('current_product');
             if ($product && is_object($product)) {
-                $clean = trim((string) preg_replace('/\s+/', ' ', $this->stripTags((string) $product->getDescription())));
+                $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $product->getDescription())));
                 if ($clean !== '') {
                     if (mb_strlen($clean) > 300) {
                         $clean = rtrim(mb_substr($clean, 0, 300)) . '…';
@@ -638,7 +638,10 @@ class Jsonld extends Template
      */
     public function getSearchActionSchema(): array
     {
-        $target = $this->getBaseUrl() . '/catalogsearch/result/?q={search_term_string}';
+        $target = $this->getUrl('catalogsearch/result/', [
+            '_query' => 'q={search_term_string}',
+            '_nosid' => true,
+        ]);
         return [
             '@type' => 'SearchAction',
             'target' => [
@@ -706,11 +709,9 @@ class Jsonld extends Template
     }
 
     /**
-     * Ensure the BreadcrumbList JSON-LD always includes the current page as
-     * the final ListItem on Hub/Collection pages, even when the rendered
-     * Magento Breadcrumbs block only contains "Home". Without this, AI
-     * search engines cannot infer the relationship between the homepage and
-     * the deep category hub (e.g. /hub/surfboards).
+     * Ensure the BreadcrumbList JSON-LD includes the current category or
+     * product as the final ListItem when rendered breadcrumbs contain only
+     * "Home".
      *
      * @param array<int, array<string, mixed>> $list
      * @return array<int, array<string, mixed>>
@@ -753,12 +754,12 @@ class Jsonld extends Template
     }
 
     /**
-     * Augment the breadcrumb chain when on a Collection page so the JSON-LD
-     * always includes the current page as the final ListItem.
+     * Augment category and product breadcrumb chains so the JSON-LD always
+     * includes the current page as the final ListItem.
      */
     private function shouldAugmentBreadcrumb(): bool
     {
-        return $this->isCollectionPage();
+        return $this->isCollectionPage() || $this->getPageType() === self::PAGE_TYPE_ITEMPAGE;
     }
 
     /**
@@ -808,7 +809,7 @@ class Jsonld extends Template
                     if (!is_array($crumb)) {
                         continue;
                     }
-                    $name = trim($this->stripTags((string) ($crumb['label'] ?? '')));
+                    $name = trim(strip_tags((string) ($crumb['label'] ?? '')));
                     if ($name === '') {
                         continue;
                     }
