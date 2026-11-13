@@ -709,11 +709,9 @@ class Jsonld extends Template
     }
 
     /**
-     * Ensure the BreadcrumbList JSON-LD always includes the current page as
-     * the final ListItem on Hub/Collection pages, even when the rendered
-     * Magento Breadcrumbs block only contains "Home". Without this, AI
-     * search engines cannot infer the relationship between the homepage and
-     * the deep category hub (e.g. /hub/surfboards).
+     * Ensure the BreadcrumbList JSON-LD includes the current category or
+     * product as the final ListItem when rendered breadcrumbs contain only
+     * "Home".
      *
      * @param array<int, array<string, mixed>> $list
      * @return array<int, array<string, mixed>>
@@ -756,12 +754,12 @@ class Jsonld extends Template
     }
 
     /**
-     * Augment the breadcrumb chain when on a Collection page so the JSON-LD
-     * always includes the current page as the final ListItem.
+     * Augment category and product breadcrumb chains so the JSON-LD always
+     * includes the current page as the final ListItem.
      */
     private function shouldAugmentBreadcrumb(): bool
     {
-        return $this->isCollectionPage();
+        return $this->isCollectionPage() || $this->getPageType() === self::PAGE_TYPE_ITEMPAGE;
     }
 
     /**
