@@ -14,14 +14,19 @@ class StripReviewSummary
         
         try {
             $dom = new \DOMDocument;
-            $dom->loadHTML($result);
+            $dom->loadHTML('<?xml encoding="UTF-8">' . $result);
             $xpath = new \DOMXPath($dom);
             $nodes = $xpath->query("//@itemprop|//@itemscope|//@itemtype");
             foreach ($nodes as $node) {
                 $node->parentNode->removeAttribute($node->nodeName);
             }
     
-            return $dom->saveHTML();
+            $html = '';
+            foreach ($dom->getElementsByTagName('body')->item(0)->childNodes as $child) {
+                $html .= $dom->saveHTML($child);
+            }
+
+            return $html;
         } catch(\Exception $e) {
             return $result;
         }
