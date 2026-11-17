@@ -7,6 +7,7 @@ use Magento\Catalog\Helper\Data as TaxHelper;
 use Magento\Catalog\Helper\Image as ImageHelper;
 use Magento\Catalog\Model\Product as ProductModel;
 use Magento\Catalog\Model\ProductFactory;
+use Magento\Catalog\Model\ResourceModel\Product as ProductResource;
 use Magento\CatalogInventory\Model\Stock;
 use Magento\CatalogInventory\Api\StockStateInterface;
 use Magento\Framework\Escaper;
@@ -15,6 +16,7 @@ use Magento\Framework\Module\Manager as ModuleManager;
 use Magento\Framework\Pricing\Helper\Data as PricingHelper;
 use Magento\Review\Model\Review\Summary;
 use Magento\Review\Model\Review\SummaryFactory;
+use Magento\Review\Model\ResourceModel\Review\Summary as ReviewSummaryResource;
 use Magento\Review\Model\ResourceModel\Rating\Option\Vote\CollectionFactory as RatingOptionVoteFactory;
 use Magento\Review\Model\ResourceModel\Review\CollectionFactory as ReviewCollectionFactory;
 use Magento\Store\Model\ScopeInterface;
@@ -105,7 +107,9 @@ class Product
         protected ProductRepositoryInterface $productRepository,
         protected Template $template,
         protected Registry $registry,
-        protected CategoryRepositoryInterface $categoryRepository
+        protected CategoryRepositoryInterface $categoryRepository,
+        protected ReviewSummaryResource $reviewSummaryResource,
+        protected ProductResource $productResource
 	) {
 	}
 
@@ -281,6 +285,7 @@ class Product
 
         $offers = $data = [];
         $children = $this->getChildren();
+        $data = null;
         if ($children) {
             $lastKey = key(array_slice($children, -1, 1, true));
 
@@ -733,7 +738,9 @@ class Product
     public function getReviewData()
     {
         if ($this->_reviewData === null) {
-            $this->_reviewData = $this->_reviewSummaryFactory->create()->load($this->_product->getId());
+            $summary = $this->_reviewSummaryFactory->create();
+            $this->reviewSummaryResource->load($summary, $this->_product->getId());
+            $this->_reviewData = $summary;
         }
         return $this->_reviewData;
     }
@@ -847,7 +854,9 @@ class Product
 
     public function loadProduct($id)
     {
-        return $this->_productFactory->create()->load($id);
+        $product = $this->_productFactory->create();
+        $this->productResource->load($product, $id);
+        return $product;
     }
 
     /**
