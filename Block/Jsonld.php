@@ -394,7 +394,7 @@ class Jsonld extends Template
         }
 
         foreach ($candidates as $raw) {
-            $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $raw)));
+            $clean = trim((string) preg_replace('/\s+/', ' ', $this->stripTags((string) $raw)));
             if ($clean === '') {
                 continue;
             }
@@ -408,7 +408,7 @@ class Jsonld extends Template
         try {
             $product = $this->registry->registry('current_product');
             if ($product && is_object($product)) {
-                $clean = trim((string) preg_replace('/\s+/', ' ', strip_tags((string) $product->getDescription())));
+                $clean = trim((string) preg_replace('/\s+/', ' ', $this->stripTags((string) $product->getDescription())));
                 if ($clean !== '') {
                     if (mb_strlen($clean) > 300) {
                         $clean = rtrim(mb_substr($clean, 0, 300)) . '…';
@@ -631,8 +631,10 @@ class Jsonld extends Template
     }
 
     /**
-     * Build a SearchAction for WebSite.potentialAction (sitelinks searchbox).
-     * Returns [] when disabled or the search route is empty.
+     * Build a SearchAction for WebSite.potentialAction.
+     *
+     * The query is passed as a raw string so the {search_term_string}
+     * placeholder is not URL-encoded by http_build_query().
      *
      * @return array<string, mixed>
      */
@@ -640,7 +642,6 @@ class Jsonld extends Template
     {
         $target = $this->getUrl('catalogsearch/result/', [
             '_query' => 'q={search_term_string}',
-            '_nosid' => true,
         ]);
         return [
             '@type' => 'SearchAction',
@@ -809,7 +810,7 @@ class Jsonld extends Template
                     if (!is_array($crumb)) {
                         continue;
                     }
-                    $name = trim(strip_tags((string) ($crumb['label'] ?? '')));
+                    $name = trim($this->stripTags((string) ($crumb['label'] ?? '')));
                     if ($name === '') {
                         continue;
                     }
