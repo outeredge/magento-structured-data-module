@@ -279,9 +279,9 @@ class Product
         $this->resetProductState();
         $this->_product = $product;
 
+        $offers = $data = [];
         $children = $this->getChildren();
         if ($children) {
-            $offers = $data = [];
             $lastKey = key(array_slice($children, -1, 1, true));
 
             foreach ($children as $key => $_childProduct) {
