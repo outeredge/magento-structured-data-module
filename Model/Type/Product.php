@@ -139,7 +139,7 @@ class Product
         ){
             $data['aggregateRating'] = [
                 "@type" => "AggregateRating",
-                "bestRating" => "100",
+                "bestRating" => "5",
                 "worstRating" => "1",
                 "ratingValue" => $this->escapeQuote((string)$this->getReviewsRating()),
                 "reviewCount" => $this->escapeQuote((string)$this->getReviewsCount())
@@ -705,9 +705,11 @@ class Product
     public function getReviewsRating()
     {
         if ($data = $this->getYotpoProductSnippet()) {
-            $ratingSummary = $data['average_score'];
+            $ratingSummary = (float) $data['average_score'];
         } else {
-            $ratingSummary = !empty($this->getReviewData()) ? $this->getReviewData()->getRatingSummary() : 1;
+            $ratingSummary = !empty($this->getReviewData())
+                ? round((float) $this->getReviewData()->getRatingSummary() / 20, 1)
+                : 1;
         }
 
         return $ratingSummary;
