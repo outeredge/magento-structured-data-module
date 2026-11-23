@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Rector\Core\Configuration\Option;
 use Rector\Config\RectorConfig;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
@@ -14,9 +13,7 @@ return static function (RectorConfig $rectorConfig): void {
 
     $rectorConfig->skip([__DIR__ . '/vendor']);
 
-    $parameters = $rectorConfig->parameters();
-
-    $parameters->set(Option::FILE_EXTENSIONS, [
+    $rectorConfig->fileExtensions([
         'php',
         'phtml'
     ]);
